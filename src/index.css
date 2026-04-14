@@ -1,111 +1,72 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ═══════════════════════════════════════════════════
+ * Blue Eclipse — Design Token Variables
+ * RGB triplets for Tailwind opacity support
+ * ═══════════════════════════════════════════════════ */
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
+  /* ── Light Mode ─────────────────────────────── */
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --ec-root:         247 250 252;   /* #F7FAFC  cool grey-blue bg     */
+    --ec-surface:      255 255 255;   /* #FFFFFF  cards / panels        */
+    --ec-muted:        237 242 247;   /* #EDF2F7  secondary bg / badges */
+    --ec-text:          15  23  42;   /* #0F172A  primary readable text */
+    --ec-text-sub:     100 116 139;   /* #64748B  subtle / secondary   */
+    --ec-accent:        59  72 208;   /* #3B48D0  interactive accent    */
+    --ec-accent-hover:  45  58 176;   /* #2D3AB0  accent hover          */
+    --ec-border:       203 213 225;   /* #CBD5E1  borders               */
+    --ec-highlight:     30  41  59;   /* #1E293B  high-emphasis text    */
   }
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  /* ── Dark Mode ──────────────────────────────── */
+  .dark {
+    --ec-root:           8  12  26;   /* #080C1A  black-blue depth      */
+    --ec-surface:       17  27  46;   /* #111B2E  dark navy surface     */
+    --ec-muted:         28  43  71;   /* #1C2B47  hazy blue             */
+    --ec-text:         226 232 240;   /* #E2E8F0  readable light text   */
+    --ec-text-sub:     123 142 181;   /* #7B8EB5  cool blue-grey        */
+    --ec-accent:       123 143 204;   /* #7B8FCC  blue-shifted accent   */
+    --ec-accent-hover: 149 168 221;   /* #95A8DD  lighter blue hover    */
+    --ec-border:        23  34  55;   /* #172237  dark blue border      */
+    --ec-highlight:    241 245 249;   /* #F1F5F9  brightest emphasis    */
+  }
+
+  /* ── Global Resets ──────────────────────────── */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    @apply m-0 p-0 antialiased bg-ec-root text-ec-text font-inter;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  #root {
+    @apply min-h-screen;
   }
 }
 
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+/* ═══════════════════════════════════════════════════
+ * Reusable Components
+ * ═══════════════════════════════════════════════════ */
+@layer components {
+  /* Custom checkbox — pseudo-element checkmark */
+  .ck-checkbox {
+    @apply appearance-none w-4 h-4 rounded cursor-pointer relative transition-all duration-200;
+    border: 1.5px solid rgb(var(--ec-border));
+    background: rgb(var(--ec-muted) / 0.3);
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+  .ck-checkbox:checked {
+    background: rgb(var(--ec-accent));
+    border-color: rgb(var(--ec-accent));
   }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  .ck-checkbox:checked::after {
+    content: '';
+    @apply absolute top-[2px] left-[5px] w-1 h-[7px] border-white border-solid;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
 }
