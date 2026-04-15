@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  *
  * @returns {'dark' | 'light'} The current system theme.
  */
-export function useSystemTheme() {
+export default function useSystemTheme() {
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'light';
     return window.matchMedia('(prefers-color-scheme: dark)').matches

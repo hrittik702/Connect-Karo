@@ -2,20 +2,21 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 // Pages Import
+import Home from "./pages/Home/Home"; // Path check kar lena sahi ho
 import Login from "./pages/auth/Login";
-// (Maan lijiye baaki pages aapne in locations pe banaye hain)
 import AdminDashboard from "./pages/admin/Dashboard";
 import CollegeDashboard from "./pages/college/Dashboard";
 import AlumniDashboard from "./pages/alumni/Dashboard";
 import StudentDashboard from "./pages/student/Dashboard";
 
-// Security Component - Ye check karta hai ki user allowed hai ya nahi
+// Role-Based Security Component
 const ProtectedRoute = ({ children, allowedRole }) => {
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, loading } = useAuth();
 
+  if (loading) return <div>Loading Application...</div>;
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (userData?.status === "blocked") return <h2>Your account is blocked.</h2>;
-  if (userData?.role !== allowedRole) return <Navigate to="/login" replace />; // Ya unauthorized page
+  if (userData?.status === "blocked") return <h2 style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Your account is blocked by Admin.</h2>;
+  if (userData?.role !== allowedRole) return <Navigate to="/login" replace />;
 
   return children;
 };
@@ -25,11 +26,13 @@ export default function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* ✅ Step 1: Root Path ab Landing Page par jayega */}
+          <Route path="/" element={<Home />} />
+          
+          {/* ✅ Step 2: Login Page alag route par rahega */}
           <Route path="/login" element={<Login />} />
 
-          {/* Secure Routes for Teams */}
+          {/* Secure Routes - Inme koi change nahi hai */}
           <Route path="/admin/*" element={
             <ProtectedRoute allowedRole="root_admin"><AdminDashboard /></ProtectedRoute>
           } />
@@ -43,6 +46,8 @@ export default function App() {
             <ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>
           } />
 
+          {/* Catch-all: Agar koi galat URL daale toh Home pe bhej do */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>

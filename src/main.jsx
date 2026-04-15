@@ -1,17 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './index.css'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
-import CollegeAdminLogin from './college-admin/login.jsx'
+import './index.css'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/college-admin/login" element={<CollegeAdminLogin />} />
-      </Routes>
-    </BrowserRouter>
-  </StrictMode>,
+// Yahan koi bhi direct page (jaise login) import nahi hoga
+// App component ke andar hi saari routing (App.jsx) handle ho rahi hai
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
 )
