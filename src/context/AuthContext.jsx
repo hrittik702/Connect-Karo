@@ -16,14 +16,10 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
-        // User ka role aur details Firestore se fetch kar rahe hai
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             setUserData(userDoc.data());
-          } else {
-            console.log("User data not found in Firestore!");
-            setUserData(null);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -32,14 +28,37 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(null);
         setUserData(null);
       }
-      setLoading(false); // Data aane ke baad loading rok do
+      setLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
+  // 🟢 NEW: Dummy Login Function for Development
+  const dummyLogin = (role) => {
+    // Fake Firebase User
+    setCurrentUser({ uid: "dummy_12345", email: `test@${role}.com` });
+    
+    // Fake Firestore Data
+    setUserData({
+      name: `Demo ${role.toUpperCase()}`,
+      role: role,
+      status: "approved",
+      collegeId: "dummy_college_01",
+      batch: "2024",
+      company: "Test Corp"
+    });
+  };
+
+  // 🟢 NEW: Dummy Logout
+  const dummyLogout = () => {
+    setCurrentUser(null);
+    setUserData(null);
+    auth.signOut(); // Real firebase logout just in case
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, userData, loading }}>
+    <AuthContext.Provider value={{ currentUser, userData, loading, dummyLogin, dummyLogout }}>
       {!loading && children}
     </AuthContext.Provider>
   );
