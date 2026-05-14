@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import '@fontsource-variable/mona-sans'
 import './index.css'
 
 // Yahan koi bhi direct page (jaise login) import nahi hoga

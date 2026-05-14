@@ -11,9 +11,19 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Track scroll for dynamic island navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleSignUp = (e) => {
@@ -34,74 +44,89 @@ export default function Home() {
     <div className="min-h-screen bg-ec-root text-ec-text overflow-hidden selection:bg-ec-accent/20">
 
       {/* ═══════════════════════════════════════════
-       * NAVIGATION — GitHub-style
+       * NAVIGATION — Dynamic Island
        * ═══════════════════════════════════════════ */}
-      <nav className="nav-bar sticky top-0 z-50">
-        <div className="flex items-center justify-between px-4 lg:px-6 py-3 mx-auto max-w-[1400px]">
-          
-          {/* Left — Logo + Nav Links */}
-          <div className="flex items-center gap-5">
-            {/* Logo */}
-            <div className="flex items-center gap-2 mr-1">
-              <div className="w-8 h-8 rounded-md bg-ec-accent flex items-center justify-center">
-                <span className="text-white font-extrabold text-sm leading-none">C</span>
+      <div
+        className="nav-island-wrapper fixed top-0 left-0 right-0 z-50"
+        style={{
+          '--island-pad-x': scrolled ? '16px' : '0px',
+          '--island-pad-top': scrolled ? '10px' : '0px',
+          padding: 'var(--island-pad-top) var(--island-pad-x) 0',
+        }}
+      >
+        <nav
+          className="nav-island"
+          data-scrolled={scrolled}
+        >
+          <div className="nav-island-inner">
+            
+            {/* ── Left: Logo + Links ── */}
+            <div className="flex items-center gap-4 min-w-0">
+              {/* Logo — always visible, scales down */}
+              <div className="nav-island-logo">
+                <span>C</span>
+              </div>
+
+              {/* Brand name — appears in island mode */}
+              <span className={`nav-island-brand ${scrolled ? 'nav-island-brand--show' : ''}`}>
+                Connect<span className="text-ec-accent">Karo</span>
+              </span>
+
+              {/* Nav Links — collapse out in island mode */}
+              <div className={`nav-island-links ${scrolled ? 'nav-island-links--hide' : ''}`}>
+                {navItems.map((item, i) => (
+                  <a
+                    key={item.label}
+                    href={item.href || '#'}
+                    className="nav-island-link"
+                    style={{ transitionDelay: scrolled ? '0ms' : `${i * 30}ms` }}
+                  >
+                    {item.label}
+                    {item.hasDropdown && <ChevronDown size={13} className="opacity-50" />}
+                  </a>
+                ))}
               </div>
             </div>
 
-            {/* Nav Links — Desktop */}
-            <div className="hidden lg:flex items-center gap-0.5">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href || '#'}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-md text-[14px] font-medium text-ec-text-sub hover:text-ec-text transition-colors duration-150"
-                >
-                  {item.label}
-                  {item.hasDropdown && <ChevronDown size={14} className="text-ec-icon opacity-60" />}
-                </a>
-              ))}
+            {/* ── Right: Search + Auth ── */}
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Search — morphs into compact pill */}
+              <div className={`nav-island-search ${scrolled ? 'nav-island-search--compact' : ''} ${searchFocused && !scrolled ? 'nav-island-search--focused' : ''}`}>
+                <Search size={14} className="nav-island-search-icon" />
+                <input
+                  type="text"
+                  placeholder={scrolled ? 'Search...' : 'Search or jump to...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  className="nav-island-search-input"
+                />
+                <kbd className={`nav-island-kbd ${scrolled ? 'nav-island-kbd--hide' : ''}`}>/</kbd>
+              </div>
+
+              {/* Sign in */}
+              <button
+                onClick={() => navigate('/login')}
+                className="nav-island-signin"
+              >
+                Sign in
+              </button>
+
+              {/* Sign up */}
+              <button
+                onClick={() => navigate('/login')}
+                className={`nav-island-signup ${scrolled ? 'nav-island-signup--pill' : ''}`}
+              >
+                Sign up
+              </button>
             </div>
           </div>
+        </nav>
+      </div>
 
-          {/* Right — Search + Sign in + Sign up */}
-          <div className="flex items-center gap-3">
-            {/* Search Bar */}
-            <div className={`hidden md:flex items-center border rounded-md px-3 py-1.5 transition-all duration-200 ${
-              searchFocused 
-                ? 'border-ec-accent/50 bg-ec-root shadow-sm shadow-ec-accent/10 w-72' 
-                : 'border-ec-border bg-transparent w-60'
-            }`}>
-              <Search size={14} className="text-ec-icon mr-2 flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Search or jump to..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className="bg-transparent border-none outline-none text-[13px] text-ec-text placeholder:text-ec-text-sub/50 w-full font-[inherit]"
-              />
-              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-ec-text-sub border border-ec-border rounded bg-ec-muted/50">/</kbd>
-            </div>
-
-            {/* Sign in */}
-            <button
-              onClick={() => navigate('/login')}
-              className="text-[14px] font-medium text-ec-text-sub hover:text-ec-text transition-colors px-2 py-1"
-            >
-              Sign in
-            </button>
-
-            {/* Sign up */}
-            <button
-              onClick={() => navigate('/login')}
-              className="text-[13px] font-semibold text-white bg-ec-accent hover:bg-ec-accent-hover border border-ec-accent rounded-md px-3.5 py-1.5 transition-all duration-150"
-            >
-              Sign up
-            </button>
-          </div>
-        </div>
-      </nav>
+      {/* Spacer for fixed navbar */}
+      <div className="h-[52px]" />
 
       {/* ═══════════════════════════════════════════
        * HERO SECTION — With background image + gradient
