@@ -52,125 +52,118 @@ export default function Login() {
   };
 
   const devRoles = [
-    { role: "root_admin", label: "Root Admin", icon: Shield, gradient: "from-red-500 to-orange-400" },
-    { role: "college_admin", label: "College Admin", icon: Building2, gradient: "from-blue-500 to-cyan-400" },
-    { role: "alumni", label: "Alumni", icon: Users, gradient: "from-purple-500 to-pink-400" },
-    { role: "student", label: "Student", icon: GraduationCap, gradient: "from-green-500 to-emerald-400" },
+    { role: "root_admin", label: "Root Admin", icon: Shield, color: "bg-red-500" },
+    { role: "college_admin", label: "College Admin", icon: Building2, color: "bg-blue-500" },
+    { role: "alumni", label: "Alumni", icon: Users, color: "bg-purple-500" },
+    { role: "student", label: "Student", icon: GraduationCap, color: "bg-ec-accent" },
   ];
 
   return (
-    <div className="relative min-h-screen bg-ec-root text-ec-text overflow-hidden font-inter flex items-center justify-center p-6">
+    <div className="relative min-h-screen bg-ec-root text-ec-text overflow-hidden flex items-center justify-center p-6">
       
-      {/* Ambient Background */}
-      <div className="ambient-mesh" />
-      <div className="noise-overlay" />
+      {/* Subtle ambient glow */}
+      <div className="ambient-glow" />
 
-      {/* Extra orbs */}
-      <div className="fixed top-[10%] left-[20%] w-[400px] h-[400px] rounded-full bg-ec-accent/15 blur-[140px] animate-float-orb pointer-events-none" />
-      <div className="fixed bottom-[10%] right-[15%] w-[350px] h-[350px] rounded-full bg-purple-500/10 blur-[120px] animate-float-orb-delayed pointer-events-none" />
-
-      {/* Login Card — Liquid Glass */}
+      {/* Login Card */}
       <div className="relative z-10 w-full max-w-md animate-fade-in-up">
         
-        {/* Back Button — Glass */}
+        {/* Back Button */}
         <button
           onClick={() => navigate('/')}
-          className="glass-btn mb-6 text-sm py-2 px-4"
+          className="btn mb-5 text-sm py-2 px-3.5"
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={15} className="text-ec-icon" />
           Back to Home
         </button>
 
         {/* Main Card */}
-        <div className="glass-card p-8 md:p-10" style={{ borderRadius: '28px' }}>
-          <div className="relative z-10">
+        <div className="surface-card p-7 md:p-9">
 
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-gradient-to-br from-ec-accent to-indigo-400 shadow-lg shadow-ec-accent/25 mb-5">
-                <LogIn size={28} className="text-white" />
-              </div>
-              <h2 className="text-2xl font-extrabold text-ec-highlight mb-2">Access Portal</h2>
-              <p className="text-sm text-ec-text-sub">Enter your credentials to continue</p>
+          {/* Header */}
+          <div className="text-center mb-7">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-ec-accent mb-4">
+              <LogIn size={24} className="text-white" />
             </div>
-
-            {/* Error — Glass */}
-            {error && (
-              <div className="glass rounded-xl p-4 mb-6 border-l-4 border-red-500/80 animate-shake" style={{ borderRadius: '14px' }}>
-                <p className="text-sm text-red-400 font-medium">{error}</p>
-              </div>
-            )}
-
-            {/* Login Form */}
-            <form onSubmit={handleRealLogin} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-ec-text-sub mb-2">Email Address</label>
-                <input
-                  type="email"
-                  placeholder="name@institution.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="glass-input"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-ec-text-sub mb-2">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="glass-input"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="glass-btn-primary w-full text-base py-4 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>
-                    Secure Login
-                    <ArrowLeft size={18} className="rotate-180" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-8">
-              <div className="flex-1 h-px bg-ec-border/30" />
-              <div className="glass-badge text-[11px] py-1 px-3 uppercase tracking-widest">
-                <Sparkles size={10} />
-                Dev Access
-              </div>
-              <div className="flex-1 h-px bg-ec-border/30" />
-            </div>
-
-            {/* Dev Login Buttons — Glass */}
-            <div className="grid grid-cols-2 gap-3">
-              {devRoles.map(({ role, label, icon: Icon, gradient }) => (
-                <button
-                  key={role}
-                  onClick={() => handleDummyLogin(role)}
-                  className="glass group p-3 rounded-2xl flex items-center gap-3 cursor-pointer hover:border-ec-accent/30 transition-all duration-300"
-                >
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon size={16} className="text-white" />
-                  </div>
-                  <span className="text-sm font-semibold text-ec-text-sub group-hover:text-ec-highlight transition-colors">
-                    {label}
-                  </span>
-                </button>
-              ))}
-            </div>
-
+            <h2 className="text-2xl font-extrabold text-ec-highlight mb-1.5">Access Portal</h2>
+            <p className="text-sm text-ec-text-sub">Enter your credentials to continue</p>
           </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3.5 mb-5 border-l-4 border-l-red-500 animate-shake">
+              <p className="text-sm text-red-400 font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleRealLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-ec-text-sub mb-1.5">Email Address</label>
+              <input
+                type="email"
+                placeholder="name@institution.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ec-text-sub mb-1.5">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full text-sm py-3.5 mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Secure Login
+                  <ArrowLeft size={16} className="rotate-180" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-7">
+            <div className="flex-1 h-px bg-ec-border" />
+            <div className="badge text-[11px] py-1 px-2.5 uppercase tracking-widest">
+              <Sparkles size={10} />
+              Dev Access
+            </div>
+            <div className="flex-1 h-px bg-ec-border" />
+          </div>
+
+          {/* Dev Login Buttons */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {devRoles.map(({ role, label, icon: Icon, color }) => (
+              <button
+                key={role}
+                onClick={() => handleDummyLogin(role)}
+                className="surface group p-2.5 rounded-lg flex items-center gap-2.5 cursor-pointer hover:border-ec-accent/30 transition-all duration-200"
+              >
+                <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center group-hover:scale-105 transition-transform duration-200`}>
+                  <Icon size={15} className="text-white" />
+                </div>
+                <span className="text-sm font-semibold text-ec-text-sub group-hover:text-ec-highlight transition-colors">
+                  {label}
+                </span>
+              </button>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>

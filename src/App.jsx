@@ -13,9 +13,9 @@ import StudentDashboard from "./pages/student/Dashboard";
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { currentUser, userData, loading } = useAuth();
 
-  if (loading) return <div>Loading Application...</div>;
+  if (loading) return <div className="min-h-screen bg-ec-root flex items-center justify-center text-ec-text-sub text-sm">Loading Application...</div>;
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (userData?.status === "blocked") return <h2 style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Your account is blocked by Admin.</h2>;
+  if (userData?.status === "blocked") return <div className="min-h-screen bg-ec-root flex items-center justify-center"><h2 className="text-red-400 text-center text-lg">Your account is blocked by Admin.</h2></div>;
   if (userData?.role !== allowedRole) return <Navigate to="/login" replace />;
 
   return children;

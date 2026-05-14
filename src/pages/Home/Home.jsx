@@ -1,135 +1,190 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Briefcase, GraduationCap, LayoutDashboard, Search, Bell, ArrowRight, Sparkles, Globe, Shield, Zap, ChevronRight } from 'lucide-react';
+import { Users, Briefcase, GraduationCap, LayoutDashboard, Search, ArrowRight, Sparkles, Shield, Zap, ChevronRight, ChevronDown, Globe, Code, BookOpen } from 'lucide-react';
 import useSystemTheme from '../../hooks/useSystemTheme';
+import heroBg from '../../assets/hero-bg.png';
 
 export default function Home() {
   const navigate = useNavigate();
   const theme = useSystemTheme();
   const [mounted, setMounted] = useState(false);
+  const [email, setEmail] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const handleSignUp = (e) => {
+    e.preventDefault();
+    // Navigate to login with email pre-filled
+    navigate('/login', { state: { email, mode: 'signup' } });
+  };
+
+  const navItems = [
+    { label: 'Platform', hasDropdown: true },
+    { label: 'Solutions', hasDropdown: true },
+    { label: 'Resources', hasDropdown: true },
+    { label: 'Open Source', hasDropdown: true },
+    { label: 'Pricing', hasDropdown: false, href: '#pricing' },
+  ];
+
   return (
-    <div className="relative min-h-screen bg-ec-root text-ec-text overflow-hidden selection:bg-ec-accent/30 font-inter">
-
-      {/* Ambient Background Mesh */}
-      <div className="ambient-mesh" />
-      
-      {/* Noise Texture for frosted realism */}
-      <div className="noise-overlay" />
-
-      {/* Extra color orbs for depth */}
-      <div className="fixed top-[20%] right-[15%] w-[350px] h-[350px] rounded-full bg-blue-500/10 dark:bg-blue-400/10 blur-[120px] animate-float-orb pointer-events-none" />
-      <div className="fixed bottom-[30%] left-[10%] w-[280px] h-[280px] rounded-full bg-purple-500/8 dark:bg-purple-400/8 blur-[100px] animate-float-orb-delayed pointer-events-none" />
+    <div className="min-h-screen bg-ec-root text-ec-text overflow-hidden selection:bg-ec-accent/20">
 
       {/* ═══════════════════════════════════════════
-       * NAVIGATION — Liquid Glass Navbar
+       * NAVIGATION — GitHub-style
        * ═══════════════════════════════════════════ */}
-      <nav className="glass-nav sticky top-0 z-50 animate-fade-in-down">
-        <div className="flex items-center justify-between px-6 py-4 mx-auto max-w-7xl">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-ec-accent to-indigo-400 flex items-center justify-center shadow-lg shadow-ec-accent/25 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-              <span className="relative text-white font-extrabold text-lg leading-none">C</span>
+      <nav className="nav-bar sticky top-0 z-50">
+        <div className="flex items-center justify-between px-4 lg:px-6 py-3 mx-auto max-w-[1400px]">
+          
+          {/* Left — Logo + Nav Links */}
+          <div className="flex items-center gap-5">
+            {/* Logo */}
+            <div className="flex items-center gap-2 mr-1">
+              <div className="w-8 h-8 rounded-md bg-ec-accent flex items-center justify-center">
+                <span className="text-white font-extrabold text-sm leading-none">C</span>
+              </div>
             </div>
-            <span className="text-xl font-bold tracking-tight text-ec-highlight">
-              Connect<span className="text-transparent bg-clip-text bg-gradient-to-r from-ec-accent to-indigo-400">Karo</span>
-            </span>
+
+            {/* Nav Links — Desktop */}
+            <div className="hidden lg:flex items-center gap-0.5">
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href || '#'}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-md text-[14px] font-medium text-ec-text-sub hover:text-ec-text transition-colors duration-150"
+                >
+                  {item.label}
+                  {item.hasDropdown && <ChevronDown size={14} className="text-ec-icon opacity-60" />}
+                </a>
+              ))}
+            </div>
           </div>
 
-          {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
-            {['Features', 'Solutions', 'Pricing'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="px-4 py-2 rounded-xl text-sm font-medium text-ec-text-sub hover:text-ec-text hover:bg-ec-surface/50 transition-all duration-300">
-                {item}
-              </a>
-            ))}
-          </div>
+          {/* Right — Search + Sign in + Sign up */}
+          <div className="flex items-center gap-3">
+            {/* Search Bar */}
+            <div className={`hidden md:flex items-center border rounded-md px-3 py-1.5 transition-all duration-200 ${
+              searchFocused 
+                ? 'border-ec-accent/50 bg-ec-root shadow-sm shadow-ec-accent/10 w-72' 
+                : 'border-ec-border bg-transparent w-60'
+            }`}>
+              <Search size={14} className="text-ec-icon mr-2 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search or jump to..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                className="bg-transparent border-none outline-none text-[13px] text-ec-text placeholder:text-ec-text-sub/50 w-full font-[inherit]"
+              />
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium text-ec-text-sub border border-ec-border rounded bg-ec-muted/50">/</kbd>
+            </div>
 
-          {/* CTA Button — Glass */}
-          <button
-            onClick={() => navigate('/login')}
-            className="glass-btn group"
-          >
-            Portal Login
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
+            {/* Sign in */}
+            <button
+              onClick={() => navigate('/login')}
+              className="text-[14px] font-medium text-ec-text-sub hover:text-ec-text transition-colors px-2 py-1"
+            >
+              Sign in
+            </button>
+
+            {/* Sign up */}
+            <button
+              onClick={() => navigate('/login')}
+              className="text-[13px] font-semibold text-white bg-ec-accent hover:bg-ec-accent-hover border border-ec-accent rounded-md px-3.5 py-1.5 transition-all duration-150"
+            >
+              Sign up
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* ═══════════════════════════════════════════
-       * HERO SECTION
+       * HERO SECTION — With background image + gradient
        * ═══════════════════════════════════════════ */}
-      <main className="relative z-10 px-6 pt-20 pb-8 mx-auto max-w-7xl">
+      <div className="hero-bg relative">
+        {/* Background Image Overlay */}
+        <div 
+          className="absolute inset-0 opacity-30 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        />
+        
+        {/* Gradient overlay on top of image */}
+        <div className="absolute inset-0 bg-gradient-to-b from-ec-surface/80 via-transparent to-ec-root/90" />
 
-        <div className="flex flex-col items-center text-center">
-          {/* Status Badge — Glass */}
-          <div className="glass-badge mb-8 animate-fade-in-up">
-            <Sparkles size={14} className="text-ec-accent" />
-            <span>Connect-Karo v2.0 is Live</span>
+        <main className="relative z-10 px-6 pt-24 pb-16 mx-auto max-w-[1200px]">
+          <div className="flex flex-col items-center text-center">
+            
+            {/* Headline */}
+            <h1 className={`max-w-4xl text-[48px] md:text-[64px] lg:text-[72px] font-[800] tracking-tight text-ec-highlight mb-5 leading-[1.05] transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              The future of <br className="hidden sm:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-ec-accent via-emerald-400 to-teal-400">
+                networking starts here
+              </span>
+            </h1>
+
+            {/* Subtitle */}
+            <p className={`max-w-2xl text-[17px] text-ec-text-sub mb-10 leading-relaxed transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              Tools and platforms evolve, but connections endure. With Connect-Karo, students, alumni, and institutions come together on one platform.
+            </p>
+
+            {/* Email Signup Row — GitHub style */}
+            <div className={`flex flex-col sm:flex-row items-center gap-3 w-full max-w-xl transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+              <form onSubmit={handleSignUp} className="flex flex-col sm:flex-row items-stretch gap-3 w-full">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-ec-root/80 border border-ec-border rounded-md text-[15px] text-ec-text placeholder:text-ec-text-sub/50 outline-none focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/30 font-[inherit]"
+                />
+                <button
+                  type="submit"
+                  className="btn-primary text-[15px] px-6 py-3 whitespace-nowrap"
+                >
+                  Sign up for Connect-Karo
+                </button>
+              </form>
+              <button
+                onClick={() => navigate('/login')}
+                className="btn-ghost text-[15px] px-6 py-3 whitespace-nowrap border-ec-text-sub/30 text-ec-text hover:border-ec-text-sub/60"
+              >
+                Try Portal Login
+              </button>
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="max-w-4xl text-5xl md:text-7xl font-extrabold tracking-tight text-ec-highlight mb-6 animate-fade-in-up-d1 leading-[1.08]">
-            The Ultimate Platform for <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-ec-accent via-blue-500 to-indigo-400">
-              Student–Alumni Synergy
-            </span>
-          </h1>
+          {/* ═══════════════════════════════════════════
+           * PROTOTYPE SHOWCASE — Dashboard Preview
+           * ═══════════════════════════════════════════ */}
+          <div className={`w-full max-w-5xl mx-auto mt-20 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
+            <div className="surface-card overflow-hidden shadow-2xl shadow-black/20">
 
-          <p className="max-w-2xl text-lg text-ec-text-sub mb-10 animate-fade-in-up-d2 leading-relaxed">
-            Unlock the power of your institutional network. Foster meaningful mentorships,
-            track career trajectories, and hire top talent directly from your alma mater.
-          </p>
-
-          {/* CTA Row — Glass Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in-up-d3">
-            <button
-              onClick={() => navigate('/login')}
-              className="glass-btn-primary text-lg px-10 py-4"
-            >
-              Get Started Free
-              <ChevronRight size={20} />
-            </button>
-            <button className="glass-btn text-lg px-10 py-4">
-              Book a Demo
-            </button>
-          </div>
-        </div>
-
-        {/* ═══════════════════════════════════════════
-         * PROTOTYPE SHOWCASE — Glass Window
-         * ═══════════════════════════════════════════ */}
-        <div className={`w-full max-w-5xl mx-auto mt-24 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
-          {/* Outer prismatic glow border */}
-          <div className="p-[2px] rounded-[28px] bg-gradient-to-b from-ec-accent/20 via-transparent to-purple-500/10">
-            <div className="glass-card rounded-[26px] overflow-hidden" style={{ borderRadius: '26px' }}>
-
-              {/* Window Chrome — Glass */}
-              <div className="relative z-10 flex items-center px-5 h-12 border-b border-ec-border/30 bg-ec-surface/30 backdrop-blur-sm">
-                <div className="flex gap-2 mr-4">
+              {/* Window Chrome */}
+              <div className="flex items-center px-4 h-10 border-b border-ec-border bg-ec-muted/30">
+                <div className="flex gap-1.5 mr-4">
                   <div className="w-3 h-3 rounded-full bg-[#FF5F57]/80" />
                   <div className="w-3 h-3 rounded-full bg-[#FEBC2E]/80" />
                   <div className="w-3 h-3 rounded-full bg-[#28C840]/80" />
                 </div>
                 <div className="flex-1 flex justify-center">
-                  <div className="glass-badge text-xs py-1 px-4">
-                    <Globe size={12} />
+                  <div className="flex items-center gap-1.5 text-xs text-ec-text-sub bg-ec-muted/40 rounded-md px-3 py-1">
+                    <Globe size={11} className="text-ec-icon" />
                     dashboard.connect-karo.edu
                   </div>
                 </div>
               </div>
 
               {/* App Content */}
-              <div className="relative z-10 flex h-[480px] bg-ec-root/60">
+              <div className="flex h-[400px] bg-ec-root">
 
-                {/* Sidebar — Glass */}
-                <aside className="hidden md:flex flex-col w-60 p-4 border-r border-ec-border/20 bg-ec-surface/20 backdrop-blur-sm">
-                  <div className="text-[11px] font-semibold text-ec-text-sub uppercase tracking-[0.15em] px-3 mb-4">Menu</div>
+                {/* Sidebar */}
+                <aside className="hidden md:flex flex-col w-52 p-3 border-r border-ec-border bg-ec-surface">
+                  <div className="text-[10px] font-semibold text-ec-text-sub uppercase tracking-[0.12em] px-2.5 mb-2.5">Menu</div>
                   {[
                     { icon: LayoutDashboard, text: 'Dashboard', active: false },
                     { icon: Users, text: 'Network', active: true },
@@ -138,143 +193,131 @@ export default function Home() {
                   ].map((item, i) => (
                     <div
                       key={i}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all duration-300
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium cursor-pointer transition-all duration-150 mb-0.5
                         ${item.active
-                          ? 'glass text-ec-accent shadow-sm'
-                          : 'text-ec-text-sub hover:text-ec-text hover:bg-ec-surface/40'
+                          ? 'bg-ec-accent/10 text-ec-accent border border-ec-accent/20'
+                          : 'text-ec-text-sub hover:text-ec-text hover:bg-ec-muted/50'
                         }`}
                     >
-                      <item.icon size={18} />
+                      <item.icon size={15} className={item.active ? 'text-ec-accent' : 'text-ec-icon'} />
                       {item.text}
                     </div>
                   ))}
 
-                  <div className="mt-auto pt-4 border-t border-ec-border/20">
-                    <div className="glass rounded-xl p-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-ec-accent/30 to-indigo-400/30 flex items-center justify-center text-sm font-bold text-ec-accent">H</div>
-                        <div>
-                          <div className="text-sm font-semibold text-ec-highlight">Hrittik</div>
-                          <div className="text-[11px] text-ec-text-sub">Admin</div>
-                        </div>
+                  <div className="mt-auto pt-3 border-t border-ec-border">
+                    <div className="flex items-center gap-2 px-2">
+                      <div className="w-7 h-7 rounded-md bg-ec-accent/15 flex items-center justify-center text-xs font-bold text-ec-accent">H</div>
+                      <div>
+                        <div className="text-[12px] font-semibold text-ec-highlight">Hrittik</div>
+                        <div className="text-[10px] text-ec-text-sub">Admin</div>
                       </div>
                     </div>
                   </div>
                 </aside>
 
                 {/* Main Area */}
-                <div className="flex-1 p-8 overflow-hidden relative">
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-8">
+                <div className="flex-1 p-5 overflow-hidden relative">
+                  <div className="flex justify-between items-start mb-5">
                     <div>
-                      <h2 className="text-2xl font-bold text-ec-highlight mb-1">Alumni Network</h2>
-                      <p className="text-sm text-ec-text-sub">Connect with 1,204 alumni from your college</p>
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="glass w-10 h-10 rounded-xl flex items-center justify-center text-ec-text-sub cursor-pointer hover:text-ec-text transition-colors">
-                        <Search size={18} />
-                      </div>
-                      <div className="glass w-10 h-10 rounded-xl flex items-center justify-center text-ec-text-sub cursor-pointer hover:text-ec-text transition-colors relative">
-                        <Bell size={18} />
-                        <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-ec-root" />
-                      </div>
+                      <h2 className="text-lg font-bold text-ec-highlight mb-0.5">Alumni Network</h2>
+                      <p className="text-[13px] text-ec-text-sub">Connect with 1,204 alumni from your college</p>
                     </div>
                   </div>
 
-                  {/* Alumni Cards — Glass */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {/* Alumni Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {[
-                      { name: 'Sarah Jenkins', role: 'Senior SWE @ Google', year: '2018', gradient: 'from-blue-500 to-cyan-400' },
-                      { name: 'Rahul Mehta', role: 'Product Manager @ Meta', year: '2019', gradient: 'from-purple-500 to-pink-400' },
-                      { name: 'Emily Chen', role: 'Founder @ Stealth', year: '2021', gradient: 'from-orange-500 to-amber-400' },
+                      { name: 'Sarah Jenkins', role: 'Senior SWE @ Google', year: '2018', color: 'bg-emerald-500' },
+                      { name: 'Rahul Mehta', role: 'PM @ Meta', year: '2019', color: 'bg-teal-500' },
+                      { name: 'Emily Chen', role: 'Founder @ Stealth', year: '2021', color: 'bg-green-600' },
                     ].map((person, i) => (
-                      <div key={i} className="glass-card group cursor-pointer p-5" style={{ borderRadius: '20px' }}>
-                        <div className="relative z-10">
-                          <div className="flex items-center gap-4 mb-4">
-                            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${person.gradient} flex items-center justify-center font-bold text-white text-lg shadow-lg`}>
-                              {person.name.charAt(0)}
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-ec-highlight">{person.name}</h3>
-                              <p className="text-xs text-ec-text-sub">Class of {person.year}</p>
-                            </div>
+                      <div key={i} className="surface-card group cursor-pointer p-3.5 hover:transform-none">
+                        <div className="flex items-center gap-2.5 mb-2.5">
+                          <div className={`w-9 h-9 rounded-md ${person.color} flex items-center justify-center font-bold text-white text-sm`}>
+                            {person.name.charAt(0)}
                           </div>
-                          <div className="mb-4">
-                            <span className="glass-badge text-xs">{person.role}</span>
+                          <div>
+                            <h3 className="font-semibold text-ec-highlight text-[13px]">{person.name}</h3>
+                            <p className="text-[11px] text-ec-text-sub">Class of {person.year}</p>
                           </div>
-                          <button className="w-full py-2.5 rounded-xl glass text-sm font-semibold text-ec-accent group-hover:bg-ec-accent/10 transition-colors">
-                            Connect
-                          </button>
                         </div>
+                        <div className="mb-2.5">
+                          <span className="badge text-[11px] py-0.5 px-2">{person.role}</span>
+                        </div>
+                        <button className="w-full py-1.5 rounded-md bg-ec-accent/10 border border-ec-accent/20 text-[12px] font-semibold text-ec-accent hover:bg-ec-accent/20 transition-colors">
+                          Connect
+                        </button>
                       </div>
                     ))}
                   </div>
 
                   {/* Bottom fade */}
-                  <div className="absolute bottom-0 left-0 w-full h-28 bg-gradient-to-t from-ec-root/80 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-ec-root to-transparent pointer-events-none" />
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </main>
+      </div>
 
-        {/* ═══════════════════════════════════════════
-         * FEATURES SECTION — Glass Cards
-         * ═══════════════════════════════════════════ */}
-        <section id="features" className="relative z-10 py-32 max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="glass-badge mx-auto mb-6 animate-fade-in-up">
-              <Zap size={14} className="text-ec-accent" />
+      {/* ═══════════════════════════════════════════
+       * FEATURES SECTION
+       * ═══════════════════════════════════════════ */}
+      <section id="features" className="relative z-10 py-24 px-6 bg-ec-root">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <div className="badge mx-auto mb-5">
+              <Zap size={13} className="text-ec-accent" />
               <span>Why Connect-Karo</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-ec-highlight mb-4">
+            <h2 className="text-[32px] md:text-[44px] font-[800] text-ec-highlight mb-3 leading-tight">
               Built for Every Stakeholder
             </h2>
-            <p className="text-ec-text-sub text-lg max-w-xl mx-auto">
+            <p className="text-ec-text-sub text-[16px] max-w-xl mx-auto">
               A unified ecosystem that empowers students, alumni, and institutions to grow together.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
               {
                 icon: GraduationCap,
                 title: 'For Students',
                 desc: 'Connect with industry professionals, seek mentorship, and unlock referral opportunities from your seniors.',
-                gradient: 'from-blue-500 to-cyan-400',
+                color: 'bg-emerald-500',
               },
               {
                 icon: Users,
                 title: 'For Alumni',
                 desc: 'Give back to your alma mater, share your journey, and hire top talent directly from your college.',
-                gradient: 'from-purple-500 to-pink-400',
+                color: 'bg-teal-500',
               },
               {
                 icon: Shield,
                 title: 'For Colleges',
                 desc: 'Manage your entire network efficiently. Approve users, monitor connections, and grow institutional value.',
-                gradient: 'from-orange-500 to-amber-400',
+                color: 'bg-green-600',
               },
             ].map((feature, i) => (
-              <div key={i} className="glass-card group p-8" style={{ borderRadius: '24px' }}>
-                <div className="relative z-10">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon size={24} className="text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-ec-highlight mb-3">{feature.title}</h3>
-                  <p className="text-ec-text-sub leading-relaxed">{feature.desc}</p>
+              <div key={i} className="surface-card group p-6">
+                <div className={`w-11 h-11 rounded-lg ${feature.color} flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200`}>
+                  <feature.icon size={20} className="text-white" />
                 </div>
+                <h3 className="text-[17px] font-bold text-ec-highlight mb-2">{feature.title}</h3>
+                <p className="text-ec-text-sub leading-relaxed text-[14px]">{feature.desc}</p>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ═══════════════════════════════════════════
-         * STATS — Glass Bar
-         * ═══════════════════════════════════════════ */}
-        <section className="relative z-10 pb-32 max-w-5xl mx-auto">
-          <div className="glass-card p-10 md:p-14" style={{ borderRadius: '28px' }}>
-            <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      {/* ═══════════════════════════════════════════
+       * STATS SECTION
+       * ═══════════════════════════════════════════ */}
+      <section className="relative z-10 pb-24 px-6 bg-ec-root">
+        <div className="max-w-5xl mx-auto">
+          <div className="surface-card p-8 md:p-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
               {[
                 { value: '50+', label: 'Colleges Onboarded' },
                 { value: '12K+', label: 'Active Alumni' },
@@ -282,60 +325,59 @@ export default function Home() {
                 { value: '95%', label: 'Satisfaction Rate' },
               ].map((stat, i) => (
                 <div key={i}>
-                  <div className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-ec-accent to-indigo-400 mb-2">
+                  <div className="text-[28px] md:text-[36px] font-[800] text-ec-accent mb-1">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-ec-text-sub font-medium">{stat.label}</div>
+                  <div className="text-[13px] text-ec-text-sub font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
           </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════
-         * CTA — Glass Panel
-         * ═══════════════════════════════════════════ */}
-        <section className="relative z-10 pb-32 max-w-4xl mx-auto text-center">
-          <div className="glass-prism p-12 md:p-16" style={{ borderRadius: '32px' }}>
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-ec-highlight mb-4">
-                Ready to Transform Your Network?
-              </h2>
-              <p className="text-ec-text-sub text-lg mb-8 max-w-xl mx-auto">
-                Join hundreds of institutions already building stronger alumni–student connections.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button
-                  onClick={() => navigate('/login')}
-                  className="glass-btn-primary text-lg px-10 py-4"
-                >
-                  Start for Free
-                  <ArrowRight size={20} />
-                </button>
-                <button className="glass-btn text-lg px-10 py-4">
-                  Contact Sales
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </main>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════
-       * FOOTER — Glass
+       * CTA SECTION
        * ═══════════════════════════════════════════ */}
-      <footer className="relative z-10 border-t border-ec-border/30">
-        <div className="glass-nav py-8 px-6">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-ec-accent to-indigo-400 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <span className="text-sm font-semibold text-ec-highlight">Connect<span className="text-ec-accent">Karo</span></span>
+      <section id="pricing" className="relative z-10 pb-24 px-6 bg-ec-root">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="surface-card p-10 md:p-14 border-ec-accent/20">
+            <h2 className="text-[28px] md:text-[38px] font-[800] text-ec-highlight mb-3 leading-tight">
+              Ready to Transform Your Network?
+            </h2>
+            <p className="text-ec-text-sub text-[16px] mb-8 max-w-xl mx-auto">
+              Join hundreds of institutions already building stronger alumni–student connections.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={() => navigate('/login')}
+                className="btn-primary text-[15px] px-7 py-3"
+              >
+                Start for Free
+                <ArrowRight size={17} />
+              </button>
+              <button className="btn text-[15px] px-7 py-3">
+                Contact Sales
+              </button>
             </div>
-            <p className="text-sm text-ec-text-sub">© 2026 Connect-Karo. Built for professional networking.</p>
-            <div className="flex gap-6 text-sm text-ec-text-sub">
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+       * FOOTER
+       * ═══════════════════════════════════════════ */}
+      <footer className="relative z-10 border-t border-ec-border bg-ec-surface">
+        <div className="py-6 px-6">
+          <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-ec-accent flex items-center justify-center">
+                <span className="text-white font-bold text-[10px]">C</span>
+              </div>
+              <span className="text-[13px] font-semibold text-ec-highlight">Connect<span className="text-ec-accent">Karo</span></span>
+            </div>
+            <p className="text-[13px] text-ec-text-sub">© 2026 Connect-Karo. Built for professional networking.</p>
+            <div className="flex gap-5 text-[13px] text-ec-text-sub">
               <a href="#" className="hover:text-ec-text transition-colors">Privacy</a>
               <a href="#" className="hover:text-ec-text transition-colors">Terms</a>
               <a href="#" className="hover:text-ec-text transition-colors">Support</a>

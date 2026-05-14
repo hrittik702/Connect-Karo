@@ -1,322 +1,249 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* ═══════════════════════════════════════════════════
+ * Mona Sans Variable Font — GitHub's custom typeface
+ * ═══════════════════════════════════════════════════ */
+@font-face {
+  font-family: 'Mona Sans VF';
+  src: url('https://cdn.jsdelivr.net/gh/github/mona-sans@main/fonts/webfonts/MonaSansVF.woff2') format('woff2-variations');
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-optical-sizing: auto;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════
- * Blue Eclipse + Liquid Glass — Design Token Variables
- * RGB triplets for Tailwind opacity support
+ * Connect-Karo — GitHub-Dark Inspired Design Tokens
+ * Auto-switches via :root (light) / .dark (dark)
  * ═══════════════════════════════════════════════════ */
 
 @layer base {
   /* ── Light Mode ─────────────────────────────── */
   :root {
-    --ec-root:         247 250 252;   /* #F7FAFC  cool grey-blue bg     */
-    --ec-surface:      255 255 255;   /* #FFFFFF  cards / panels        */
-    --ec-muted:        237 242 247;   /* #EDF2F7  secondary bg / badges */
-    --ec-text:          15  23  42;   /* #0F172A  primary readable text */
-    --ec-text-sub:     100 116 139;   /* #64748B  subtle / secondary   */
-    --ec-accent:        59  72 208;   /* #3B48D0  interactive accent    */
-    --ec-accent-hover:  45  58 176;   /* #2D3AB0  accent hover          */
-    --ec-border:       203 213 225;   /* #CBD5E1  borders               */
-    --ec-highlight:     30  41  59;   /* #1E293B  high-emphasis text    */
+    --ec-root:         246 248 250;
+    --ec-surface:      255 255 255;
+    --ec-muted:        234 238 242;
+    --ec-text:          31  35  40;
+    --ec-text-sub:     101 109 118;
+    --ec-icon:         101 109 118;
+    --ec-accent:        45 164  66;
+    --ec-accent-hover:  34 139  54;
+    --ec-border:       216 222 228;
+    --ec-highlight:     31  35  40;
 
-    /* Liquid Glass tokens — Light */
-    --glass-bg: rgba(255, 255, 255, 0.45);
-    --glass-bg-strong: rgba(255, 255, 255, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.6);
-    --glass-border-subtle: rgba(203, 213, 225, 0.35);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-    --glass-shadow-hover: 0 12px 48px rgba(0, 0, 0, 0.10);
-    --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    --glass-blur: 20px;
-    --glass-refraction: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.2) 100%);
-    --glass-prism: linear-gradient(135deg, rgba(120,119,198,0.08), rgba(59,130,246,0.05), rgba(147,51,234,0.05));
+    --surface-elevated: rgba(255, 255, 255, 0.95);
+    --shadow-sm: 0 1px 2px rgba(31, 35, 40, 0.04);
+    --shadow-md: 0 4px 12px rgba(31, 35, 40, 0.06);
+    --shadow-lg: 0 8px 24px rgba(31, 35, 40, 0.08);
+    --shadow-accent: 0 4px 14px rgba(45, 164, 66, 0.15);
+    --shadow-accent-hover: 0 6px 20px rgba(45, 164, 66, 0.25);
   }
 
   /* ── Dark Mode ──────────────────────────────── */
   .dark {
-    --ec-root:           8  12  26;   /* #080C1A  black-blue depth      */
-    --ec-surface:       17  27  46;   /* #111B2E  dark navy surface     */
-    --ec-muted:         28  43  71;   /* #1C2B47  hazy blue             */
-    --ec-text:         226 232 240;   /* #E2E8F0  readable light text   */
-    --ec-text-sub:     123 142 181;   /* #7B8EB5  cool blue-grey        */
-    --ec-accent:       123 143 204;   /* #7B8FCC  blue-shifted accent   */
-    --ec-accent-hover: 149 168 221;   /* #95A8DD  lighter blue hover    */
-    --ec-border:        23  34  55;   /* #172237  dark blue border      */
-    --ec-highlight:    241 245 249;   /* #F1F5F9  brightest emphasis    */
+    --ec-root:           1   4   9;
+    --ec-surface:       13  17  23;
+    --ec-muted:         22  27  34;
+    --ec-text:         240 246 252;
+    --ec-text-sub:     145 152 161;
+    --ec-icon:         145 152 161;
+    --ec-accent:        63 185  80;
+    --ec-accent-hover:  87 203 102;
+    --ec-border:        48  54  61;
+    --ec-highlight:    240 246 252;
 
-    /* Liquid Glass tokens — Dark */
-    --glass-bg: rgba(17, 27, 46, 0.40);
-    --glass-bg-strong: rgba(17, 27, 46, 0.65);
-    --glass-border: rgba(123, 143, 204, 0.15);
-    --glass-border-subtle: rgba(255, 255, 255, 0.06);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-    --glass-shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.5);
-    --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    --glass-blur: 24px;
-    --glass-refraction: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.03) 100%);
-    --glass-prism: linear-gradient(135deg, rgba(120,119,198,0.12), rgba(59,130,246,0.08), rgba(147,51,234,0.08));
+    --surface-elevated: rgba(22, 27, 34, 0.95);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-accent: 0 4px 14px rgba(63, 185, 80, 0.15);
+    --shadow-accent-hover: 0 6px 20px rgba(63, 185, 80, 0.3);
   }
 
   /* ── Global Resets ──────────────────────────── */
   *, *::before, *::after {
     box-sizing: border-box;
   }
+
+  html {
+    font-family: 'Mona Sans VF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+
   body {
-    @apply m-0 p-0 antialiased bg-ec-root text-ec-text font-inter;
+    @apply m-0 p-0 antialiased bg-ec-root text-ec-text;
+    font-family: 'Mona Sans VF', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+
   #root {
     @apply min-h-screen;
   }
 }
 
 /* ═══════════════════════════════════════════════════
- * Liquid Glass Design System
+ * Component Design System
  * ═══════════════════════════════════════════════════ */
 @layer components {
 
-  /* ── Base Glass Panel ──────────────────────── */
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow), var(--glass-inset);
-    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* ── Surface Panel ────────────────────────────── */
+  .surface {
+    background: rgb(var(--ec-surface));
+    border: 1px solid rgb(var(--ec-border));
+    box-shadow: var(--shadow-sm);
+    transition: all 0.25s ease;
   }
 
-  .glass:hover {
-    box-shadow: var(--glass-shadow-hover), var(--glass-inset);
+  .surface:hover {
+    box-shadow: var(--shadow-md);
   }
 
-  /* ── Strong Glass (more opaque) ────────────── */
-  .glass-strong {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(calc(var(--glass-blur) + 8px)) saturate(1.8);
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 8px)) saturate(1.8);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow), var(--glass-inset);
-    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  /* ── Glass Card with refraction edge ────────── */
-  .glass-card {
+  /* ── Surface Card ─────────────────────────────── */
+  .surface-card {
     position: relative;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    border: 1px solid var(--glass-border-subtle);
-    border-radius: 20px;
-    box-shadow: var(--glass-shadow), var(--glass-inset);
+    background: rgb(var(--ec-surface));
+    border: 1px solid rgb(var(--ec-border));
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .glass-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-refraction);
-    pointer-events: none;
-    z-index: 1;
+  .surface-card:hover {
+    border-color: rgb(var(--ec-accent) / 0.3);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
   }
 
-  .glass-card:hover {
-    border-color: var(--glass-border);
-    box-shadow: var(--glass-shadow-hover), var(--glass-inset);
-    transform: translateY(-4px);
+  /* ── Button — Default ──────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgb(var(--ec-surface));
+    border: 1px solid rgb(var(--ec-border));
+    border-radius: 8px;
+    color: rgb(var(--ec-text));
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    font-family: inherit;
   }
 
-  /* ── Prismatic Glass (rainbow refraction edge) ─ */
-  .glass-prism {
-    position: relative;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-    border: 1px solid transparent;
-    border-radius: 24px;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  .btn:hover {
+    background: rgb(var(--ec-muted));
+    border-color: rgb(var(--ec-text-sub) / 0.3);
+    box-shadow: var(--shadow-md);
   }
 
-  .glass-prism::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    background: linear-gradient(
-      135deg,
-      rgba(59, 130, 246, 0.4),
-      rgba(147, 51, 234, 0.3),
-      rgba(236, 72, 153, 0.2),
-      rgba(59, 130, 246, 0.3)
-    );
-    z-index: -1;
-    opacity: 0.5;
-    transition: opacity 0.4s ease;
+  .btn:active {
+    transform: scale(0.98);
   }
 
-  .glass-prism::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-refraction);
-    pointer-events: none;
-  }
-
-  .glass-prism:hover::before {
-    opacity: 1;
-  }
-
-  /* ── Liquid Glass Button ─────────────────────── */
-  .glass-btn {
-    position: relative;
+  /* ── Button — Primary (Green Accent) ──────────── */
+  .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 12px 28px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
-    color: rgb(var(--ec-highlight));
-    font-weight: 600;
+    background: rgb(var(--ec-accent));
+    border: 1px solid rgb(var(--ec-accent));
+    border-radius: 8px;
+    color: #ffffff;
+    font-weight: 700;
     font-size: 15px;
     cursor: pointer;
-    overflow: hidden;
-    box-shadow: var(--glass-shadow), var(--glass-inset);
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: var(--shadow-accent);
+    transition: all 0.2s ease;
+    font-family: inherit;
   }
 
-  .glass-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--glass-refraction);
-    pointer-events: none;
+  .btn-primary:hover {
+    background: rgb(var(--ec-accent-hover));
+    border-color: rgb(var(--ec-accent-hover));
+    box-shadow: var(--shadow-accent-hover);
+    transform: translateY(-1px);
   }
 
-  .glass-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--glass-shadow-hover), var(--glass-inset);
-    border-color: rgba(59, 130, 246, 0.3);
-  }
-
-  .glass-btn:active {
+  .btn-primary:active {
     transform: translateY(0) scale(0.98);
   }
 
-  /* ── Liquid Glass Primary Button ─────────────── */
-  .glass-btn-primary {
-    position: relative;
+  /* ── Button — Ghost (transparent) ─────────────── */
+  .btn-ghost {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px 32px;
-    background: linear-gradient(135deg, rgba(59,72,208,0.85), rgba(99,102,241,0.85));
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 16px;
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 16px;
-    cursor: pointer;
-    overflow: hidden;
-    box-shadow:
-      0 8px 32px rgba(59,72,208,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.25),
-      inset 0 -1px 0 rgba(0,0,0,0.1);
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  .glass-btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-    transition: left 0.5s ease;
-  }
-
-  .glass-btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 12px 40px rgba(59,72,208,0.5),
-      inset 0 1px 0 rgba(255,255,255,0.3),
-      inset 0 -1px 0 rgba(0,0,0,0.1);
-  }
-
-  .glass-btn-primary:hover::before {
-    left: 100%;
-  }
-
-  .glass-btn-primary:active {
-    transform: translateY(0) scale(0.98);
-  }
-
-  /* ── Glass Input ─────────────────────────────── */
-  .glass-input {
-    width: 100%;
-    padding: 14px 18px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px) saturate(1.4);
-    -webkit-backdrop-filter: blur(12px) saturate(1.4);
-    border: 1px solid var(--glass-border-subtle);
-    border-radius: 14px;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid rgb(var(--ec-border));
+    border-radius: 8px;
     color: rgb(var(--ec-text));
-    font-size: 15px;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    box-shadow: var(--glass-inset);
-    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
   }
 
-  .glass-input::placeholder {
+  .btn-ghost:hover {
+    background: rgb(var(--ec-surface) / 0.5);
+    border-color: rgb(var(--ec-text-sub) / 0.4);
+  }
+
+  /* ── Input ─────────────────────────────────────── */
+  .input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgb(var(--ec-root));
+    border: 1px solid rgb(var(--ec-border));
+    border-radius: 8px;
+    color: rgb(var(--ec-text));
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .input::placeholder {
     color: rgb(var(--ec-text-sub) / 0.6);
   }
 
-  .glass-input:focus {
-    border-color: rgb(var(--ec-accent) / 0.5);
-    box-shadow:
-      0 0 0 4px rgb(var(--ec-accent) / 0.08),
-      var(--glass-inset);
+  .input:focus {
+    border-color: rgb(var(--ec-accent));
+    box-shadow: 0 0 0 3px rgb(var(--ec-accent) / 0.12);
   }
 
-  /* ── Glass Navbar ────────────────────────────── */
-  .glass-nav {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(calc(var(--glass-blur) + 12px)) saturate(1.8);
-    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 12px)) saturate(1.8);
-    border-bottom: 1px solid var(--glass-border-subtle);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  /* ── Navbar ────────────────────────────────────── */
+  .nav-bar {
+    background: rgb(var(--ec-surface) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgb(var(--ec-border));
   }
 
-  /* ── Glass Badge ─────────────────────────────── */
-  .glass-badge {
+  /* ── Badge ─────────────────────────────────────── */
+  .badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border-subtle);
+    padding: 5px 12px;
+    background: rgb(var(--ec-accent) / 0.1);
+    border: 1px solid rgb(var(--ec-accent) / 0.2);
     border-radius: 100px;
     font-size: 13px;
     font-weight: 500;
     color: rgb(var(--ec-accent));
   }
 
-  /* ── Custom checkbox — pseudo-element checkmark ── */
+  /* ── Custom checkbox ─────────────────────────── */
   .ck-checkbox {
     @apply appearance-none w-4 h-4 rounded cursor-pointer relative transition-all duration-200;
     border: 1.5px solid rgb(var(--ec-border));
@@ -335,9 +262,48 @@
 }
 
 /* ═══════════════════════════════════════════════════
- * Ambient Background Mesh
+ * Hero Background
  * ═══════════════════════════════════════════════════ */
-.ambient-mesh {
+.hero-bg {
+  position: relative;
+  background: linear-gradient(180deg, 
+    rgb(var(--ec-surface)) 0%, 
+    #0d1117 8%,
+    #161b28 30%,
+    #1a0e35 55%,
+    #21143d 70%,
+    #0d1117 100%
+  );
+  overflow: hidden;
+}
+
+/* In light mode, use a lighter gradient */
+:root .hero-bg {
+  background: linear-gradient(180deg,
+    rgb(var(--ec-surface)) 0%,
+    #f0f2f5 8%,
+    #e8eaf0 30%,
+    #ddd8f0 55%,
+    #e0daf5 70%,
+    #f0f2f5 100%
+  );
+}
+
+.dark .hero-bg {
+  background: linear-gradient(180deg, 
+    rgb(var(--ec-surface)) 0%, 
+    #0d1117 8%,
+    #161b28 30%,
+    #1a0e35 55%,
+    #21143d 70%,
+    #0d1117 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+ * Ambient Glow
+ * ═══════════════════════════════════════════════════ */
+.ambient-glow {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -345,47 +311,52 @@
   overflow: hidden;
 }
 
-.ambient-mesh::before,
-.ambient-mesh::after {
+.ambient-glow::before {
   content: '';
   position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 45%;
+  height: 45%;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.5;
-  animation: meshFloat 12s ease-in-out infinite alternate;
+  background: radial-gradient(circle, rgb(var(--ec-accent) / 0.06) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: glowFloat 15s ease-in-out infinite alternate;
 }
 
-.ambient-mesh::before {
-  top: -15%;
-  left: -10%;
+.ambient-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, rgba(59,72,208,0.20) 0%, transparent 70%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--ec-accent) / 0.04) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: glowFloat 15s ease-in-out 7s infinite alternate;
 }
 
-.ambient-mesh::after {
-  bottom: -15%;
-  right: -10%;
-  width: 55%;
-  height: 55%;
-  background: radial-gradient(circle, rgba(147,51,234,0.12) 0%, transparent 70%);
-  animation-delay: -6s;
-}
-
-@keyframes meshFloat {
+@keyframes glowFloat {
   0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(30px, -30px) scale(1.08); }
+  100% { transform: translate(20px, -20px) scale(1.05); }
 }
 
 /* ═══════════════════════════════════════════════════
- * Noise texture overlay for frosted glass realism
+ * Animations
  * ═══════════════════════════════════════════════════ */
-.noise-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-size: 256px 256px;
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
 }
