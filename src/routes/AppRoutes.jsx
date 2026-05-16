@@ -1,85 +1,102 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Path updated (../)
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-// Pages Import (Paths updated to point back to src folder)
+// ── MASTER PUBLIC & OTHER DASHBOARDS IMPORTS ──
 import Home from "../pages/Home/Home";
 import Login from "../pages/auth/Login";
-// AdminDashboard import hata diya kyunki ab modular routes hain
 import CollegeDashboard from "../pages/college/Dashboard";
 import AlumniDashboard from "../pages/alumni/Dashboard";
 import StudentDashboard from "../pages/student/Dashboard";
 
-// Role-Based Security Component (Wahi same aapka code)
+// ── ✅ ACTUAL ROOT ADMIN IMPORTS (PRODUCTION READY) ──
+import DashboardLayout from "../pages/admin/DashboardLayout";
+import DashboardOverview from "../pages/admin/DashboardOverview";
+import CollegeList from "../pages/admin/colleges/CollegeList";
+import AddCollege from "../pages/admin/colleges/AddCollege";
+
+// Enterprise Role-Based Security Guard
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { currentUser, userData, loading } = useAuth();
 
-  if (loading) return <div className="min-h-screen bg-ec-root flex items-center justify-center text-ec-text-sub text-sm">Loading Application...</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ec-root flex items-center justify-center text-ec-text-sub text-sm font-sans font-medium tracking-wide">
+        Loading Application...
+      </div>
+    );
+  }
+  
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (userData?.status === "blocked") return <div className="min-h-screen bg-ec-root flex items-center justify-center"><h2 className="text-red-400 text-center text-lg">Your account is blocked by Admin.</h2></div>;
+  
+  if (userData?.status === "blocked") {
+    return (
+      <div className="min-h-screen bg-ec-root flex items-center justify-center font-sans">
+        <h2 className="text-red-400 text-center text-lg font-bold bg-red-500/10 border border-red-500/20 px-6 py-4 rounded-xl shadow-xl">
+          Your account is blocked by Admin.
+        </h2>
+      </div>
+    );
+  }
+  
   if (userData?.role !== allowedRole) return <Navigate to="/login" replace />;
 
   return children;
 };
 
-// 🚧 Temporary Components: Jab tak actual files nahi banti, error na aaye isliye ye dummy components hain
-const AdminLayoutPlaceholder = () => (
-  <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-10">
-    <h1 className="text-2xl font-bold mb-4 text-blue-400">Admin Command Center Layout</h1>
-    {/* Outlet bahut zaroori hai nested routes ko render karne ke liye */}
-    <div className="w-full max-w-4xl p-6 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-      <Outlet /> 
-    </div>
-  </div>
-);
-
+// 🚧 Secondary Infrastructure Placeholder Component
 const UnderConstruction = ({ title }) => (
-  <div className="text-center p-8">
-    <h2 className="text-xl font-semibold text-yellow-400">{title}</h2>
-    <p className="mt-2 text-gray-400">🚧 Page is Under Construction 🚧</p>
+  <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed border-ec-border rounded-xl bg-ec-surface/30 animate-in fade-in duration-300 select-none">
+    <div className="w-14 h-14 mb-4 rounded-full bg-yellow-500/10 flex items-center justify-center text-xl border border-yellow-500/20">
+      🚧
+    </div>
+    <h2 className="text-base font-bold text-ec-highlight mb-1">{title}</h2>
+    <p className="text-xs text-ec-text-sub max-w-sm leading-relaxed">
+      Yeh feature pipeline abhi development phase mein hai. Core database aur UI structures lock hote hi ise live kar diya jayega.
+    </p>
   </div>
 );
 
-// Master Routes
+// ── MAIN ARCHITECTURE ROUTE MAP ──
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* ✅ Public Routes */}
+      {/* 🔓 Public Landing Pages */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
 
-      {/* ✅ Root Admin Modules (Nested Routing Setup) */}
+      {/* 🔐 Root Admin Secure Control Tower (Nested Routing) */}
       <Route 
         path="/admin" 
         element={
           <ProtectedRoute allowedRole="root_admin">
-            {/* Future me isko <DashboardLayout /> se replace karenge */}
-            <AdminLayoutPlaceholder /> 
+            <DashboardLayout /> 
           </ProtectedRoute>
         }
       >
-        {/* /admin hit karne pe by default Dashboard Overview khulega */}
-        <Route index element={<UnderConstruction title="Dashboard Overview (Metrics & Graphs)" />} />
+        {/* /admin -> By default system overview dashboard open hoga */}
+        <Route index element={<DashboardOverview />} />
         
-        {/* College Management */}
-        <Route path="colleges" element={<UnderConstruction title="Master College List" />} />
-        <Route path="colleges/add" element={<UnderConstruction title="Add New College Form" />} />
-        <Route path="colleges/:id" element={<UnderConstruction title="Dedicated College View" />} />
+        {/* College Management Grid & Form Pipeline */}
+        <Route path="colleges" element={<CollegeList />} />
+        <Route path="colleges/add" element={<AddCollege />} />
+        <Route path="colleges/:id" element={<UnderConstruction title="Dedicated College View (360° Control Panel)" />} />
         
-        {/* Helpdesk & Support */}
-        <Route path="support" element={<UnderConstruction title="Ticket Manager" />} />
+        {/* Helpdesk Global Escalation Hub */}
+        <Route path="support" element={<UnderConstruction title="Ticket Manager & Support Helpdesk" />} />
         
-        {/* Billing & Subscriptions */}
-        <Route path="billing" element={<UnderConstruction title="Billing & Plans Overview" />} />
+        {/* Commercial Billing & SaaS Node Contracts */}
+        <Route path="billing" element={<UnderConstruction title="SaaS Subscriptions & Billing Metrics" />} />
         
-        {/* Broadcast */}
-        <Route path="broadcast" element={<UnderConstruction title="Global Announcement Panel" />} />
+        {/* Network-wide Announcement Engine */}
+        <Route path="broadcast" element={<UnderConstruction title="Global Announcement & Notice Broadcast" />} />
         
-        {/* Settings */}
-        <Route path="settings" element={<UnderConstruction title="Root Settings" />} />
-        <Route path="settings/logs" element={<UnderConstruction title="Security & Audit Logs" />} />
+        {/* System Node Cryptography & Security Settings */}
+        <Route path="settings" element={<UnderConstruction title="Root Credentials & Security Framework" />} />
+        <Route path="settings/logs" element={<UnderConstruction title="System Audit Logs & Threat Detection Trace" />} />
       </Route>
 
-      {/* ✅ Other Secure Routes */}
+      {/* 🔐 Other Tenants Secure Sub-dashboards */}
       <Route path="/college/*" element={
         <ProtectedRoute allowedRole="college_admin"><CollegeDashboard /></ProtectedRoute>
       } />
@@ -90,7 +107,7 @@ export default function AppRoutes() {
         <ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>
       } />
 
-      {/* ✅ Catch-all: Agar koi galat URL daale toh Home pe bhej do */}
+      {/* 🛸 Catch-all Edge Route Recovery Block */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

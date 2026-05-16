@@ -3,7 +3,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Apne Firebase Project Settings se ye details copy karke yahan paste karein
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyASSOQo2tqnyMfqlV3FFwnEiqEK5NX2eJc",
   authDomain: "connect-karo-21ffd.firebaseapp.com",
   projectId: "connect-karo-21ffd",
