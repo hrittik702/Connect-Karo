@@ -5,33 +5,22 @@ import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import useSystemTheme from "../../hooks/useSystemTheme";
+import { ArrowLeft, LogIn, Shield, GraduationCap, Users, Building2, Sparkles } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   
   const { dummyLogin } = useAuth();
   const theme = useSystemTheme();
 
-  // Dynamic Colors based on System Theme
-  const isDark = theme === 'dark';
-  const colors = {
-    background: isDark ? '#0f172a' : '#f8fafc',
-    textPrimary: isDark ? '#f1f5f9' : '#0f172a',
-    textSecondary: isDark ? '#94a3b8' : '#64748b',
-    cardBg: isDark ? '#1e293b' : '#ffffff',
-    cardBorder: isDark ? '#334155' : '#e2e8f0',
-    primaryBlue: '#3b82f6',
-    hoverBlue: '#2563eb',
-    inputBg: isDark ? '#0f172a' : '#f1f5f9',
-    errorText: '#ef4444'
-  };
-
   const handleRealLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -45,6 +34,8 @@ export default function Login() {
       }
     } catch (err) {
       setError("Authentication failed. Please verify your credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,126 +51,120 @@ export default function Login() {
     else if (role === "student") navigate("/student");
   };
 
-  // Internal CSS for animations and focus states
-  const internalStyles = `
-    .animate-fade-in {
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    }
-    @keyframes fadeIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .custom-input:focus {
-      outline: none;
-      border-color: ${colors.primaryBlue} !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-    }
-    .btn-primary {
-      transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-    .btn-primary:active {
-      transform: scale(0.98);
-    }
-    .dev-btn {
-      transition: all 0.2s ease;
-    }
-    .dev-btn:hover {
-      border-color: ${colors.primaryBlue} !important;
-      color: ${colors.primaryBlue} !important;
-    }
-    .back-link {
-      transition: color 0.2s ease;
-    }
-    .back-link:hover {
-      color: ${colors.primaryBlue} !important;
-    }
-  `;
+  const devRoles = [
+    { role: "root_admin", label: "Root Admin", icon: Shield, color: "bg-red-500" },
+    { role: "college_admin", label: "College Admin", icon: Building2, color: "bg-blue-500" },
+    { role: "alumni", label: "Alumni", icon: Users, color: "bg-purple-500" },
+    { role: "student", label: "Student", icon: GraduationCap, color: "bg-ec-accent" },
+  ];
 
   return (
-    <div style={{ backgroundColor: colors.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif", transition: 'background-color 0.4s ease' }}>
-      <style>{internalStyles}</style>
+    <div className="relative min-h-screen bg-ec-root text-ec-text overflow-hidden flex items-center justify-center p-6">
+      
+      {/* Subtle ambient glow */}
+      <div className="ambient-glow" />
 
-      <div className="animate-fade-in" style={{ backgroundColor: colors.cardBg, padding: '40px', borderRadius: '12px', width: '100%', maxWidth: '400px', border: `1px solid ${colors.cardBorder}`, boxShadow: isDark ? '0 20px 40px rgba(0,0,0,0.4)' : '0 10px 30px rgba(0,0,0,0.05)', position: 'relative' }}>
+      {/* Login Card */}
+      <div className="relative z-10 w-full max-w-md animate-fade-in-up">
         
-        {/* Back to Home Link */}
-        <button 
-          onClick={() => navigate('/')} 
-          className="back-link"
-          style={{ position: 'absolute', top: '20px', left: '20px', background: 'none', border: 'none', color: colors.textSecondary, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="btn mb-5 text-sm py-2 px-3.5"
         >
-          &larr; Home
+          <ArrowLeft size={15} className="text-ec-icon" />
+          Back to Home
         </button>
 
-        <div style={{ textAlign: 'center', marginTop: '15px', marginBottom: '30px' }}>
-          <h2 style={{ color: colors.textPrimary, fontSize: '24px', fontWeight: '700', marginBottom: '8px' }}>Access Portal</h2>
-          <p style={{ color: colors.textSecondary, fontSize: '14px' }}>Enter your credentials to continue</p>
-        </div>
+        {/* Main Card */}
+        <div className="surface-card p-7 md:p-9">
 
-        {error && (
-          <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeft: `3px solid ${colors.errorText}`, padding: '10px 15px', marginBottom: '20px', borderRadius: '4px' }}>
-            <p style={{ color: colors.errorText, fontSize: '13px', margin: 0 }}>{error}</p>
+          {/* Header */}
+          <div className="text-center mb-7">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-ec-accent mb-4">
+              <LogIn size={24} className="text-white" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-ec-highlight mb-1.5">Access Portal</h2>
+            <p className="text-sm text-ec-text-sub">Enter your credentials to continue</p>
           </div>
-        )}
-        
-        {/* Real Authentication Form */}
-        <form onSubmit={handleRealLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', color: colors.textSecondary, fontSize: '13px', marginBottom: '6px', fontWeight: '500' }}>Email Address</label>
-            <input 
-              type="email" 
-              placeholder="name@institution.edu" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              className="custom-input"
-              style={{ width: '100%', padding: '12px 14px', backgroundColor: colors.inputBg, border: `1px solid ${colors.cardBorder}`, color: colors.textPrimary, borderRadius: '6px', boxSizing: 'border-box', transition: 'all 0.2s ease' }}
-              required
-            />
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3.5 mb-5 border-l-4 border-l-red-500 animate-shake">
+              <p className="text-sm text-red-400 font-medium">{error}</p>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleRealLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-ec-text-sub mb-1.5">Email Address</label>
+              <input
+                type="email"
+                placeholder="name@institution.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ec-text-sub mb-1.5">Password</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full text-sm py-3.5 mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Secure Login
+                  <ArrowLeft size={16} className="rotate-180" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-7">
+            <div className="flex-1 h-px bg-ec-border" />
+            <div className="badge text-[11px] py-1 px-2.5 uppercase tracking-widest">
+              <Sparkles size={10} />
+              Dev Access
+            </div>
+            <div className="flex-1 h-px bg-ec-border" />
           </div>
-          <div>
-            <label style={{ display: 'block', color: colors.textSecondary, fontSize: '13px', marginBottom: '6px', fontWeight: '500' }}>Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              className="custom-input"
-              style={{ width: '100%', padding: '12px 14px', backgroundColor: colors.inputBg, border: `1px solid ${colors.cardBorder}`, color: colors.textPrimary, borderRadius: '6px', boxSizing: 'border-box', transition: 'all 0.2s ease' }}
-              required
-            />
+
+          {/* Dev Login Buttons */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {devRoles.map(({ role, label, icon: Icon, color }) => (
+              <button
+                key={role}
+                onClick={() => handleDummyLogin(role)}
+                className="surface group p-2.5 rounded-lg flex items-center gap-2.5 cursor-pointer hover:border-ec-accent/30 transition-all duration-200"
+              >
+                <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center group-hover:scale-105 transition-transform duration-200`}>
+                  <Icon size={15} className="text-white" />
+                </div>
+                <span className="text-sm font-semibold text-ec-text-sub group-hover:text-ec-highlight transition-colors">
+                  {label}
+                </span>
+              </button>
+            ))}
           </div>
-          
-          <button 
-            type="submit" 
-            className="btn-primary"
-            style={{ width: '100%', padding: '14px', backgroundColor: colors.primaryBlue, color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', marginTop: '8px', fontSize: '15px' }}
-          >
-            Secure Login
-          </button>
-        </form>
 
-        <div style={{ display: 'flex', alignItems: 'center', margin: '30px 0', color: colors.textSecondary }}>
-          <div style={{ flex: 1, height: '1px', backgroundColor: colors.cardBorder }}></div>
-          <span style={{ padding: '0 10px', fontSize: '12px', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px' }}>Developer Access</span>
-          <div style={{ flex: 1, height: '1px', backgroundColor: colors.cardBorder }}></div>
         </div>
-
-        {/* Development Environment Access */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-          <button onClick={() => handleDummyLogin("root_admin")} className="dev-btn" style={{ padding: '10px', backgroundColor: 'transparent', color: colors.textSecondary, border: `1px solid ${colors.cardBorder}`, borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-            Root Admin
-          </button>
-          <button onClick={() => handleDummyLogin("college_admin")} className="dev-btn" style={{ padding: '10px', backgroundColor: 'transparent', color: colors.textSecondary, border: `1px solid ${colors.cardBorder}`, borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-            College Admin
-          </button>
-          <button onClick={() => handleDummyLogin("alumni")} className="dev-btn" style={{ padding: '10px', backgroundColor: 'transparent', color: colors.textSecondary, border: `1px solid ${colors.cardBorder}`, borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-            Alumni
-          </button>
-          <button onClick={() => handleDummyLogin("student")} className="dev-btn" style={{ padding: '10px', backgroundColor: 'transparent', color: colors.textSecondary, border: `1px solid ${colors.cardBorder}`, borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}>
-            Student
-          </button>
-        </div>
-
       </div>
     </div>
   );
