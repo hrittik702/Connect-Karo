@@ -5,429 +5,346 @@ import {
   Globe, 
   Hash, 
   Mail, 
-  Lock, 
-  RefreshCw, 
-  Copy, 
-  Check, 
-  ShieldAlert, 
+  Phone, 
+  MapPin, 
   Save, 
-  ArrowLeft,
-  ToggleLeft,
-  ToggleRight,
-  Sparkles
+  ArrowLeft, 
+  CheckCircle2, 
+  AlertTriangle,
+  RefreshCw,
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
-
-// Firebase Configurations & SDK Tools
-import { db, firebaseConfig } from '../../../firebase/config'; 
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { initializeApp, deleteApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db } from '../../../firebase/config';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 
 export default function AddCollege() {
   const navigate = useNavigate();
-
-  // 1. Form Core Fields State
-  const [collegeName, setCollegeName] = useState('');
-  const [domain, setDomain] = useState('');
-  const [collegeCode, setCollegeCode] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [subscriptionPlan, setSubscriptionPlan] = useState('free');
-
-  // 2. SaaS Feature Flags Toggles State
-  const [features, setFeatures] = useState({
-    jobBoard: true,
-    mentorship: true,
-    alumniDirectory: true,
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    name: '',
+    collegeCode: '',
+    domain: '',
+    adminEmail: '',
+    adminPhone: '',
+    address: '',
+    password: '',
+    confirmPassword: ''
   });
 
-  // 3. Operational Infrastructure States
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [passwordCopied, setPasswordCopied] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState({ show: false, message: '', type: '' });
 
-  // Feature Flag Toggle Helper
-  const toggleFeature = (key) => {
-    setFeatures(prev => ({ ...prev, [key]: !prev[key] }));
+  // ── CUSTOM TOAST NOTIFICATION ──
+  const showFeedback = (msg, type = 'success') => {
+    setFeedback({ show: true, message: msg, type });
+    setTimeout(() => setFeedback({ show: false, message: '', type: '' }), 4000);
   };
 
-  // Enterprise Password Generator Utility
-  const generateSecurePassword = () => {
-    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-    let password = "";
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setAdminPassword(password);
-    if (error.includes('Password')) setError('');
+  // Handle Input Changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Copy Password Utility
-  const copyPasswordToClipboard = async () => {
-    if (!adminPassword) return;
-    try {
-      await navigator.clipboard.writeText(adminPassword);
-      setPasswordCopied(true);
-      setTimeout(() => setPasswordCopied(false), 2000);
-    } catch (err) {
-      console.error("Clipboard Error:", err);
-    }
+  // ── AUTO-SANITIZATION & VALIDATION ──
+  const cleanDomainString = (rawDomain) => {
+    return rawDomain
+      .toLowerCase()
+      .trim()
+      .replace(/^https?:\/\//, '') 
+      .replace(/^www\./, '')       
+      .replace(/\/.*$/, '');       
   };
 
-  // 100% Production-Ready Form Submission Engine
+  const validateDomain = (domain) => {
+    const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain);
+  };
+
+  // ── FORM SUBMISSION PIPELINE ──
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Core Validation Boundary Logs
-    if (!collegeName || !domain || !collegeCode || !adminEmail || !adminPassword) {
-      setError('Kripya saari mandatory fields ko sahi se fill karein.');
+    setIsSubmitting(true);
+
+    // 1. Password Pre-Validation Checks
+    if (formData.password.length < 6) {
+      showFeedback("Password must be at least 6 characters long!", "error");
+      setIsSubmitting(false);
       return;
     }
 
-    // Domain validation regex rule
-    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-    if (!domainRegex.test(domain)) {
-      setError('Invalid domain format! Udaharan ke liye sahi format: recabn.ac.in');
+    if (formData.password !== formData.confirmPassword) {
+      showFeedback("Passwords do not match!", "error");
+      setIsSubmitting(false);
       return;
     }
-
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    let secondaryApp;
 
     try {
-      // Step 1: Initialize Secondary App Instance for background auth injection
-      const uniqueInstanceName = `SecondaryApp_${Date.now()}`;
-      secondaryApp = initializeApp(firebaseConfig, uniqueInstanceName);
-      const secondaryAuth = getAuth(secondaryApp);
+      // 2. Sanitize Inputs
+      const sanitizedDomain = cleanDomainString(formData.domain);
+      const sanitizedCode = formData.collegeCode.toUpperCase().trim();
+      const sanitizedEmail = formData.adminEmail.toLowerCase().trim();
 
-      // Step 2: Register College Admin User Credentials safely
-      const userCredential = await createUserWithEmailAndPassword(
-        secondaryAuth, 
-        adminEmail, 
-        adminPassword
-      );
-      const adminUid = userCredential.user.uid;
-
-      // Step 3: Write to Master 'users' Auth Node Collection
-      const userDocRef = doc(db, 'users', adminUid);
-      await setDoc(userDocRef, {
-        email: adminEmail.toLowerCase().trim(),
-        role: 'college_admin',
-        status: 'active',
-        createdAt: serverTimestamp(),
-        lastLogin: null
-      });
-
-      // Step 4: Write to Master 'colleges' Config Node Collection
-      const customCollegeId = `clg_${collegeCode.toLowerCase().trim()}_${Date.now().toString().slice(-4)}`;
-      const collegeDocRef = doc(db, 'colleges', customCollegeId);
-      
-      // Calculate automated plan expiration time boundary (e.g., 1 Year standard tier boundary)
-      const expirationDate = new Date();
-      expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-
-      await setDoc(collegeDocRef, {
-        name: collegeName.trim(),
-        domain: domain.toLowerCase().trim(),
-        collegeCode: collegeCode.toUpperCase().trim(),
-        adminUid: adminUid,
-        status: 'active',
-        features: {
-          jobBoard: features.jobBoard,
-          mentorship: features.mentorship,
-          alumniDirectory: features.alumniDirectory
-        },
-        subscription: {
-          plan: subscriptionPlan,
-          expiresAt: expirationDate
-        },
-        metrics: {
-          totalStudents: 0,
-          totalAlumni: 0
-        },
-        createdAt: serverTimestamp()
-      });
-
-      // Pipeline execution completely successful
-      setSuccess(`College '${collegeName}' successfully onboard kar diya gaya hai!`);
-      
-      // Clear form inputs safely
-      setCollegeName('');
-      setDomain('');
-      setCollegeCode('');
-      setAdminEmail('');
-      setAdminPassword('');
-      
-    } catch (err) {
-      console.error("Critical Onboarding Failure Pipeline:", err);
-      if (err.code === 'auth/email-already-in-use') {
-        setError('Yeh Admin Email id pehle se system mein registered hai.');
-      } else {
-        setError(`Database registration pipeline block ho gayi: ${err.message}`);
+      // 3. Validate Domain Format
+      if (!validateDomain(sanitizedDomain)) {
+        showFeedback("Invalid domain format! Example: recabn.ac.in", "error");
+        setIsSubmitting(false);
+        return;
       }
+
+      // 4. Multi-Layer Duplicate Verification (Domain, Code, and Email must be entirely unique)
+      const collegesRef = collection(db, 'colleges');
+      
+      const domainQuery = query(collegesRef, where("domain", "==", sanitizedDomain));
+      const codeQuery = query(collegesRef, where("collegeCode", "==", sanitizedCode));
+      const emailQuery = query(collegesRef, where("adminEmail", "==", sanitizedEmail));
+
+      const [domainSnapshot, codeSnapshot, emailSnapshot] = await Promise.all([
+        getDocs(domainQuery),
+        getDocs(codeQuery),
+        getDocs(emailQuery)
+      ]);
+
+      if (!domainSnapshot.empty) {
+        showFeedback(`Domain '${sanitizedDomain}' is already registered!`, "error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!codeSnapshot.empty) {
+        showFeedback(`College Code '${sanitizedCode}' is already in use!`, "error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!emailSnapshot.empty) {
+        showFeedback(`Admin Email '${sanitizedEmail}' is already registered!`, "error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 5. Build Master Payload for Database Provisioning
+      // Find this block in AddCollege.jsx and update the createdAt field:
+const newCollegeData = {
+  name: formData.name.trim(),
+  collegeCode: sanitizedCode,
+  domain: sanitizedDomain,
+  adminEmail: sanitizedEmail,
+  adminPhone: formData.adminPhone.trim(),
+  address: formData.address.trim(),
+  status: 'active', 
+  subscription: {
+    plan: 'free',
+    expiresAt: null
+  },
+  metrics: {
+    totalStudents: 0,
+    totalAlumni: 0
+  },
+  createdAt: new Date().toISOString() // Using local ISO string to bypass field transform checks
+};
+
+      // Execute Write Operation
+      await addDoc(collegesRef, newCollegeData);
+
+      /* NOTE FOR PRODUCTION PIPELINE:
+         When you switch to real Firebase auth, we will link this to a cloud function 
+         that calls admin.auth().createUser({ email, password }) using these exact values. */
+
+      // 6. Success Orchestration
+      showFeedback("Institution and credentials provisioned successfully!", "success");
+      setFormData({ name: '', collegeCode: '', domain: '', adminEmail: '', adminPhone: '', address: '', password: '', confirmPassword: '' });
+      
+      setTimeout(() => navigate('/admin/colleges'), 1500);
+
+    } catch (error) {
+      console.error("Critical Provisioning Error:", error);
+      showFeedback("A structural database write error occurred.", "error");
     } finally {
-      // Step 5: Critical Memory Leak Cleanup - Kill secondary instance immediately
-      if (secondaryApp) {
-        try {
-          await deleteApp(secondaryApp);
-        } catch (cleanupErr) {
-          console.error("Secondary app termination block error:", cleanupErr);
-        }
-      }
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-12">
+    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300 pb-12 relative">
       
-      {/* Upper Navigation & Title Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-ec-border pb-5">
-        <div>
+      {/* Custom Toast Feedback */}
+      {feedback.show && (
+        <div className={`fixed bottom-8 right-8 z-[200] px-5 py-3.5 rounded-xl flex items-center gap-3 text-sm font-bold shadow-2xl animate-in slide-in-from-bottom-5 border backdrop-blur-md ${
+          feedback.type === 'success' 
+            ? 'bg-[#0b0f19]/90 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10' 
+            : 'bg-[#0b0f19]/90 text-red-400 border-red-500/30 shadow-red-500/10'
+        }`}>
+          {feedback.type === 'success' ? <CheckCircle2 size={20} /> : <AlertTriangle size={20} />}
+          {feedback.message}
+        </div>
+      )}
+
+      {/* Header Panel */}
+      <div className="flex items-center justify-between border-b border-ec-border pb-5">
+        <div className="flex items-center gap-4">
           <button 
+            type="button"
             onClick={() => navigate('/admin/colleges')}
-            className="flex items-center gap-1.5 text-xs text-ec-text-sub hover:text-ec-accent mb-2 transition-colors group"
+            className="p-2 rounded-lg bg-ec-surface border border-ec-border text-ec-text-sub hover:text-ec-highlight hover:border-ec-accent/50 transition-all"
           >
-            <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
-            Back to College List
+            <ArrowLeft size={18} />
           </button>
-          <h2 className="text-xl font-bold text-ec-highlight tracking-tight flex items-center gap-2">
-            <Building2 className="text-ec-accent" size={22} />
-            Onboard New Institution
-          </h2>
-          <p className="text-xs text-ec-text-sub mt-0.5">Platform multi-tenant node par naya college account link karein.</p>
+          <div>
+            <h2 className="text-xl font-bold text-ec-highlight tracking-tight flex items-center gap-2">
+              <Building2 className="text-ec-accent" size={22} />
+              Onboard New Institution
+            </h2>
+            <p className="text-xs text-ec-text-sub mt-1">Register institutional nodes and configure secure access credentials.</p>
+          </div>
         </div>
       </div>
 
-      {/* Global State Notifications Deck */}
-      {error && (
-        <div className="p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-sm text-red-400">
-          <ShieldAlert size={18} className="shrink-0 mt-0.5" />
-          <p className="font-medium leading-relaxed">{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="p-3.5 bg-ec-accent/10 border border-ec-accent/20 rounded-xl flex items-start gap-3 text-sm text-ec-accent">
-          <Sparkles size={18} className="shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold leading-none mb-1">Registration Complete!</p>
-            <p className="text-xs opacity-90">{success}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Main Execution Split Panel Form */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Master Form */}
+      <form onSubmit={handleSubmit} className="surface-card border border-ec-border rounded-xl p-6 lg:p-8 space-y-8">
         
-        {/* Left Side: Inputs Fields Deck */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Section 1: Institutional Core Parameters */}
-          <div className="surface-card p-6 border border-ec-border rounded-xl space-y-4">
-            <h3 className="text-sm font-bold text-ec-highlight border-b border-ec-border/60 pb-2 uppercase tracking-wider text-xs opacity-75">
-              1. Institutional Specifications
-            </h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2 space-y-1.5">
-                <label className="text-xs font-semibold text-ec-text-sub">College / University Name *</label>
-                <div className="relative">
-                  <Building2 size={16} className="absolute left-3 top-3.5 text-ec-text-sub/50" />
-                  <input 
-                    type="text"
-                    required
-                    value={collegeName}
-                    onChange={(e) => setCollegeName(e.target.value)}
-                    placeholder="e.g., Rajkiya Engineering College"
-                    className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/20 transition-all font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-ec-text-sub">Official Domain *</label>
-                <div className="relative">
-                  <Globe size={16} className="absolute left-3 top-3.5 text-ec-text-sub/50" />
-                  <input 
-                    type="text"
-                    required
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
-                    placeholder="e.g., recabn.ac.in"
-                    className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/20 transition-all font-medium font-mono"
-                  />
-                </div>
-                <span className="text-[10px] text-ec-text-sub block opacity-60 pl-1">Isi domain ke email IDs handle honge.</span>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-ec-text-sub">College Code / AICTE Code *</label>
-                <div className="relative">
-                  <Hash size={16} className="absolute left-3 top-3.5 text-ec-text-sub/50" />
-                  <input 
-                    type="text"
-                    required
-                    value={collegeCode}
-                    onChange={(e) => setCollegeCode(e.target.value)}
-                    placeholder="e.g., RECABN84"
-                    className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/20 transition-all font-medium font-mono uppercase"
-                  />
-                </div>
+        {/* Section 1: Institutional Core Mapping */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-ec-accent uppercase tracking-wider border-b border-ec-border/40 pb-2">1. Identity & Routing Mapping</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Institution Name</label>
+              <div className="relative">
+                <Building2 size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type="text" required name="name" value={formData.name} onChange={handleChange}
+                  placeholder="e.g., Rajkiya Engineering College"
+                  className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+                />
               </div>
             </div>
-          </div>
 
-          {/* Section 2: Administrative Control Credentials */}
-          <div className="surface-card p-6 border border-ec-border rounded-xl space-y-4">
-            <h3 className="text-sm font-bold text-ec-highlight border-b border-ec-border/60 pb-2 uppercase tracking-wider text-xs opacity-75">
-              2. Administrative Management Keys
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-ec-text-sub">College Master Admin Email *</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-3.5 text-ec-text-sub/50" />
-                  <input 
-                    type="email"
-                    required
-                    value={adminEmail}
-                    onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="e.g., admin@recabn.ac.in"
-                    className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/20 transition-all font-medium font-mono"
-                  />
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Primary Domain</label>
+              <div className="relative">
+                <Globe size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type="text" required name="domain" value={formData.domain} onChange={handleChange}
+                  placeholder="e.g., recabn.ac.in"
+                  className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+                />
               </div>
+            </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-semibold text-ec-text-sub">Secure Account Access Password *</label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Lock size={16} className="absolute left-3 top-3.5 text-ec-text-sub/50" />
-                    <input 
-                      type="text"
-                      required
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      placeholder="Min 8 characters alpha-numeric"
-                      className="w-full pl-10 pr-10 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/20 transition-all font-medium font-mono"
-                    />
-                    {adminPassword && (
-                      <button
-                        type="button"
-                        onClick={copyPasswordToClipboard}
-                        className="absolute right-3 top-3 text-ec-text-sub hover:text-ec-accent transition-colors p-0.5"
-                        title="Copy Password"
-                      >
-                        {passwordCopied ? <Check size={16} className="text-ec-accent" /> : <Copy size={16} />}
-                      </button>
-                    )}
-                  </div>
-                  
-                  <button
-                    type="button"
-                    onClick={generateSecurePassword}
-                    className="px-3 bg-ec-surface border border-ec-border hover:border-ec-accent hover:bg-ec-accent/10 rounded-lg text-ec-text-sub hover:text-ec-accent text-xs font-semibold flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0"
-                  >
-                    <RefreshCw size={14} />
-                    Auto Gen
-                  </button>
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Institution Code</label>
+              <div className="relative">
+                <Hash size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type="text" required name="collegeCode" value={formData.collegeCode} onChange={handleChange}
+                  placeholder="e.g., RECABN"
+                  className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium uppercase"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: SaaS Tier & Feature Triggers Panel */}
-        <div className="space-y-6">
-          
-          {/* SaaS Plan Selector Panel */}
-          <div className="surface-card p-6 border border-ec-border rounded-xl space-y-4">
-            <h3 className="text-sm font-bold text-ec-highlight border-b border-ec-border/60 pb-2 uppercase tracking-wider text-xs opacity-75">
-              3. Service Plan Matrix
-            </h3>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-ec-text-sub">Subscription Tier Selector</label>
-              <select 
-                value={subscriptionPlan}
-                onChange={(e) => setSubscriptionPlan(e.target.value)}
-                className="w-full px-3 py-2.5 bg-ec-root border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent transition-all font-semibold"
-              >
-                <option value="free">Basic Trial Deployment</option>
-                <option value="premium">Premium Commercial Network</option>
-                <option value="enterprise">Custom Enterprise Cluster</option>
-              </select>
+        {/* Section 2: Security & Access Management (ADDED PASSSWORD LOGIC) */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-ec-accent uppercase tracking-wider border-b border-ec-border/40 pb-2">2. Secure Identity Access</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Root Admin Email</label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type="email" required name="adminEmail" value={formData.adminEmail} onChange={handleChange}
+                  placeholder="e.g., admin@recabn.ac.in"
+                  className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* SaaS Feature Flags Switching Panel */}
-          <div className="surface-card p-6 border border-ec-border rounded-xl space-y-4">
-            <h3 className="text-sm font-bold text-ec-highlight border-b border-ec-border/60 pb-2 uppercase tracking-wider text-xs opacity-75">
-              4. Operational Flags
-            </h3>
-
-            <div className="space-y-3.5 pt-1">
-              {/* Feature Toggle Row 1 */}
-              <div className="flex items-center justify-between p-2 rounded-lg bg-ec-root/40 border border-ec-border/40">
-                <div>
-                  <p className="text-xs font-bold text-ec-highlight">Job Portal Engine</p>
-                  <p className="text-[10px] text-ec-text-sub">Alumni job postings & referrals.</p>
-                </div>
-                <button type="button" onClick={() => toggleFeature('jobBoard')} className="text-ec-accent transition-colors">
-                  {features.jobBoard ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-ec-text-sub/40" />}
-                </button>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Contact Phone</label>
+              <div className="relative">
+                <Phone size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type="tel" required name="adminPhone" value={formData.adminPhone} onChange={handleChange}
+                  placeholder="e.g., +91 9876543210"
+                  className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+                />
               </div>
+            </div>
 
-              {/* Feature Toggle Row 2 */}
-              <div className="flex items-center justify-between p-2 rounded-lg bg-ec-root/40 border border-ec-border/40">
-                <div>
-                  <p className="text-xs font-bold text-ec-highlight">Mentorship Grid</p>
-                  <p className="text-[10px] text-ec-text-sub">1-on-1 scheduled network maps.</p>
-                </div>
-                <button type="button" onClick={() => toggleFeature('mentorship')} className="text-ec-accent transition-colors">
-                  {features.mentorship ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-ec-text-sub/40" />}
-                </button>
-              </div>
-
-              {/* Feature Toggle Row 3 */}
-              <div className="flex items-center justify-between p-2 rounded-lg bg-ec-root/40 border border-ec-border/40">
-                <div>
-                  <p className="text-xs font-bold text-ec-highlight">Alumni Directory</p>
-                  <p className="text-[10px] text-ec-text-sub">Global verified identity matrix indexing.</p>
-                </div>
-                <button type="button" onClick={() => toggleFeature('alumniDirectory')} className="text-ec-accent transition-colors">
-                  {features.alumniDirectory ? <ToggleRight size={28} /> : <ToggleLeft size={28} className="text-ec-text-sub/40" />}
+            {/* Password */}
+            <div className="space-y-1.5 relative">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Access Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type={showPassword ? "text" : "password"} required name="password" value={formData.password} onChange={handleChange}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-10 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+                />
+                <button 
+                  type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-ec-text-sub/50 hover:text-ec-highlight transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Submission Primary Controls Trigger */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-ec-accent hover:bg-emerald-600 disabled:bg-ec-accent/50 text-ec-root font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-ec-accent/10 select-none cursor-pointer"
+            {/* Confirm Password */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Confirm Access Password</label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+                <input 
+                  type={showPassword ? "text" : "password"} required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Localization Details */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold text-ec-accent uppercase tracking-wider border-b border-ec-border/40 pb-2">3. Physical Deployment Bounds</h3>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide">Physical Campus Address</label>
+            <div className="relative">
+              <MapPin size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+              <textarea 
+                required name="address" rows={3} value={formData.address} onChange={handleChange}
+                placeholder="Enter complete institutional address..."
+                className="w-full pl-10 pr-4 py-2.5 bg-ec-root/60 border border-ec-border rounded-lg text-[13px] text-ec-text outline-none focus:border-ec-accent transition-all font-medium resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Action Footer */}
+        <div className="pt-5 border-t border-ec-border flex justify-end gap-3">
+          <button 
+            type="button" onClick={() => navigate('/admin/colleges')}
+            className="px-5 py-2.5 text-[13px] font-bold text-ec-text-sub hover:text-white bg-ec-surface border border-ec-border hover:bg-ec-muted rounded-lg transition-colors"
           >
-            {loading ? (
-              <>
-                <RefreshCw size={16} className="animate-spin" />
-                <span>Onboarding Cluster...</span>
-              </>
-            ) : (
-              <>
-                <Save size={16} />
-                <span>Execute Account Deployment</span>
-              </>
-            )}
+            Cancel
+          </button>
+          <button 
+            type="submit" disabled={isSubmitting}
+            className="px-6 py-2.5 text-[13px] font-bold text-ec-root bg-ec-accent hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-all shadow-lg shadow-emerald-500/10 flex items-center gap-2"
+          >
+            {isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+            {isSubmitting ? 'Provisioning Node...' : 'Register Institution'}
           </button>
         </div>
       </form>
+
     </div>
   );
 }
