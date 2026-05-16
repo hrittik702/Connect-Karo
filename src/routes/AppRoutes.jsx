@@ -14,6 +14,9 @@ import DashboardLayout from "../pages/admin/DashboardLayout";
 import DashboardOverview from "../pages/admin/DashboardOverview";
 import CollegeList from "../pages/admin/colleges/CollegeList";
 import AddCollege from "../pages/admin/colleges/AddCollege";
+import BillingOverview from "../pages/admin/billing/BillingOverview";
+import TicketManager from "../pages/admin/support/TicketManager";
+import AnnouncementPanel from "../pages/admin/broadcast/AnnouncementPanel";
 
 // Enterprise Role-Based Security Guard
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -83,13 +86,14 @@ export default function AppRoutes() {
         <Route path="colleges/:id" element={<UnderConstruction title="Dedicated College View (360° Control Panel)" />} />
         
         {/* Helpdesk Global Escalation Hub */}
-        <Route path="support" element={<UnderConstruction title="Ticket Manager & Support Helpdesk" />} />
-        
+        <Route path="support" element={<TicketManager />} />
+
+
         {/* Commercial Billing & SaaS Node Contracts */}
-        <Route path="billing" element={<UnderConstruction title="SaaS Subscriptions & Billing Metrics" />} />
+        <Route path="billing" element={<BillingOverview />} />
         
         {/* Network-wide Announcement Engine */}
-        <Route path="broadcast" element={<UnderConstruction title="Global Announcement & Notice Broadcast" />} />
+        <Route path="broadcast" element={<AnnouncementPanel />} />
         
         {/* System Node Cryptography & Security Settings */}
         <Route path="settings" element={<UnderConstruction title="Root Credentials & Security Framework" />} />
