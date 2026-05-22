@@ -138,8 +138,7 @@ export default function Home() {
           style={{ backgroundImage: `url(${heroBg})` }}
         />
         
-        {/* Gradient overlay on top of image */}
-        <div className="absolute inset-0 bg-gradient-to-b from-ec-surface/80 via-transparent to-ec-root/90" />
+        {/* Background image only, gradient overlay removed */}
 
         <main className="relative z-10 px-6 pt-24 pb-16 mx-auto max-w-[1200px]">
           <div className="flex flex-col items-center text-center">

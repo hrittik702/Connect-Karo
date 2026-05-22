@@ -27,6 +27,7 @@ export default {
           'accent-hover': 'rgb(var(--ec-accent-hover) / <alpha-value>)',
           border:       'rgb(var(--ec-border)       / <alpha-value>)',
           highlight:    'rgb(var(--ec-highlight)    / <alpha-value>)',
+          header:       'rgb(var(--ec-header)       / <alpha-value>)',
         },
       },
 

@@ -59,17 +59,14 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-ec-root text-ec-text flex flex-col font-sans relative selection:bg-ec-accent/20">
       
-      {/* Ambient Premium Blur Layer */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-ec-accent/5 blur-[140px] pointer-events-none z-0" />
-      
       {/* ── TOP NAVBAR (2-Liner layout) ── */}
-      <header className="sticky top-0 z-50 w-full bg-ec-surface/85 backdrop-blur-md flex flex-col shrink-0 select-none">
+      <header className="w-full bg-ec-header flex flex-col shrink-0 select-none">
         
         {/* Row 1: Brand logo/title and notifications/profile */}
-        <div className="w-full h-12 flex items-center justify-between px-4">
+        <div className="w-full h-16 flex items-center justify-between px-4 pt-3 pb-1">
           {/* Brand Header */}
           <div className="flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 rounded-lg bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center">
               <GoGear size={16} className="text-ec-accent" />
             </div>
             <span className="text-[13.5px] font-bold text-ec-highlight tracking-wide uppercase">
@@ -167,7 +164,7 @@ export default function DashboardLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scroll-smooth z-10 bg-transparent">
+      <main className="flex-1 pt-10 pb-6 px-4 sm:pt-12 sm:pb-8 sm:px-6 lg:pt-16 lg:pb-12 lg:px-8 z-10 bg-transparent">
         <div className="max-w-7xl mx-auto h-full">
           <Outlet />
         </div>

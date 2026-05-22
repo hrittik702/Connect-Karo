@@ -22,6 +22,7 @@
     --ec-accent-hover:  34 139  54;
     --ec-border:       216 222 228;
     --ec-highlight:     31  35  40;
+    --ec-header:       255 255 255;
 
     --surface-elevated: rgba(255, 255, 255, 0.95);
     --shadow-sm: 0 1px 2px rgba(31, 35, 40, 0.04);
@@ -33,9 +34,9 @@
 
   /* ── Dark Mode ──────────────────────────────── */
   .dark {
-    --ec-root:           1   4   9;
-    --ec-surface:       13  17  23;
-    --ec-muted:         22  27  34;
+    --ec-root:          13  17  23;
+    --ec-surface:       22  27  34;
+    --ec-muted:         33  38  45;
     --ec-text:         240 246 252;
     --ec-text-sub:     145 152 161;
     --ec-icon:         145 152 161;
@@ -43,6 +44,7 @@
     --ec-accent-hover:  87 203 102;
     --ec-border:        48  54  61;
     --ec-highlight:    240 246 252;
+    --ec-header:         1   4   9;
 
     --surface-elevated: rgba(22, 27, 34, 0.95);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -597,38 +599,17 @@
  * ═══════════════════════════════════════════════════ */
 .hero-bg {
   position: relative;
-  background: linear-gradient(180deg, 
-    rgb(var(--ec-surface)) 0%, 
-    #0d1117 8%,
-    #161b28 30%,
-    #1a0e35 55%,
-    #21143d 70%,
-    #0d1117 100%
-  );
+  background: rgb(var(--ec-root));
   overflow: hidden;
 }
 
-/* In light mode, use a lighter gradient */
+/* In light mode, use a lighter background color */
 :root .hero-bg {
-  background: linear-gradient(180deg,
-    rgb(var(--ec-surface)) 0%,
-    #f0f2f5 8%,
-    #e8eaf0 30%,
-    #ddd8f0 55%,
-    #e0daf5 70%,
-    #f0f2f5 100%
-  );
+  background: rgb(var(--ec-root));
 }
 
 .dark .hero-bg {
-  background: linear-gradient(180deg, 
-    rgb(var(--ec-surface)) 0%, 
-    #0d1117 8%,
-    #161b28 30%,
-    #1a0e35 55%,
-    #21143d 70%,
-    #0d1117 100%
-  );
+  background: rgb(var(--ec-root));
 }
 
 /* ═══════════════════════════════════════════════════
@@ -640,37 +621,6 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-}
-
-.ambient-glow::before {
-  content: '';
-  position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 45%;
-  height: 45%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(var(--ec-accent) / 0.06) 0%, transparent 70%);
-  filter: blur(80px);
-  animation: glowFloat 15s ease-in-out infinite alternate;
-}
-
-.ambient-glow::after {
-  content: '';
-  position: absolute;
-  bottom: -20%;
-  right: -10%;
-  width: 50%;
-  height: 50%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgb(var(--ec-accent) / 0.04) 0%, transparent 70%);
-  filter: blur(80px);
-  animation: glowFloat 15s ease-in-out 7s infinite alternate;
-}
-
-@keyframes glowFloat {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(20px, -20px) scale(1.05); }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -691,3 +641,40 @@
   60%      { transform: translateX(-3px); }
   80%      { transform: translateX(3px); }
 }
+
+/* ═══════════════════════════════════════════════════
+ * Scrollbar & Utility Customizations
+ * ═══════════════════════════════════════════════════ */
+
+/* Hide scrollbar utility class */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Premium dark-themed custom scrollbars globally */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--ec-border) / 0.7);
+  border-radius: 9999px;
+  border: 2px solid transparent; /* Padding around thumb */
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ec-accent) / 0.8);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
