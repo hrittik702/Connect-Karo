@@ -6,20 +6,18 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import useSystemTheme from "../../hooks/useSystemTheme";
 import { 
-  ArrowLeft, 
-  ArrowRight, 
-  LogIn, 
-  Shield, 
-  GraduationCap, 
-  Users, 
-  Building2, 
-  Sparkles, 
-  Check, 
-  CheckCircle2, 
-  Info,
-  Building,
-  ChevronRight
-} from "lucide-react";
+  GoArrowLeft, 
+  GoArrowRight, 
+  GoShield, 
+  GoMortarBoard, 
+  GoPeople, 
+  GoOrganization, 
+  GoZap, 
+  GoCheck, 
+  GoCheckCircle, 
+  GoInfo, 
+  GoChevronRight 
+} from "react-icons/go";
 
 // Twinkling space backdrop for the left pane
 function StarfieldCanvas() {
@@ -364,10 +362,10 @@ export default function Login() {
   };
 
   const devRoles = [
-    { role: "root_admin", label: "Root Admin", icon: Shield, color: "bg-red-500" },
-    { role: "college_admin", label: "College Admin", icon: Building2, color: "bg-blue-500" },
-    { role: "alumni", label: "Alumni", icon: Users, color: "bg-purple-500" },
-    { role: "student", label: "Student", icon: GraduationCap, color: "bg-ec-accent" },
+    { role: "root_admin", label: "Root Admin", icon: GoShield, color: "bg-red-500" },
+    { role: "college_admin", label: "College Admin", icon: GoOrganization, color: "bg-blue-500" },
+    { role: "alumni", label: "Alumni", icon: GoPeople, color: "bg-purple-500" },
+    { role: "student", label: "Student", icon: GoMortarBoard, color: "bg-ec-accent" },
   ];
 
   const valueProps = [
@@ -414,8 +412,8 @@ export default function Login() {
         </div>
 
         {/* Brand Accordion Panel */}
-        <div className="my-auto py-6 z-10 relative max-w-[460px]">
-          <h2 className="text-3xl font-[800] tracking-tight leading-tight text-white mb-2">
+        <div className="my-auto py-6 z-10 relative max-w-[460px] mx-auto w-full text-center flex flex-col items-center">
+          <h2 className="text-3xl font-[800] tracking-tight leading-tight text-white mb-3">
             Secure Gateway to <br />
             Your Campus Network
           </h2>
@@ -424,15 +422,15 @@ export default function Login() {
           </p>
 
           {/* Interactive Bouncing Guide Banner */}
-          <div className="flex items-center gap-2.5 mb-6 bg-slate-900/60 border border-slate-800/80 rounded-lg py-2 px-3.5 self-start animate-pulse">
-            <Sparkles size={12} className="text-ec-accent shrink-0 animate-bounce" />
+          <div className="flex items-center gap-2.5 mb-6 bg-slate-900/60 border border-slate-800/80 rounded-lg py-2 px-3.5 mx-auto animate-pulse">
+            <GoZap size={12} className="text-ec-accent shrink-0 animate-bounce" />
             <span className="text-[10.5px] font-medium text-slate-300">
               Interactive Guide: Click any feature below to expand details.
             </span>
           </div>
 
           {/* Accordion List */}
-          <div className="space-y-3.5">
+          <div className="space-y-3.5 w-full text-left">
             {valueProps.map((prop, i) => {
               const isOpen = openIndex === i;
               return (
@@ -451,7 +449,7 @@ export default function Login() {
                           ? "bg-ec-accent border-ec-accent text-white" 
                           : "bg-slate-900 border-slate-700 text-slate-400 group-hover:text-slate-300"}`}
                       >
-                        <Check size={11} className="stroke-[3.5]" />
+                        <GoCheck size={11} className="stroke-[3.5]" />
                       </div>
                       <span className={`font-semibold text-xs transition-colors duration-200 truncate
                         ${isOpen ? "text-white" : "text-slate-300 group-hover:text-white"}`}
@@ -460,7 +458,7 @@ export default function Login() {
                       </span>
                     </div>
                     
-                    <ChevronRight 
+                    <GoChevronRight 
                       size={14} 
                       className={`text-slate-400 group-hover:text-slate-300 transition-transform duration-300 shrink-0
                         ${isOpen ? "rotate-90 text-ec-accent" : ""}`} 
@@ -490,39 +488,39 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ── RIGHT PANE: 50% split form, constrained height fitting without scrollbars ── */}
-      <div className="flex flex-col justify-between p-6 md:p-10 xl:p-12 h-full relative bg-ec-root overflow-y-auto lg:overflow-y-hidden">
+      {/* ── RIGHT PANE: 50% split form, light GitHub style layout ── */}
+      <div className="flex flex-col justify-between p-6 md:p-10 xl:p-12 h-full relative bg-white overflow-y-auto lg:overflow-y-hidden text-gray-900 shadow-2xl">
         
         {/* Subtle Ambient light glow */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-ec-accent/5 to-transparent rounded-full filter blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-emerald-500/5 to-transparent rounded-full filter blur-[80px] pointer-events-none" />
 
-        {/* Top Switch Row */}
-        <div className="flex items-center justify-between w-full mb-6 lg:mb-0 z-10">
+        {/* Absolute Top Switch Controls */}
+        <div className="absolute top-6 left-6 right-6 md:top-8 md:left-8 md:right-8 flex justify-between items-center z-20">
           <button 
             onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-ec-text-sub hover:text-ec-highlight transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
           >
-            <ArrowLeft size={13} />
+            <GoArrowLeft size={13} />
             Back to Home
           </button>
 
           <div className="text-xs">
             {mode === "signup" ? (
               <>
-                <span className="text-ec-text-sub mr-1.5">Already registered?</span>
+                <span className="text-gray-500 mr-1.5">Already registered?</span>
                 <button 
                   onClick={() => { setMode("login"); setError(""); }} 
-                  className="text-ec-accent hover:text-ec-accent-hover font-bold transition-colors cursor-pointer hover:underline"
+                  className="text-emerald-600 hover:text-emerald-700 font-extrabold transition-colors cursor-pointer hover:underline"
                 >
                   Sign in &rarr;
                 </button>
               </>
             ) : (
               <>
-                <span className="text-ec-text-sub mr-1.5">Need portal access?</span>
+                <span className="text-gray-500 mr-1.5">Need portal access?</span>
                 <button 
                   onClick={() => { setMode("signup"); setError(""); }} 
-                  className="text-ec-accent hover:text-ec-accent-hover font-bold transition-colors cursor-pointer hover:underline"
+                  className="text-emerald-600 hover:text-emerald-700 font-extrabold transition-colors cursor-pointer hover:underline"
                 >
                   Register &rarr;
                 </button>
@@ -531,45 +529,45 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Form Container (Fits strictly on screen) */}
-        <div className="flex-1 flex flex-col justify-center max-w-[390px] w-full mx-auto my-auto z-10 py-4">
+        {/* Form Container (Fits strictly on screen with slightly larger width) */}
+        <div className="flex-1 flex flex-col justify-center max-w-[410px] w-full mx-auto my-auto z-10 py-6">
           
           {/* Mobile Logo Brand */}
           <div 
             onClick={() => navigate("/")}
             className="flex items-center gap-2 mb-6 lg:hidden cursor-pointer"
           >
-            <div className="w-7 h-7 rounded-lg bg-ec-accent flex items-center justify-center font-bold text-white text-sm">
+            <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center font-bold text-white text-sm">
               C
             </div>
-            <span className="font-extrabold text-sm tracking-tight text-ec-highlight">
-              Connect<span className="text-ec-accent">Karo</span>
+            <span className="font-extrabold text-sm tracking-tight text-gray-900">
+              Connect<span className="text-emerald-600">Karo</span>
             </span>
           </div>
 
           {signupSuccess ? (
             /* Request Confirmation Screen */
-            <div className="surface-card p-6 animate-fade-in-up border border-ec-accent/20 bg-ec-surface/40 backdrop-blur-sm shadow-xl">
+            <div className="p-6 bg-gray-50 border border-emerald-500/20 rounded-2xl shadow-xl animate-fade-in-up">
               <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center text-ec-accent mb-4 animate-pulse">
-                  <CheckCircle2 size={24} className="stroke-[2.5]" />
+                <div className="w-12 h-12 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-4 animate-pulse">
+                  <GoCheckCircle size={24} />
                 </div>
-                <h3 className="text-lg font-bold text-ec-highlight mb-1.5">Request Submitted</h3>
-                <p className="text-[11px] text-ec-text-sub leading-relaxed mb-5">
-                  We've successfully logged your request for <strong className="text-ec-highlight">{email}</strong>. 
-                  Administrators at <span className="font-medium text-ec-highlight">{colleges.find(c => c.collegeCode === selectedCollegeCode)?.name || "your college"}</span> will review your academic credentials.
+                <h3 className="text-xl font-bold text-gray-900 mb-1.5">Request Submitted</h3>
+                <p className="text-xs text-gray-600 leading-relaxed mb-5">
+                  We've successfully logged your request for <strong className="text-gray-900">{email}</strong>. 
+                  Administrators at <span className="font-semibold text-gray-900">{colleges.find(c => c.collegeCode === selectedCollegeCode)?.name || "your college"}</span> will review your academic credentials.
                 </p>
-                <div className="w-full bg-ec-muted/40 rounded-lg p-3 mb-5 text-left border border-ec-border">
+                <div className="w-full bg-white rounded-xl p-4 mb-5 text-left border border-gray-200 shadow-sm">
                   <div className="flex gap-2">
-                    <Info size={13} className="text-ec-accent mt-0.5 shrink-0" />
-                    <p className="text-[10px] text-ec-text-sub leading-normal">
+                    <GoInfo size={14} className="text-emerald-600 mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-gray-500 leading-normal">
                       Once verified, an onboarding invitation link containing role authorization credentials will be delivered to your registered inbox.
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={() => { setSignupSuccess(false); setMode("login"); }}
-                  className="btn-primary w-full text-xs py-3"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg py-3 text-sm transition-colors cursor-pointer"
                 >
                   Return to Sign In
                 </button>
@@ -578,11 +576,11 @@ export default function Login() {
           ) : (
             /* Auth / Access Form */
             <div className="animate-fade-in-up">
-              <div className="mb-5">
-                <h2 className="text-xl font-extrabold text-ec-highlight tracking-tight mb-1">
+              <div className="mb-6">
+                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-2 md:text-[26px]">
                   {mode === "signup" ? "Request portal access" : "Sign in to Connect-Karo"}
                 </h2>
-                <p className="text-[11px] text-ec-text-sub leading-relaxed">
+                <p className="text-xs md:text-[13px] text-gray-500 leading-relaxed">
                   {mode === "signup" 
                     ? "Enter your academic credentials to submit an invitation request to your college."
                     : "Access your student dashboard, alumni workspace, or administration tower."
@@ -592,45 +590,45 @@ export default function Login() {
 
               {/* Error Notice */}
               {error && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4 border-l-4 border-l-red-500 animate-shake">
-                  <p className="text-[11px] text-red-400 font-medium">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 border-l-4 border-l-red-500 animate-shake">
+                  <p className="text-xs text-red-600 font-semibold">{error}</p>
                 </div>
               )}
 
               {/* Form Input fields */}
-              <form onSubmit={mode === "signup" ? handleRequestAccess : handleRealLogin} className="space-y-3.5">
+              <form onSubmit={mode === "signup" ? handleRequestAccess : handleRealLogin} className="space-y-4">
                 
                 {mode === "login" ? (
                   <>
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Email Address</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email Address</label>
                       <input
                         type="email"
                         placeholder="name@institution.edu"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="input text-xs py-2.5"
+                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                         required
                       />
                     </div>
                     <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider">Password</label>
-                        <a href="#" className="text-[10px] font-semibold text-ec-accent hover:underline">Forgot password?</a>
+                      <div className="flex justify-between items-center mb-1.5">
+                        <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider">Password</label>
+                        <a href="#" className="text-xs font-semibold text-emerald-600 hover:underline">Forgot password?</a>
                       </div>
                       <input
                         type="password"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="input text-xs py-2.5"
+                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                         required
                       />
                     </div>
                   </>
                 ) : (
                   /* Signup fields wrapper with internal scrolling */
-                  <div className="max-h-[300px] md:max-h-[360px] lg:max-h-[260px] xl:max-h-[340px] overflow-y-auto pr-2 space-y-3.5 custom-form-scroll">
+                  <div className="max-h-[300px] md:max-h-[360px] lg:h-[198px] xl:h-[198px] overflow-y-auto pr-2 space-y-4 custom-form-scroll">
                     <style>{`
                       .custom-form-scroll::-webkit-scrollbar {
                         width: 4px;
@@ -639,60 +637,60 @@ export default function Login() {
                         background: transparent;
                       }
                       .custom-form-scroll::-webkit-scrollbar-thumb {
-                        background: rgba(255, 255, 255, 0.1);
+                        background: rgba(0, 0, 0, 0.1);
                         border-radius: 4px;
                       }
                       .custom-form-scroll::-webkit-scrollbar-thumb:hover {
-                        background: rgba(255, 255, 255, 0.2);
+                        background: rgba(0, 0, 0, 0.2);
                       }
                     `}</style>
                     
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Full Name</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Full Name</label>
                       <input
                         type="text"
                         placeholder="John Doe"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="input text-xs py-2.5"
+                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Email Address</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email Address</label>
                       <input
                         type="email"
                         placeholder="name@institution.edu"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="input text-xs py-2.5"
+                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Choose Password</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Choose Password</label>
                       <input
                         type="password"
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="input text-xs py-2.5"
+                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Select College</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select College</label>
                       <div className="relative">
                         {collegesLoading ? (
-                          <div className="input text-xs py-2.5 pl-9 flex items-center justify-between text-ec-text-sub">
+                          <div className="w-full bg-white text-gray-500 border border-gray-300 rounded-lg px-3.5 py-2.5 pl-9 text-sm flex items-center justify-between">
                             <span>Loading active colleges...</span>
-                            <div className="w-3.5 h-3.5 border-2 border-ec-accent/30 border-t-ec-accent rounded-full animate-spin" />
+                            <div className="w-3.5 h-3.5 border-2 border-emerald-500/30 border-t-emerald-600 rounded-full animate-spin" />
                           </div>
                         ) : colleges.length === 0 ? (
-                          <div className="input text-xs py-2.5 pl-9 text-red-400 border-red-500/20 bg-red-500/5">
+                          <div className="w-full bg-red-50 text-red-600 border border-red-200 rounded-lg px-3.5 py-2.5 pl-9 text-sm">
                             No registered colleges found.
                           </div>
                         ) : (
@@ -700,84 +698,84 @@ export default function Login() {
                             <select
                               value={selectedCollegeCode}
                               onChange={(e) => setSelectedCollegeCode(e.target.value)}
-                              className="input text-xs py-2.5 pl-9 pr-8 bg-ec-root appearance-none cursor-pointer w-full text-ec-highlight font-medium focus:border-ec-accent"
+                              className="w-full bg-white text-gray-900 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 pl-9 pr-8 appearance-none cursor-pointer font-medium transition-all duration-200 outline-none"
                               required
                             >
                               {colleges.map((c) => (
-                                <option key={c.collegeCode} value={c.collegeCode} className="bg-[#0b0f19] text-ec-text">
+                                <option key={c.collegeCode} value={c.collegeCode} className="text-gray-900 bg-white">
                                   {c.name} ({c.collegeCode})
                                 </option>
                               ))}
                             </select>
-                            <Building size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-icon" />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
+                            <GoOrganization size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">&#9662;</div>
                           </>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Select Role</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select Role</label>
                       <div className="relative">
                         <select 
                           value={signupRole}
                           onChange={(e) => setSignupRole(e.target.value)}
-                          className="input text-xs py-2.5 pl-9 pr-8 bg-ec-root appearance-none cursor-pointer w-full text-ec-highlight font-medium focus:border-ec-accent"
+                          className="w-full bg-white text-gray-900 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 pl-9 pr-8 appearance-none cursor-pointer font-medium transition-all duration-200 outline-none"
                           required
                         >
-                          <option value="student" className="bg-[#0b0f19] text-ec-text">Student Account</option>
-                          <option value="alumni" className="bg-[#0b0f19] text-ec-text">Alumni Account</option>
+                          <option value="student" className="text-gray-900 bg-white">Student Account</option>
+                          <option value="alumni" className="text-gray-900 bg-white">Alumni Account</option>
                         </select>
-                        <GraduationCap size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-icon" />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
+                        <GoMortarBoard size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">&#9662;</div>
                       </div>
                     </div>
 
                     {/* Role-specific sections */}
                     {signupRole === "student" ? (
-                      <div className="space-y-3.5 pt-2 border-t border-ec-border/30">
-                        <div className="text-[9px] font-extrabold text-ec-accent uppercase tracking-wider">Student Academic Details</div>
+                      <div className="space-y-4 pt-3 border-t border-gray-200">
+                        <div className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider">Student Academic Details</div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Roll Number</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Roll Number</label>
                           <input
                             type="text"
                             placeholder="e.g. 210123010"
                             value={rollNo}
                             onChange={(e) => setRollNo(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Branch / Department</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Branch / Department</label>
                           <input
                             type="text"
                             placeholder="e.g. Computer Science"
                             value={branch}
                             onChange={(e) => setBranch(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Current Year</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Current Year</label>
                           <div className="relative">
                             <select
                               value={currentYear}
                               onChange={(e) => setCurrentYear(e.target.value)}
-                              className="input text-xs py-2.5 pl-3 pr-8 bg-ec-root appearance-none cursor-pointer w-full text-ec-highlight font-medium focus:border-ec-accent"
+                              className="w-full bg-white text-gray-900 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 pr-8 appearance-none cursor-pointer font-medium transition-all duration-200 outline-none"
                               required
                             >
-                              <option value="1st" className="bg-[#0b0f19] text-ec-text">1st Year</option>
-                              <option value="2nd" className="bg-[#0b0f19] text-ec-text">2nd Year</option>
-                              <option value="3rd" className="bg-[#0b0f19] text-ec-text">3rd Year</option>
-                              <option value="4th" className="bg-[#0b0f19] text-ec-text">4th Year</option>
+                              <option value="1st" className="text-gray-900 bg-white">1st Year</option>
+                              <option value="2nd" className="text-gray-900 bg-white">2nd Year</option>
+                              <option value="3rd" className="text-gray-900 bg-white">3rd Year</option>
+                              <option value="4th" className="text-gray-900 bg-white">4th Year</option>
                             </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">&#9662;</div>
                           </div>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Graduation Year</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Graduation Year</label>
                           <input
                             type="number"
                             min="2000"
@@ -785,38 +783,38 @@ export default function Login() {
                             placeholder="e.g. 2025"
                             value={graduationYear}
                             onChange={(e) => setGraduationYear(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-3.5 pt-2 border-t border-ec-border/30">
-                        <div className="text-[9px] font-extrabold text-ec-accent uppercase tracking-wider">Alumni Professional Details</div>
+                      <div className="space-y-4 pt-3 border-t border-gray-200">
+                        <div className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider">Alumni Professional Details</div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Roll Number</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Roll Number</label>
                           <input
                             type="text"
                             placeholder="e.g. 210123010"
                             value={rollNo}
                             onChange={(e) => setRollNo(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Branch / Department</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Branch / Department</label>
                           <input
                             type="text"
                             placeholder="e.g. Computer Science"
                             value={branch}
                             onChange={(e) => setBranch(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Graduation Year</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Graduation Year</label>
                           <input
                             type="number"
                             min="1950"
@@ -824,40 +822,40 @@ export default function Login() {
                             placeholder="e.g. 2020"
                             value={graduationYear}
                             onChange={(e) => setGraduationYear(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Current Company</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Current Company</label>
                           <input
                             type="text"
                             placeholder="e.g. Google"
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Current Designation</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Current Designation</label>
                           <input
                             type="text"
                             placeholder="e.g. Software Engineer"
                             value={designation}
                             onChange={(e) => setDesignation(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">LinkedIn Profile URL</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">LinkedIn Profile URL</label>
                           <input
                             type="url"
                             placeholder="e.g. https://linkedin.com/in/johndoe"
                             value={linkedin}
                             onChange={(e) => setLinkedin(e.target.value)}
-                            className="input text-xs py-2.5"
+                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
                             required
                           />
                         </div>
@@ -869,19 +867,19 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading || (mode === "signup" && colleges.length === 0)}
-                  className="btn-primary w-full text-xs font-bold py-3 mt-1 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg py-3 text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_4px_20px_rgba(16,185,129,0.15)] transition-colors"
                 >
                   {loading ? (
                     <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : mode === "signup" ? (
                     <>
                       Submit Access Request
-                      <ArrowRight size={13} />
+                      <GoArrowRight size={14} />
                     </>
                   ) : (
                     <>
                       Secure Sign In
-                      <ArrowRight size={13} />
+                      <GoArrowRight size={14} />
                     </>
                   )}
                 </button>
@@ -889,10 +887,10 @@ export default function Login() {
 
               {/* Developer Access Box (Available only in Login Mode) */}
               {mode === "login" && import.meta.env.DEV && (
-                <div className="mt-5 border-t border-ec-border/60 pt-4">
+                <div className="mt-5 border-t border-gray-200 pt-4">
                   <div className="flex items-center gap-1.5 mb-3">
-                    <Sparkles size={12} className="text-ec-accent animate-pulse" />
-                    <span className="text-[9px] font-[800] text-ec-text-sub uppercase tracking-wider">
+                    <GoZap size={12} className="text-emerald-600 animate-pulse" />
+                    <span className="text-[9px] font-[800] text-gray-500 uppercase tracking-wider">
                       Developer & Evaluator Portal Access
                     </span>
                   </div>
@@ -901,16 +899,16 @@ export default function Login() {
                       <button
                         key={role}
                         onClick={() => handleDummyLogin(role)}
-                        className="flex items-center gap-2 p-1.5 rounded-lg border border-ec-border/80 bg-ec-surface/40 hover:bg-ec-surface hover:border-ec-accent/40 group transition-all duration-200 cursor-pointer"
+                        className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-emerald-500/40 group transition-all duration-200 cursor-pointer shadow-sm text-gray-900"
                       >
-                        <div className={`w-6 h-6 rounded-md ${color} flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-105`}>
-                          <Icon size={11} className="stroke-[2.5]" />
+                        <div className={`w-7 h-7 rounded-md ${color} flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-105 shadow-sm`}>
+                          <Icon size={12} className="stroke-[2.5]" />
                         </div>
                         <div className="text-left min-w-0">
-                          <div className="text-[10px] font-bold text-ec-highlight group-hover:text-ec-accent transition-colors truncate">
+                          <div className="text-[11px] font-bold text-gray-800 group-hover:text-emerald-600 transition-colors truncate">
                             {label}
                           </div>
-                          <div className="text-[8.5px] text-ec-text-sub leading-none mt-0.5">
+                          <div className="text-[9px] text-gray-500 leading-none mt-0.5">
                             Bypass Login
                           </div>
                         </div>
@@ -924,12 +922,12 @@ export default function Login() {
         </div>
 
         {/* Footer info links (Lower heights to avoid scrollbars) */}
-        <div className="w-full mt-6 lg:mt-0 flex flex-col sm:flex-row items-center justify-between text-[10px] text-ec-text-sub gap-2 pt-4 border-t border-ec-border/40">
+        <div className="w-full mt-6 lg:mt-0 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-400 gap-2 pt-4 border-t border-gray-100">
           <span>&copy; 2026 Connect-Karo. All rights reserved.</span>
           <div className="flex gap-3.5">
-            <a href="#" className="hover:text-ec-highlight transition-colors">Security</a>
-            <a href="#" className="hover:text-ec-highlight transition-colors">Terms</a>
-            <a href="#" className="hover:text-ec-highlight transition-colors">Support</a>
+            <a href="#" className="hover:text-gray-800 transition-colors">Security</a>
+            <a href="#" className="hover:text-gray-800 transition-colors">Terms</a>
+            <a href="#" className="hover:text-gray-800 transition-colors">Support</a>
           </div>
         </div>
       </div>
