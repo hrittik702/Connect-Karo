@@ -886,7 +886,7 @@ export default function Login() {
               </form>
 
               {/* Developer Access Box (Available only in Login Mode) */}
-              {mode === "login" && import.meta.env.DEV && (
+              {mode === "login" && (
                 <div className="mt-5 border-t border-gray-200 pt-4">
                   <div className="flex items-center gap-1.5 mb-3">
                     <GoZap size={12} className="text-emerald-600 animate-pulse" />

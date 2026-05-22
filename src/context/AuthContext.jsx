@@ -64,12 +64,8 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  // 🟢 Dummy Login Function for Development (Guarded in Production)
+  // 🟢 Dummy Login Function (Enabled in production to facilitate evaluation and testing on Vercel)
   const dummyLogin = (role) => {
-    if (!import.meta.env.DEV) {
-      console.error("Security violation: Dummy authentication is disabled in production environments.");
-      return;
-    }
     // Fake Firebase User
     setCurrentUser({ uid: "dummy_12345", email: `test@${role}.com` });
     

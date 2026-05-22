@@ -69,8 +69,8 @@ export default function DashboardLayout() {
             <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center">
               <GoGear size={16} className="text-ec-accent" />
             </div>
-            <span className="text-[13.5px] font-bold text-ec-highlight tracking-wide uppercase">
-              Root<span className="text-ec-accent">Admin</span>
+            <span className="text-[17.5px] font-bold text-ec-highlight tracking-wide uppercase">
+              Root<span className="text-ec-accent"> Admin</span>
             </span>
           </div>
 
