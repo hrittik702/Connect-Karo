@@ -11,7 +11,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, runTransaction, limit } from 'firebase/firestore';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function CollegeUserList() {
@@ -21,8 +21,11 @@ export default function CollegeUserList() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all', 'student', 'alumni', 'blocked'
   const [actionMenuOpen, setActionMenuOpen] = useState(null);
+  const [limitCount, setLimitCount] = useState(15);
+  const [hasMore, setHasMore] = useState(false);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -31,26 +34,74 @@ export default function CollegeUserList() {
     return () => window.removeEventListener('click', handleClose);
   }, []);
 
-  // Fetch verified & blocked users
+  // Search Debouncer
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Reset page size when filter changes
+  useEffect(() => {
+    setLimitCount(15);
+  }, [filterType]);
+
+  // Fetch verified & blocked users (Server-side paginated/filtered)
   useEffect(() => {
     if (!collegeId) return;
 
-    // Fetch all users in college, filter status in React state
-    const q = query(
-      collection(db, 'users'), 
-      where('collegeId', '==', collegeId)
-    );
+    setLoading(true);
+    let q;
+    if (filterType === 'student') {
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId),
+        where('status', '==', 'approved'),
+        where('role', '==', 'student'),
+        limit(limitCount + 1)
+      );
+    } else if (filterType === 'alumni') {
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId),
+        where('status', '==', 'approved'),
+        where('role', '==', 'alumni'),
+        limit(limitCount + 1)
+      );
+    } else if (filterType === 'blocked') {
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId),
+        where('status', '==', 'blocked'),
+        limit(limitCount + 1)
+      );
+    } else {
+      // 'all' - Fetch approved and blocked directory members
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId),
+        where('status', 'in', ['approved', 'blocked']),
+        limit(limitCount + 1)
+      );
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = [];
       snapshot.forEach((docSnap) => {
         const u = { id: docSnap.id, ...docSnap.data() };
-        // We only show approved & blocked users here (pending requests have their own requests tab)
-        if ((u.status === 'approved' || u.status === 'blocked') && u.role !== 'college_admin' && u.role !== 'root_admin') {
+        if (u.role !== 'college_admin' && u.role !== 'root_admin') {
           data.push(u);
         }
       });
-      setUsers(data);
+
+      if (data.length > limitCount) {
+        setHasMore(true);
+        setUsers(data.slice(0, limitCount));
+      } else {
+        setHasMore(false);
+        setUsers(data);
+      }
       setLoading(false);
     }, (error) => {
       console.error("Fetch users list error:", error);
@@ -58,54 +109,89 @@ export default function CollegeUserList() {
     });
 
     return () => unsubscribe();
-  }, [collegeId]);
+  }, [collegeId, filterType, limitCount]);
 
-  // Toggle user block/active state
+  // Toggle user block/active state with Transactions
   const handleToggleBlock = async (userId, currentStatus, role) => {
     setActionMenuOpen(null);
+    const userRef = doc(db, 'users', userId);
+    const collegeRef = doc(db, 'colleges', collegeId);
+    const newStatus = currentStatus === 'approved' ? 'blocked' : 'approved';
+    const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
+    const incVal = newStatus === 'blocked' ? -1 : 1;
+
     try {
-      const newStatus = currentStatus === 'approved' ? 'blocked' : 'approved';
-      await updateDoc(doc(db, 'users', userId), { status: newStatus });
-      
-      // Sync stats: If blocked, decrement count. If unblocked, increment count.
-      const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
-      const incVal = newStatus === 'blocked' ? -1 : 1;
-      await updateDoc(doc(db, 'colleges', collegeId), {
-        [metricsField]: increment(incVal)
+      await runTransaction(db, async (transaction) => {
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) {
+          throw new Error("User document does not exist.");
+        }
+        
+        const collegeSnap = await transaction.get(collegeRef);
+        if (!collegeSnap.exists()) {
+          throw new Error("College document does not exist.");
+        }
+        
+        transaction.update(userRef, { status: newStatus });
+
+        const collegeData = collegeSnap.data();
+        const metrics = collegeData.metrics || {};
+        const currentCount = role === 'student' ? (metrics.totalStudents || 0) : (metrics.totalAlumni || 0);
+        const newCount = Math.max(0, currentCount + incVal);
+
+        transaction.update(collegeRef, {
+          [metricsField]: newCount
+        });
       });
     } catch (error) {
-      console.error("Toggle block error:", error);
-      alert("Block toggling failed.");
+      console.error("Toggle block transaction error:", error);
+      alert("Block toggling failed. Please try again.");
     }
   };
 
-  // Delete user from directory
+  // Delete user from directory with Transactions
   const handleDeleteUser = async (userId, userName, currentStatus, role) => {
     setActionMenuOpen(null);
     const isConfirmed = window.confirm(`WARNING: Are you sure you want to permanently delete '${userName}'? This cannot be undone.`);
     if (!isConfirmed) return;
 
-    try {
-      await deleteDoc(doc(db, 'users', userId));
+    const userRef = doc(db, 'users', userId);
+    const collegeRef = doc(db, 'colleges', collegeId);
 
-      // Decrement metrics only if the deleted user was active ('approved')
-      if (currentStatus === 'approved') {
-        const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
-        await updateDoc(doc(db, 'colleges', collegeId), {
-          [metricsField]: increment(-1)
-        });
-      }
+    try {
+      await runTransaction(db, async (transaction) => {
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) {
+          throw new Error("User document does not exist.");
+        }
+
+        transaction.delete(userRef);
+
+        if (currentStatus === 'approved') {
+          const collegeSnap = await transaction.get(collegeRef);
+          if (collegeSnap.exists()) {
+            const collegeData = collegeSnap.data();
+            const metrics = collegeData.metrics || {};
+            const currentCount = role === 'student' ? (metrics.totalStudents || 0) : (metrics.totalAlumni || 0);
+            const newCount = Math.max(0, currentCount - 1);
+            const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
+            transaction.update(collegeRef, {
+              [metricsField]: newCount
+            });
+          }
+        }
+      });
     } catch (error) {
-      console.error("Delete user error:", error);
-      alert("User deletion failed.");
+      console.error("Delete user transaction error:", error);
+      alert("User deletion failed. Please try again.");
     }
   };
 
-  // Search & Filtration logic
+  // Search & Filtration logic (local filter on the retrieved page)
   const filteredUsers = users.filter(u => {
     const matchesSearch = 
-      u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      u.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+      u.email?.toLowerCase().includes(debouncedSearch.toLowerCase());
     
     let matchesType = true;
     if (filterType === 'student') matchesType = (u.role === 'student' && u.status === 'approved');
@@ -328,6 +414,17 @@ export default function CollegeUserList() {
           </div>
         )}
       </div>
+
+      {hasMore && !loading && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setLimitCount(prev => prev + 15)}
+            className="px-4 py-2 bg-ec-surface hover:bg-ec-muted border border-ec-border hover:border-ec-accent/40 rounded-lg text-xs font-bold text-ec-text transition-all cursor-pointer shadow-sm"
+          >
+            Load More Users
+          </button>
+        </div>
+      )}
 
     </div>
   );

@@ -3,11 +3,7 @@ import { auth } from "../../firebase/config";
 import { BookOpen, LogOut, Users, Building2 } from "lucide-react";
 
 export default function StudentDashboard() {
-  const { userData, dummyLogout } = useAuth(); // dummyLogout ko destructure karein
-
-  const handleLogout = () => {
-    auth.signOut();
-  };
+  const { userData, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-ec-root text-ec-text">
@@ -21,7 +17,7 @@ export default function StudentDashboard() {
             <h1 className="text-lg font-bold text-ec-highlight">Student Dashboard</h1>
           </div>
           <button 
-            onClick={dummyLogout} 
+            onClick={logout} 
             className="btn text-sm text-red-400 hover:text-red-300 hover:border-red-500/30"
           >
             <LogOut size={15} className="text-ec-icon" />

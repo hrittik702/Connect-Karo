@@ -26,36 +26,39 @@ export default function CollegeBroadcastList() {
     const unsub = onSnapshot(doc(db, 'colleges', collegeId), (snapshot) => {
       if (snapshot.exists()) {
         setCollegeDetails(snapshot.data());
+      } else {
+        // Fallback college details for local development / dummy login
+        setCollegeDetails({
+          status: 'active',
+          subscription: { plan: 'free' }
+        });
       }
     });
     return () => unsub();
   }, [collegeId]);
 
-  // 2. Fetch active announcements and filter in-memory
+  // 2. Fetch active announcements with server-side target authorization
   useEffect(() => {
-    if (!collegeId) return;
+    if (!collegeId || !collegeDetails) return;
 
-    // Fetch announcements ordered by creation time
-    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
+    const plan = collegeDetails?.subscription?.plan || 'free';
+    const status = collegeDetails?.status || 'active';
+
+    const allowedTargets = ['all'];
+    if (status === 'active') allowedTargets.push('active');
+    if (plan === 'premium') allowedTargets.push('premium');
+
+    const q = query(
+      collection(db, 'announcements'),
+      where('status', '==', 'active'),
+      where('target', 'in', allowedTargets),
+      orderBy('createdAt', 'desc')
+    );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = [];
-      const plan = collegeDetails?.subscription?.plan || 'free';
-      const status = collegeDetails?.status || 'active';
-
       snapshot.forEach((docSnap) => {
-        const anc = { id: docSnap.id, ...docSnap.data() };
-        
-        // Match status and subscription filters
-        if (anc.status === 'active') {
-          if (
-            anc.target === 'all' ||
-            (anc.target === 'active' && status === 'active') ||
-            (anc.target === 'premium' && plan === 'premium')
-          ) {
-            data.push(anc);
-          }
-        }
+        data.push({ id: docSnap.id, ...docSnap.data() });
       });
 
       setAnnouncements(data);

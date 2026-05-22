@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper: check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    // Helper: check if user owns the path
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    // Match files in user directories (avatars, credentials)
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuth();
+      allow write: if isOwner(userId);
+    }
+    
+    // Default fallback rule: deny all other requests
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

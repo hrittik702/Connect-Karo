@@ -888,7 +888,7 @@ export default function Login() {
               </form>
 
               {/* Developer Access Box (Available only in Login Mode) */}
-              {mode === "login" && (
+              {mode === "login" && import.meta.env.DEV && (
                 <div className="mt-5 border-t border-ec-border/60 pt-4">
                   <div className="flex items-center gap-1.5 mb-3">
                     <Sparkles size={12} className="text-ec-accent animate-pulse" />

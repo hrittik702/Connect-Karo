@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebase/config";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 const AuthContext = createContext();
 
@@ -30,11 +30,21 @@ export const AuthProvider = ({ children }) => {
                 snap = await getDoc(docRef);
                 if (snap.exists()) {
                   data.collegeId = rawId.toUpperCase();
+                  try {
+                    await updateDoc(doc(db, "users", user.uid), { collegeId: data.collegeId });
+                  } catch (e) {
+                    console.warn("Self-healing updateDoc failed:", e);
+                  }
                 } else {
                   docRef = doc(db, "colleges", rawId.toLowerCase());
                   snap = await getDoc(docRef);
                   if (snap.exists()) {
                     data.collegeId = rawId.toLowerCase();
+                    try {
+                      await updateDoc(doc(db, "users", user.uid), { collegeId: data.collegeId });
+                    } catch (e) {
+                      console.warn("Self-healing updateDoc failed:", e);
+                    }
                   }
                 }
               }
@@ -54,8 +64,12 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  // 🟢 NEW: Dummy Login Function for Development
+  // 🟢 Dummy Login Function for Development (Guarded in Production)
   const dummyLogin = (role) => {
+    if (!import.meta.env.DEV) {
+      console.error("Security violation: Dummy authentication is disabled in production environments.");
+      return;
+    }
     // Fake Firebase User
     setCurrentUser({ uid: "dummy_12345", email: `test@${role}.com` });
     
@@ -70,15 +84,20 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  // 🟢 NEW: Dummy Logout
-  const dummyLogout = () => {
+  // 🟢 Unified Logout Function
+  const logout = () => {
     setCurrentUser(null);
     setUserData(null);
-    auth.signOut(); // Real firebase logout just in case
+    return auth.signOut();
+  };
+
+  // 🟢 Dummy Logout (for backward compatibility, calls unified logout)
+  const dummyLogout = () => {
+    logout();
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, userData, loading, dummyLogin, dummyLogout }}>
+    <AuthContext.Provider value={{ currentUser, userData, loading, dummyLogin, dummyLogout, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

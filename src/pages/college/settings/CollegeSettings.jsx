@@ -20,7 +20,7 @@ import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function CollegeSettings() {
-  const { currentUser, userData, dummyLogout } = useAuth();
+  const { currentUser, userData, logout } = useAuth();
   const collegeId = userData?.collegeId || '';
   const navigate = useNavigate();
 
@@ -140,11 +140,7 @@ export default function CollegeSettings() {
 
   const handleLogout = async () => {
     try {
-      if (currentUser?.uid === 'dummy_12345') {
-        dummyLogout();
-      } else {
-        await auth.signOut();
-      }
+      await logout();
       navigate('/login');
     } catch (err) {
       console.error("Sign out error:", err);

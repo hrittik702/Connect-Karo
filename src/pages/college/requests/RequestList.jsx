@@ -10,7 +10,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, runTransaction, limit } from 'firebase/firestore';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function CollegeRequestList() {
@@ -20,25 +20,69 @@ export default function CollegeRequestList() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all'); // 'all', 'student', 'alumni'
   const [actionInProgress, setActionInProgress] = useState(null);
+  const [limitCount, setLimitCount] = useState(15);
+  const [hasMore, setHasMore] = useState(false);
 
-  // Live snapshot fetch
+  // Search Debouncer
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Reset page size when filter changes
+  useEffect(() => {
+    setLimitCount(15);
+  }, [filterRole]);
+
+  // Live snapshot fetch with server-side filters and pagination limit
   useEffect(() => {
     if (!collegeId) return;
 
-    const q = query(
-      collection(db, 'users'), 
-      where('collegeId', '==', collegeId), 
-      where('status', '==', 'pending')
-    );
+    setLoading(true);
+    let q;
+    if (filterRole === 'student') {
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId), 
+        where('status', '==', 'pending'),
+        where('role', '==', 'student'),
+        limit(limitCount + 1)
+      );
+    } else if (filterRole === 'alumni') {
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId), 
+        where('status', '==', 'pending'),
+        where('role', '==', 'alumni'),
+        limit(limitCount + 1)
+      );
+    } else {
+      q = query(
+        collection(db, 'users'), 
+        where('collegeId', '==', collegeId), 
+        where('status', '==', 'pending'),
+        limit(limitCount + 1)
+      );
+    }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = [];
       snapshot.forEach((docSnap) => {
         data.push({ id: docSnap.id, ...docSnap.data() });
       });
-      setRequests(data);
+
+      if (data.length > limitCount) {
+        setHasMore(true);
+        setRequests(data.slice(0, limitCount));
+      } else {
+        setHasMore(false);
+        setRequests(data);
+      }
       setLoading(false);
     }, (error) => {
       console.error("Fetch pending error:", error);
@@ -46,37 +90,65 @@ export default function CollegeRequestList() {
     });
 
     return () => unsubscribe();
-  }, [collegeId]);
+  }, [collegeId, filterRole, limitCount]);
 
-  // Approval handler
+  // Approval handler with Transactions
   const handleApprove = async (userId, role) => {
     setActionInProgress(userId);
+    const userRef = doc(db, 'users', userId);
+    const collegeRef = doc(db, 'colleges', collegeId);
+    const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
+
     try {
-      await updateDoc(doc(db, 'users', userId), { status: 'approved' });
-      
-      const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
-      await updateDoc(doc(db, 'colleges', collegeId), {
-        [metricsField]: increment(1)
+      await runTransaction(db, async (transaction) => {
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) {
+          throw new Error("User document does not exist.");
+        }
+        
+        const collegeSnap = await transaction.get(collegeRef);
+        if (!collegeSnap.exists()) {
+          throw new Error("College document does not exist.");
+        }
+
+        transaction.update(userRef, { status: 'approved' });
+
+        const collegeData = collegeSnap.data();
+        const metrics = collegeData.metrics || {};
+        const currentCount = role === 'student' ? (metrics.totalStudents || 0) : (metrics.totalAlumni || 0);
+        const newCount = currentCount + 1;
+
+        transaction.update(collegeRef, {
+          [metricsField]: newCount
+        });
       });
     } catch (error) {
       console.error("Approve Error:", error);
-      alert("Approve state setting failed.");
+      alert("Approve action failed. Please try again.");
     } finally {
       setActionInProgress(null);
     }
   };
 
-  // Reject handler
+  // Reject handler with Transactions
   const handleReject = async (userId) => {
     const isConfirmed = window.confirm("Are you sure you want to decline this registration request? This action deletes their temporary record.");
     if (!isConfirmed) return;
 
     setActionInProgress(userId);
+    const userRef = doc(db, 'users', userId);
+
     try {
-      await deleteDoc(doc(db, 'users', userId));
+      await runTransaction(db, async (transaction) => {
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) {
+          throw new Error("User document does not exist.");
+        }
+        transaction.delete(userRef);
+      });
     } catch (error) {
       console.error("Reject Error:", error);
-      alert("Reject state setting failed.");
+      alert("Reject action failed. Please try again.");
     } finally {
       setActionInProgress(null);
     }
@@ -85,8 +157,8 @@ export default function CollegeRequestList() {
   // Filtration logic
   const filteredRequests = requests.filter(req => {
     const matchesSearch = 
-      req.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      req.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      req.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
+      req.email?.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchesRole = filterRole === 'all' || req.role === filterRole;
     return matchesSearch && matchesRole;
   });
@@ -263,6 +335,17 @@ export default function CollegeRequestList() {
           </div>
         )}
       </div>
+
+      {hasMore && !loading && (
+        <div className="flex justify-center pt-2">
+          <button
+            onClick={() => setLimitCount(prev => prev + 15)}
+            className="px-4 py-2 bg-ec-surface hover:bg-ec-muted border border-ec-border hover:border-ec-accent/40 rounded-lg text-xs font-bold text-ec-text transition-all cursor-pointer shadow-sm"
+          >
+            Load More Requests
+          </button>
+        </div>
+      )}
 
     </div>
   );

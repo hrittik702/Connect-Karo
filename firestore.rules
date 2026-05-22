@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper: check if user is authenticated
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    // Helper: get user document data
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Helper: check if user has a specific role
+    function hasRole(role) {
+      return isAuth() && getUserData().role == role;
+    }
+    
+    // Helper: check if user is owner of the document
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Authenticated users can view profiles
+      allow read: if isAuth();
+      
+      // Users can only create their own profile document
+      allow create: if isAuth() && request.auth.uid == userId;
+      
+      // Owners, college admins of the same college, and root admins can update profile documents
+      allow update: if isOwner(userId) 
+        || (hasRole('college_admin') && getUserData().collegeId == resource.data.collegeId)
+        || hasRole('root_admin');
+        
+      // Only college admins of the same college and root admins can delete profile documents
+      allow delete: if (hasRole('college_admin') && getUserData().collegeId == resource.data.collegeId)
+        || hasRole('root_admin');
+    }
+    
+    // Colleges collection rules
+    match /colleges/{collegeId} {
+      // Anyone can query college listings for registration and details view
+      allow read: if true;
+      
+      // Only root admin can provision colleges
+      allow create: if hasRole('root_admin');
+      
+      // Only root admin or college admin of this specific college can update metadata and metrics
+      allow update: if hasRole('root_admin') 
+        || (hasRole('college_admin') && getUserData().collegeId == collegeId);
+        
+      // Only root admin can delete colleges
+      allow delete: if hasRole('root_admin');
+    }
+    
+    // Announcements collection rules
+    match /announcements/{announcementId} {
+      // Authenticated users can read announcements
+      allow read: if isAuth();
+      
+      // Only root admin can create, update or delete announcements
+      allow write: if hasRole('root_admin');
+    }
+  }
+}
