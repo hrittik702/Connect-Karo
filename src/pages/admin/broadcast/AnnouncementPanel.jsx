@@ -17,43 +17,6 @@ import {
 } from 'lucide-react';
 import { db } from '../../../firebase/config';
 import { collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-
-// =====================================================================
-// 🚨 DUMMY DATA BLOCK START
-// =====================================================================
-const DUMMY_ANNOUNCEMENTS = [
-  {
-    id: 'ANC-881',
-    title: 'Scheduled Core Network Maintenance',
-    message: 'The ConnectKaro core database will undergo scheduled maintenance on Sunday, 02:00 AM IST. Expect a downtime of approximately 45 minutes.',
-    type: 'critical',
-    target: 'all',
-    status: 'active',
-    createdAt: { toDate: () => new Date(Date.now() - 3600000) }
-  },
-  {
-    id: 'ANC-882',
-    title: 'New Alumni Analytics Dashboard Live',
-    message: 'We have rolled out the new V2 analytics dashboard. College admins can now track alumni engagement metrics in real-time.',
-    type: 'info',
-    target: 'premium',
-    status: 'active',
-    createdAt: { toDate: () => new Date(Date.now() - 86400000) }
-  },
-  {
-    id: 'ANC-883',
-    title: 'Identity Verification Reminder',
-    message: 'Please ensure all pending student and alumni profiles are verified by Friday to maintain your active node status.',
-    type: 'warning',
-    target: 'active',
-    status: 'active',
-    createdAt: { toDate: () => new Date(Date.now() - 172800000) }
-  }
-];
-// =====================================================================
-// 🚨 DUMMY DATA BLOCK END
-// =====================================================================
-
 export default function AnnouncementPanel() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,13 +46,6 @@ export default function AnnouncementPanel() {
 
   // ── DATA FETCHING PIPELINE ──
   useEffect(() => {
-    // =====================================================================
-    // 🚨 DUMMY INITIALIZATION
-    // =====================================================================
-    setAnnouncements(DUMMY_ANNOUNCEMENTS);
-    setLoading(false);
-
-    /* --- 🔥 PRODUCTION FIREBASE CODE (UNCOMMENT WHEN READY) ---
     const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = [];
@@ -104,7 +60,6 @@ export default function AnnouncementPanel() {
       setLoading(false);
     });
     return () => unsubscribe();
-    ---------------------------------------------------------- */
   }, []);
 
   // ── DISPATCH / UPDATE BROADCAST (Write Operation) ──
@@ -115,35 +70,16 @@ export default function AnnouncementPanel() {
     setIsSubmitting(true);
     try {
       if (isEditing && editId) {
-        // 🚨 DUMMY UPDATE LOGIC
-        setAnnouncements(prev => prev.map(anc => 
-          anc.id === editId ? { ...anc, title: title.trim(), message: message.trim(), type, target } : anc
-        ));
-        showFeedback('Broadcast updated successfully.', 'success');
-
-        /* --- 🔥 PRODUCTION FIREBASE UPDATE CODE ---
         await updateDoc(doc(db, 'announcements', editId), {
           title: title.trim(), message: message.trim(), type, target, updatedAt: serverTimestamp()
         });
         showFeedback('Broadcast updated successfully.', 'success');
-        ------------------------------------------ */
       } else {
-        // 🚨 DUMMY DISPATCH LOGIC
-        const newAnnouncement = {
-          id: `ANC-${Math.floor(Math.random() * 1000)}`,
-          title: title.trim(), message: message.trim(), type, target, status: 'active',
-          createdAt: { toDate: () => new Date() }
-        };
-        setAnnouncements([newAnnouncement, ...announcements]);
-        showFeedback('Broadcast dispatched across the network.', 'success');
-
-        /* --- 🔥 PRODUCTION FIREBASE DISPATCH CODE ---
         await addDoc(collection(db, 'announcements'), {
           title: title.trim(), message: message.trim(), type, target, status: 'active',
           createdAt: serverTimestamp(), dispatchedBy: 'root_admin'
         });
         showFeedback('Broadcast dispatched across the network.', 'success');
-        ------------------------------------------ */
       }
       cancelEdit();
     } catch (error) {
@@ -161,16 +97,9 @@ export default function AnnouncementPanel() {
     if (!revokeTarget) return;
     const { id } = revokeTarget;
     try {
-      // 🚨 DUMMY REVOKE LOGIC
-      setAnnouncements(prev => prev.filter(a => a.id !== id));
-      showFeedback('Announcement revoked and removed.', 'success');
-      if (isEditing && editId === id) cancelEdit();
-
-      /* --- 🔥 PRODUCTION FIREBASE REVOKE CODE ---
       await deleteDoc(doc(db, 'announcements', id));
       showFeedback('Announcement revoked and removed.', 'success');
       if (isEditing && editId === id) cancelEdit();
-      ------------------------------------------ */
     } catch (error) {
       console.error("Revoke Error:", error);
       showFeedback('Failed to revoke announcement.', 'error');

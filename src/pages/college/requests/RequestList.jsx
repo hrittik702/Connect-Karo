@@ -1,0 +1,246 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  UserCheck, 
+  Search, 
+  Filter,
+  Check,
+  X,
+  RefreshCw,
+  Mail,
+  Calendar
+} from 'lucide-react';
+import { db } from '../../../firebase/config';
+import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, increment } from 'firebase/firestore';
+import { useAuth } from '../../../context/AuthContext';
+
+export default function CollegeRequestList() {
+  const { userData } = useAuth();
+  const collegeId = userData?.collegeId || '';
+
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all'); // 'all', 'student', 'alumni'
+  const [actionInProgress, setActionInProgress] = useState(null);
+
+  // Live snapshot fetch
+  useEffect(() => {
+    if (!collegeId) return;
+
+    const q = query(
+      collection(db, 'users'), 
+      where('collegeId', '==', collegeId), 
+      where('status', '==', 'pending')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = [];
+      snapshot.forEach((docSnap) => {
+        data.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      setRequests(data);
+      setLoading(false);
+    }, (error) => {
+      console.error("Fetch pending error:", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [collegeId]);
+
+  // Approval handler
+  const handleApprove = async (userId, role) => {
+    setActionInProgress(userId);
+    try {
+      await updateDoc(doc(db, 'users', userId), { status: 'approved' });
+      
+      const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
+      await updateDoc(doc(db, 'colleges', collegeId), {
+        [metricsField]: increment(1)
+      });
+    } catch (error) {
+      console.error("Approve Error:", error);
+      alert("Approve state setting failed.");
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  // Reject handler
+  const handleReject = async (userId) => {
+    const isConfirmed = window.confirm("Are you sure you want to decline this registration request? This action deletes their temporary record.");
+    if (!isConfirmed) return;
+
+    setActionInProgress(userId);
+    try {
+      await deleteDoc(doc(db, 'users', userId));
+    } catch (error) {
+      console.error("Reject Error:", error);
+      alert("Reject state setting failed.");
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  // Filtration logic
+  const filteredRequests = requests.filter(req => {
+    const matchesSearch = 
+      req.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      req.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'all' || req.role === filterRole;
+    return matchesSearch && matchesRole;
+  });
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300 pb-12 h-full flex flex-col">
+      
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-ec-border pb-5 shrink-0">
+        <div>
+          <h2 className="text-xl font-bold text-ec-highlight tracking-tight flex items-center gap-2">
+            <UserCheck className="text-ec-accent" size={22} />
+            Verification Center
+          </h2>
+          <p className="text-xs text-ec-text-sub mt-1">
+            Approve or decline student and alumni registration requests linked to your domain.
+          </p>
+        </div>
+      </div>
+
+      {/* Control Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
+          <input 
+            type="text"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 bg-ec-surface/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent transition-all font-medium"
+          />
+        </div>
+        
+        <div className="relative shrink-0">
+          <Filter size={16} className="absolute left-3 top-3 text-ec-text-sub/50 pointer-events-none" />
+          <select 
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+            className="pl-9 pr-8 py-2.5 bg-ec-surface/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent transition-all font-semibold appearance-none cursor-pointer"
+          >
+            <option value="all">All Roles</option>
+            <option value="student">Students Only</option>
+            <option value="alumni">Alumni Only</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Data Table */}
+      <div className="flex-1 surface-card border border-ec-border rounded-xl overflow-hidden flex flex-col">
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-ec-surface/40 border-b border-ec-border">
+                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Candidate Name</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Academic Email</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Requested Role</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider text-right">Verification Verification</th>
+              </tr>
+            </thead>
+            
+            <tbody className="divide-y divide-ec-border/60">
+              {loading ? (
+                [...Array(4)].map((_, i) => (
+                  <tr key={i} className="animate-pulse">
+                    <td className="px-5 py-4"><div className="h-4 bg-ec-muted/50 rounded w-3/4 mb-2"></div><div className="h-3 bg-ec-muted/30 rounded w-1/2"></div></td>
+                    <td className="px-5 py-4"><div className="h-4 bg-ec-muted/50 rounded w-40"></div></td>
+                    <td className="px-5 py-4"><div className="h-5 bg-ec-muted/50 rounded-full w-20"></div></td>
+                    <td className="px-5 py-4"><div className="h-6 bg-ec-muted/50 rounded w-16 ml-auto"></div></td>
+                  </tr>
+                ))
+              ) : filteredRequests.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-5 py-12 text-center text-ec-text-sub">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-ec-muted/30 mb-3">
+                      <Search size={20} className="opacity-50" />
+                    </div>
+                    <p className="text-sm font-medium">No pending registration requests found.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredRequests.map((req) => (
+                  <tr key={req.id} className="hover:bg-ec-surface/80 transition-colors group">
+                    
+                    {/* Candidate Name */}
+                    <td className="px-5 py-4">
+                      <div className="font-semibold text-[13px] text-ec-highlight group-hover:text-ec-accent transition-colors flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-md bg-ec-muted text-ec-highlight flex items-center justify-center uppercase font-extrabold text-[10px]">
+                          {req.name?.charAt(0) || '?'}
+                        </div>
+                        {req.name}
+                      </div>
+                    </td>
+
+                    {/* Email */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5 text-[12px] text-ec-text font-medium">
+                        <Mail size={13} className="text-ec-text-sub" />
+                        {req.email}
+                      </div>
+                      {req.batch && (
+                        <div className="text-[10px] text-ec-text-sub mt-0.5 flex items-center gap-1">
+                          <Calendar size={11} /> Batch Year: {req.batch}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Role */}
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        req.role === 'student' 
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                          : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                      }`}>
+                        {req.role}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          disabled={actionInProgress !== null}
+                          onClick={() => handleApprove(req.id, req.role)}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-500/10 flex items-center gap-1 disabled:opacity-50"
+                        >
+                          {actionInProgress === req.id ? <RefreshCw size={13} className="animate-spin" /> : <Check size={13} />}
+                          Approve
+                        </button>
+                        
+                        <button 
+                          disabled={actionInProgress !== null}
+                          onClick={() => handleReject(req.id)}
+                          className="px-3 py-1.5 bg-ec-surface hover:bg-red-500/10 text-ec-text-sub hover:text-red-400 border border-ec-border hover:border-red-500/30 rounded-lg text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <X size={13} />
+                          Decline
+                        </button>
+                      </div>
+                    </td>
+
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        
+        {!loading && filteredRequests.length > 0 && (
+          <div className="p-4 border-t border-ec-border bg-ec-surface/30 text-xs text-ec-text-sub text-center">
+            Showing {filteredRequests.length} pending candidate(s)
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}

@@ -5,9 +5,16 @@ import { useAuth } from "../context/AuthContext";
 // ── MASTER PUBLIC & OTHER DASHBOARDS IMPORTS ──
 import Home from "../pages/Home/Home";
 import Login from "../pages/auth/Login";
-import CollegeDashboard from "../pages/college/Dashboard";
 import AlumniDashboard from "../pages/alumni/Dashboard";
 import StudentDashboard from "../pages/student/Dashboard";
+
+// ── COLLEGE ADMIN IMPORTS ──
+import CollegeDashboardLayout from "../pages/college/DashboardLayout";
+import CollegeDashboardOverview from "../pages/college/DashboardOverview";
+import CollegeRequestList from "../pages/college/requests/RequestList";
+import CollegeUserList from "../pages/college/users/UserList";
+import CollegeBroadcastList from "../pages/college/broadcasts/BroadcastList";
+import CollegeSettings from "../pages/college/settings/CollegeSettings";
 
 // ── ✅ ACTUAL ROOT ADMIN IMPORTS (PRODUCTION READY) ──
 import DashboardLayout from "../pages/admin/DashboardLayout";
@@ -100,10 +107,21 @@ export default function AppRoutes() {
         <Route path="settings/logs" element={<UnderConstruction title="System Audit Logs & Threat Detection Trace" />} />
       </Route>
 
-      {/* 🔐 Other Tenants Secure Sub-dashboards */}
-      <Route path="/college/*" element={
-        <ProtectedRoute allowedRole="college_admin"><CollegeDashboard /></ProtectedRoute>
-      } />
+      {/* 🔐 College Admin Control Console (Nested Routing) */}
+      <Route 
+        path="/college" 
+        element={
+          <ProtectedRoute allowedRole="college_admin">
+            <CollegeDashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<CollegeDashboardOverview />} />
+        <Route path="requests" element={<CollegeRequestList />} />
+        <Route path="users" element={<CollegeUserList />} />
+        <Route path="broadcasts" element={<CollegeBroadcastList />} />
+        <Route path="settings" element={<CollegeSettings />} />
+      </Route>
       <Route path="/alumni/*" element={
         <ProtectedRoute allowedRole="alumni"><AlumniDashboard /></ProtectedRoute>
       } />
