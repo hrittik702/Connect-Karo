@@ -174,7 +174,7 @@ export default function AddCollege() {
       });
 
       // 8. Execute Write Operation for College Collection
-      await addDoc(collegesRef, newCollegeData);
+      await setDoc(doc(db, 'colleges', sanitizedCode), newCollegeData);
 
       // 9. Success Orchestration
       showFeedback("Institution and credentials provisioned successfully!", "success");

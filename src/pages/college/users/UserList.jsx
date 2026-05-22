@@ -46,7 +46,7 @@ export default function CollegeUserList() {
       snapshot.forEach((docSnap) => {
         const u = { id: docSnap.id, ...docSnap.data() };
         // We only show approved & blocked users here (pending requests have their own requests tab)
-        if (u.status === 'approved' || u.status === 'blocked') {
+        if ((u.status === 'approved' || u.status === 'blocked') && u.role !== 'college_admin' && u.role !== 'root_admin') {
           data.push(u);
         }
       });
@@ -161,10 +161,10 @@ export default function CollegeUserList() {
 
       {/* Directory Table */}
       <div className="flex-1 surface-card border border-ec-border rounded-xl overflow-hidden flex flex-col">
-        <div className="overflow-x-auto flex-1">
+        <div className="overflow-x-auto flex-1 max-h-[550px] overflow-y-auto scrollbar-thin">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-ec-surface/40 border-b border-ec-border">
+            <thead className="sticky top-0 bg-ec-surface/95 backdrop-blur-md z-10 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
+              <tr className="border-b border-ec-border">
                 <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Candidate Profile</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Professional Data</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Role</th>
@@ -211,18 +211,46 @@ export default function CollegeUserList() {
                     </td>
 
                     {/* Pro Info / Batch */}
-                    <td className="px-5 py-4">
-                      {u.role === 'alumni' && u.company ? (
-                        <div className="flex items-center gap-1 text-[12px] font-medium text-ec-text">
-                          <Briefcase size={12} className="text-ec-text-sub" />
-                          <span>{u.company}</span>
+                    <td className="px-5 py-4 max-w-[280px]">
+                      {u.role === 'student' ? (
+                        <div className="space-y-0.5 text-[11px] text-ec-text-sub">
+                          <div className="text-[12px] font-medium text-ec-text">Roll No: {u.rollNo || 'N/A'}</div>
+                          <div>Branch: {u.branch || 'N/A'}</div>
+                          <div className="flex gap-2">
+                            <span>Year: {u.currentYear || 'N/A'}</span>
+                            <span>|</span>
+                            <span>Class of {u.batch || 'N/A'}</span>
+                          </div>
                         </div>
                       ) : (
-                        <div className="text-[12px] text-ec-text font-medium">Academic Program</div>
+                        <div className="space-y-0.5 text-[11px] text-ec-text-sub">
+                          {u.company || u.designation ? (
+                            <div className="flex items-start gap-1 text-[12px] font-medium text-ec-text">
+                              <Briefcase size={12} className="text-ec-text-sub mt-0.5 shrink-0" />
+                              <span>{u.designation || 'Alumni'} at {u.company || 'N/A'}</span>
+                            </div>
+                          ) : (
+                            <div className="text-[12px] font-medium text-ec-text">Class of {u.batch || 'N/A'}</div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <span>Branch: {u.branch || 'N/A'}</span>
+                            <span>|</span>
+                            <span>Class of {u.batch || 'N/A'}</span>
+                          </div>
+                          {u.linkedin && (
+                            <div>
+                              <a 
+                                href={u.linkedin} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="inline-flex items-center gap-1 text-ec-accent hover:underline text-[10px] mt-0.5"
+                              >
+                                🔗 LinkedIn
+                              </a>
+                            </div>
+                          )}
+                        </div>
                       )}
-                      <div className="text-[10px] text-ec-text-sub mt-0.5">
-                        Batch Class of {u.batch || 'N/A'}
-                      </div>
                     </td>
 
                     {/* Role */}

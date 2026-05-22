@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, setDoc, getDocFromServer } from "firebase/firestore";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import useSystemTheme from "../../hooks/useSystemTheme";
@@ -107,16 +107,97 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   
+  // Registration States
   const [name, setName] = useState("");
-  const [college, setCollege] = useState("");
   const [signupRole, setSignupRole] = useState("student");
   const [signupSuccess, setSignupSuccess] = useState(false);
+
+  // Selected College state
+  const [selectedCollegeCode, setSelectedCollegeCode] = useState("");
+  
+  // Student registration fields
+  const [rollNo, setRollNo] = useState("");
+  const [branch, setBranch] = useState("");
+  const [currentYear, setCurrentYear] = useState("1st");
+  const [graduationYear, setGraduationYear] = useState("");
+
+  // Alumni registration fields
+  const [company, setCompany] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+
+  // List of active colleges & loading state
+  const [colleges, setColleges] = useState([]);
+  const [collegesLoading, setCollegesLoading] = useState(false);
 
   // Stateful index for the collapsible description accordion
   const [openIndex, setOpenIndex] = useState(0); 
 
   const { dummyLogin } = useAuth();
   const theme = useSystemTheme(); 
+
+  // Fetch registered colleges with caching
+  useEffect(() => {
+    if (mode === "signup") {
+      fetchColleges();
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("error") === "suspended") {
+      setError("Your institution is not registered or is currently suspended on this platform. Please contact support.");
+    }
+  }, [location]);
+
+  const fetchColleges = async () => {
+    setCollegesLoading(true);
+    try {
+      const cachedColleges = localStorage.getItem("connect_karo_active_colleges");
+      const cachedTime = localStorage.getItem("connect_karo_colleges_cache_time");
+      const now = Date.now();
+
+      // Use cache if under 5 minutes (300000 ms)
+      if (cachedColleges && cachedTime && (now - parseInt(cachedTime)) < 300000) {
+        const parsed = JSON.parse(cachedColleges);
+        setColleges(parsed);
+        if (parsed.length > 0) {
+          setSelectedCollegeCode(parsed[0].collegeCode);
+        }
+        setCollegesLoading(false);
+        return;
+      }
+
+      // Read from Firestore (Active colleges only)
+      const q = query(collection(db, "colleges"), where("status", "==", "active"));
+      const snapshot = await getDocs(q);
+      const list = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        list.push({
+          id: doc.id,
+          name: data.name,
+          collegeCode: data.collegeCode,
+          domain: data.domain
+        });
+      });
+
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      setColleges(list);
+      
+      if (list.length > 0) {
+        setSelectedCollegeCode(list[0].collegeCode);
+      }
+
+      localStorage.setItem("connect_karo_active_colleges", JSON.stringify(list));
+      localStorage.setItem("connect_karo_colleges_cache_time", now.toString());
+    } catch (err) {
+      console.error("Colleges load failed:", err);
+      setError("Failed to fetch registered colleges. Please try again.");
+    } finally {
+      setCollegesLoading(false);
+    }
+  };
 
   const handleRealLogin = async (e) => {
     e.preventDefault();
@@ -125,13 +206,58 @@ export default function Login() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userDoc = await getDocFromServer(doc(db, "users", user.uid));
       
       if (userDoc.exists()) {
-        const role = userDoc.data().role;
+        const userData = userDoc.data();
+        if (userData.status === "blocked") {
+          setError("Your account is blocked by Admin.");
+          await auth.signOut();
+          return;
+        }
+        if (userData.status === "pending") {
+          setError("Your registration request is pending approval from your college.");
+          await auth.signOut();
+          return;
+        }
+
+        // Student, Alumni and College Admin must belong to a registered and active college
+        if (userData.role === "student" || userData.role === "alumni" || userData.role === "college_admin") {
+          if (!userData.collegeId) {
+            setError("Your user profile is missing an institutional identifier.");
+            await auth.signOut();
+            return;
+          }
+          
+          const isDummy = userData.collegeId.toLowerCase() === "dummy_college_01";
+          let isCollegeActive = isDummy;
+          
+          if (!isDummy) {
+            let collegeDoc = await getDocFromServer(doc(db, "colleges", userData.collegeId.trim()));
+            if (!collegeDoc.exists()) {
+              collegeDoc = await getDocFromServer(doc(db, "colleges", userData.collegeId.trim().toUpperCase()));
+            }
+            if (!collegeDoc.exists()) {
+              collegeDoc = await getDocFromServer(doc(db, "colleges", userData.collegeId.trim().toLowerCase()));
+            }
+            
+            if (collegeDoc.exists() && collegeDoc.data()?.status === "active") {
+              isCollegeActive = true;
+            }
+          }
+          
+          if (!isCollegeActive) {
+            setError("Your institution is not registered or is currently suspended on this platform. Please contact support.");
+            await auth.signOut();
+            return;
+          }
+        }
+
+        const role = userData.role;
         redirectUser(role);
       } else {
         setError("User profile not found in the system database.");
+        await auth.signOut();
       }
     } catch (err) {
       console.error(err);
@@ -141,15 +267,88 @@ export default function Login() {
     }
   };
 
-  const handleRequestAccess = (e) => {
+  const handleRequestAccess = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     
-    setTimeout(() => {
+    if (!selectedCollegeCode) {
+      setError("Please select a registered college to continue.");
       setLoading(false);
+      return;
+    }
+
+    try {
+      // 1. Create User in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      const selectedCollegeObj = colleges.find(c => c.collegeCode === selectedCollegeCode);
+      
+      // 2. Prepare user profile payload
+      const baseData = {
+        uid: user.uid,
+        name: name.trim(),
+        email: email.trim(),
+        role: signupRole,
+        collegeId: selectedCollegeCode,
+        collegeName: selectedCollegeObj?.name || selectedCollegeCode,
+        status: "pending",
+        createdAt: new Date().toISOString()
+      };
+
+      let finalData = { ...baseData };
+      if (signupRole === "student") {
+        finalData = {
+          ...finalData,
+          rollNo: rollNo.trim(),
+          branch: branch.trim(),
+          currentYear: currentYear,
+          batch: graduationYear.trim()
+        };
+      } else if (signupRole === "alumni") {
+        finalData = {
+          ...finalData,
+          rollNo: rollNo.trim(),
+          branch: branch.trim(),
+          batch: graduationYear.trim(),
+          company: company.trim(),
+          designation: designation.trim(),
+          linkedin: linkedin.trim()
+        };
+      }
+
+      // 3. Write User Profile into Firestore
+      await setDoc(doc(db, "users", user.uid), finalData);
+      
+      // 4. Force auth sign out immediately to prevent auto-login of pending user
+      await auth.signOut();
+
+      // Clear form inputs
+      setName("");
+      setRollNo("");
+      setBranch("");
+      setGraduationYear("");
+      setCompany("");
+      setDesignation("");
+      setLinkedin("");
+      
+      // Show registration success view
       setSignupSuccess(true);
-    }, 1000);
+    } catch (err) {
+      console.error("Sign up failure:", err);
+      if (err.code === "auth/email-already-in-use") {
+        setError("This email address is already registered in our system.");
+      } else if (err.code === "auth/weak-password") {
+        setError("Password should be at least 6 characters long.");
+      } else if (err.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else {
+        setError(err.message || "Failed to submit request. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDummyLogin = (role) => {
@@ -358,7 +557,7 @@ export default function Login() {
                 <h3 className="text-lg font-bold text-ec-highlight mb-1.5">Request Submitted</h3>
                 <p className="text-[11px] text-ec-text-sub leading-relaxed mb-5">
                   We've successfully logged your request for <strong className="text-ec-highlight">{email}</strong>. 
-                  Administrators at <span className="font-medium text-ec-highlight">{college || "your college"}</span> will review your academic credentials.
+                  Administrators at <span className="font-medium text-ec-highlight">{colleges.find(c => c.collegeCode === selectedCollegeCode)?.name || "your college"}</span> will review your academic credentials.
                 </p>
                 <div className="w-full bg-ec-muted/40 rounded-lg p-3 mb-5 text-left border border-ec-border">
                   <div className="flex gap-2">
@@ -401,8 +600,53 @@ export default function Login() {
               {/* Form Input fields */}
               <form onSubmit={mode === "signup" ? handleRequestAccess : handleRealLogin} className="space-y-3.5">
                 
-                {mode === "signup" && (
+                {mode === "login" ? (
                   <>
+                    <div>
+                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        placeholder="name@institution.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input text-xs py-2.5"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider">Password</label>
+                        <a href="#" className="text-[10px] font-semibold text-ec-accent hover:underline">Forgot password?</a>
+                      </div>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="input text-xs py-2.5"
+                        required
+                      />
+                    </div>
+                  </>
+                ) : (
+                  /* Signup fields wrapper with internal scrolling */
+                  <div className="max-h-[300px] md:max-h-[360px] lg:max-h-[260px] xl:max-h-[340px] overflow-y-auto pr-2 space-y-3.5 custom-form-scroll">
+                    <style>{`
+                      .custom-form-scroll::-webkit-scrollbar {
+                        width: 4px;
+                      }
+                      .custom-form-scroll::-webkit-scrollbar-track {
+                        background: transparent;
+                      }
+                      .custom-form-scroll::-webkit-scrollbar-thumb {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 4px;
+                      }
+                      .custom-form-scroll::-webkit-scrollbar-thumb:hover {
+                        background: rgba(255, 255, 255, 0.2);
+                      }
+                    `}</style>
+                    
                     <div>
                       <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Full Name</label>
                       <input
@@ -416,66 +660,215 @@ export default function Login() {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Institution / College Name</label>
+                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        placeholder="name@institution.edu"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input text-xs py-2.5"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Choose Password</label>
+                      <input
+                        type="password"
+                        placeholder="Min. 6 characters"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="input text-xs py-2.5"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Select College</label>
                       <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="State Technical University"
-                          value={college}
-                          onChange={(e) => setCollege(e.target.value)}
-                          className="input text-xs py-2.5 pl-9"
-                          required
-                        />
-                        <Building size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-icon" />
+                        {collegesLoading ? (
+                          <div className="input text-xs py-2.5 pl-9 flex items-center justify-between text-ec-text-sub">
+                            <span>Loading active colleges...</span>
+                            <div className="w-3.5 h-3.5 border-2 border-ec-accent/30 border-t-ec-accent rounded-full animate-spin" />
+                          </div>
+                        ) : colleges.length === 0 ? (
+                          <div className="input text-xs py-2.5 pl-9 text-red-400 border-red-500/20 bg-red-500/5">
+                            No registered colleges found.
+                          </div>
+                        ) : (
+                          <>
+                            <select
+                              value={selectedCollegeCode}
+                              onChange={(e) => setSelectedCollegeCode(e.target.value)}
+                              className="input text-xs py-2.5 pl-9 pr-8 bg-ec-root appearance-none cursor-pointer w-full text-ec-highlight font-medium focus:border-ec-accent"
+                              required
+                            >
+                              {colleges.map((c) => (
+                                <option key={c.collegeCode} value={c.collegeCode} className="bg-[#0b0f19] text-ec-text">
+                                  {c.name} ({c.collegeCode})
+                                </option>
+                              ))}
+                            </select>
+                            <Building size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-icon" />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
+                          </>
+                        )}
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Select Role</label>
-                      <select 
-                        value={signupRole}
-                        onChange={(e) => setSignupRole(e.target.value)}
-                        className="input text-xs py-2.5 bg-ec-root appearance-none cursor-pointer"
-                      >
-                        <option value="student">Student Account</option>
-                        <option value="alumni">Alumni Account</option>
-                      </select>
+                      <div className="relative">
+                        <select 
+                          value={signupRole}
+                          onChange={(e) => setSignupRole(e.target.value)}
+                          className="input text-xs py-2.5 pl-9 pr-8 bg-ec-root appearance-none cursor-pointer w-full text-ec-highlight font-medium focus:border-ec-accent"
+                          required
+                        >
+                          <option value="student" className="bg-[#0b0f19] text-ec-text">Student Account</option>
+                          <option value="alumni" className="bg-[#0b0f19] text-ec-text">Alumni Account</option>
+                        </select>
+                        <GraduationCap size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-icon" />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
+                      </div>
                     </div>
-                  </>
-                )}
 
-                <div>
-                  <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    placeholder="name@institution.edu"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input text-xs py-2.5"
-                    required
-                  />
-                </div>
-
-                {mode === "login" && (
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider">Password</label>
-                      <a href="#" className="text-[10px] font-semibold text-ec-accent hover:underline">Forgot password?</a>
-                    </div>
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input text-xs py-2.5"
-                      required
-                    />
+                    {/* Role-specific sections */}
+                    {signupRole === "student" ? (
+                      <div className="space-y-3.5 pt-2 border-t border-ec-border/30">
+                        <div className="text-[9px] font-extrabold text-ec-accent uppercase tracking-wider">Student Academic Details</div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Roll Number</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 210123010"
+                            value={rollNo}
+                            onChange={(e) => setRollNo(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Branch / Department</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Computer Science"
+                            value={branch}
+                            onChange={(e) => setBranch(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Current Year</label>
+                          <div className="relative">
+                            <select
+                              value={currentYear}
+                              onChange={(e) => setCurrentYear(e.target.value)}
+                              className="input text-xs py-2.5 pl-3 pr-8 bg-ec-root appearance-none cursor-pointer w-full text-ec-highlight font-medium focus:border-ec-accent"
+                              required
+                            >
+                              <option value="1st" className="bg-[#0b0f19] text-ec-text">1st Year</option>
+                              <option value="2nd" className="bg-[#0b0f19] text-ec-text">2nd Year</option>
+                              <option value="3rd" className="bg-[#0b0f19] text-ec-text">3rd Year</option>
+                              <option value="4th" className="bg-[#0b0f19] text-ec-text">4th Year</option>
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Graduation Year</label>
+                          <input
+                            type="number"
+                            min="2000"
+                            max="2035"
+                            placeholder="e.g. 2025"
+                            value={graduationYear}
+                            onChange={(e) => setGraduationYear(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3.5 pt-2 border-t border-ec-border/30">
+                        <div className="text-[9px] font-extrabold text-ec-accent uppercase tracking-wider">Alumni Professional Details</div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Roll Number</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 210123010"
+                            value={rollNo}
+                            onChange={(e) => setRollNo(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Branch / Department</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Computer Science"
+                            value={branch}
+                            onChange={(e) => setBranch(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Graduation Year</label>
+                          <input
+                            type="number"
+                            min="1950"
+                            max="2035"
+                            placeholder="e.g. 2020"
+                            value={graduationYear}
+                            onChange={(e) => setGraduationYear(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Current Company</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Google"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">Current Designation</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Software Engineer"
+                            value={designation}
+                            onChange={(e) => setDesignation(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-ec-text-sub uppercase tracking-wider mb-1">LinkedIn Profile URL</label>
+                          <input
+                            type="url"
+                            placeholder="e.g. https://linkedin.com/in/johndoe"
+                            value={linkedin}
+                            onChange={(e) => setLinkedin(e.target.value)}
+                            className="input text-xs py-2.5"
+                            required
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (mode === "signup" && colleges.length === 0)}
                   className="btn-primary w-full text-xs font-bold py-3 mt-1 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? (

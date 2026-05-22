@@ -136,14 +136,14 @@ export default function CollegeRequestList() {
 
       {/* Data Table */}
       <div className="flex-1 surface-card border border-ec-border rounded-xl overflow-hidden flex flex-col">
-        <div className="overflow-x-auto flex-1">
+        <div className="overflow-x-auto flex-1 max-h-[550px] overflow-y-auto scrollbar-thin">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-ec-surface/40 border-b border-ec-border">
+            <thead className="sticky top-0 bg-ec-surface/95 backdrop-blur-md z-10 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
+              <tr className="border-b border-ec-border">
                 <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Candidate Name</th>
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Academic Email</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Email & Verification Details</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Requested Role</th>
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider text-right">Verification Verification</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider text-right">Verification</th>
               </tr>
             </thead>
             
@@ -180,15 +180,38 @@ export default function CollegeRequestList() {
                       </div>
                     </td>
 
-                    {/* Email */}
-                    <td className="px-5 py-4">
+                    {/* Email & Details */}
+                    <td className="px-5 py-4 max-w-[320px]">
                       <div className="flex items-center gap-1.5 text-[12px] text-ec-text font-medium">
-                        <Mail size={13} className="text-ec-text-sub" />
-                        {req.email}
+                        <Mail size={13} className="text-ec-text-sub shrink-0" />
+                        <span className="truncate">{req.email}</span>
                       </div>
-                      {req.batch && (
-                        <div className="text-[10px] text-ec-text-sub mt-0.5 flex items-center gap-1">
-                          <Calendar size={11} /> Batch Year: {req.batch}
+                      {req.role === 'student' ? (
+                        <div className="mt-1.5 space-y-0.5 text-[10px] text-ec-text-sub border-t border-ec-border/30 pt-1.5">
+                          <div><span className="font-semibold text-ec-highlight">Roll No:</span> {req.rollNo || 'N/A'}</div>
+                          <div><span className="font-semibold text-ec-highlight">Branch:</span> {req.branch || 'N/A'}</div>
+                          <div className="flex gap-2">
+                            <span><span className="font-semibold text-ec-highlight">Year:</span> {req.currentYear || 'N/A'}</span>
+                            <span>|</span>
+                            <span><span className="font-semibold text-ec-highlight">Batch:</span> {req.batch || 'N/A'}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-1.5 space-y-0.5 text-[10px] text-ec-text-sub border-t border-ec-border/30 pt-1.5">
+                          <div><span className="font-semibold text-ec-highlight">Branch:</span> {req.branch || 'N/A'} | <span className="font-semibold text-ec-highlight">Batch:</span> {req.batch || 'N/A'}</div>
+                          <div><span className="font-semibold text-ec-highlight">Work:</span> {req.designation || 'N/A'} at {req.company || 'N/A'}</div>
+                          {req.linkedin && (
+                            <div>
+                              <a 
+                                href={req.linkedin} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="inline-flex items-center gap-1 text-ec-accent hover:underline mt-0.5"
+                              >
+                                🔗 LinkedIn Profile
+                              </a>
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>

@@ -19,7 +19,27 @@ export const AuthProvider = ({ children }) => {
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
-            setUserData(userDoc.data());
+            const data = userDoc.data();
+            if (data.collegeId && data.collegeId.toLowerCase() !== "dummy_college_01") {
+              const rawId = data.collegeId.trim();
+              let docRef = doc(db, "colleges", rawId);
+              let snap = await getDoc(docRef);
+              
+              if (!snap.exists()) {
+                docRef = doc(db, "colleges", rawId.toUpperCase());
+                snap = await getDoc(docRef);
+                if (snap.exists()) {
+                  data.collegeId = rawId.toUpperCase();
+                } else {
+                  docRef = doc(db, "colleges", rawId.toLowerCase());
+                  snap = await getDoc(docRef);
+                  if (snap.exists()) {
+                    data.collegeId = rawId.toLowerCase();
+                  }
+                }
+              }
+            }
+            setUserData(data);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);

@@ -1,6 +1,8 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { auth, db } from "../firebase/config";
+import { doc, onSnapshot, getDoc, getDocFromServer } from "firebase/firestore";
 
 // ── MASTER PUBLIC & OTHER DASHBOARDS IMPORTS ──
 import Home from "../pages/Home/Home";
@@ -49,14 +51,138 @@ const ProtectedRoute = ({ children, allowedRole }) => {
       </div>
     );
   }
+
+  if (userData?.status === "pending") {
+    return (
+      <div className="min-h-screen bg-ec-root flex items-center justify-center font-sans p-6">
+        <div className="text-center p-8 border border-yellow-500/20 rounded-xl bg-yellow-500/10 max-w-md shadow-xl flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-yellow-500/15 flex items-center justify-center text-yellow-500 mb-4 animate-pulse">
+            ⚠️
+          </div>
+          <h2 className="text-yellow-400 text-lg font-bold mb-2">
+            Registration Pending Approval
+          </h2>
+          <p className="text-xs text-ec-text-sub leading-relaxed mb-6">
+            Hi {userData.name || 'there'}, your registration request for <strong className="text-ec-highlight">{userData.collegeName || 'your college'}</strong> is currently pending verification. Please wait for the institutional administrator to approve your credentials.
+          </p>
+          <button 
+            onClick={() => auth.signOut()} 
+            className="px-5 py-2.5 bg-ec-surface hover:bg-ec-muted text-ec-text border border-ec-border hover:border-ec-accent/40 rounded-lg text-xs font-bold transition-all shadow-md cursor-pointer"
+          >
+            Sign Out & Return
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   if (userData?.role !== allowedRole) return <Navigate to="/login" replace />;
 
   return children;
 };
 
+// 🔒 Real-time Guard for Suspended Colleges
+const CollegeStatusGuard = ({ children }) => {
+  const { userData } = useAuth();
+  const [status, setStatus] = React.useState("active");
+  const [loading, setLoading] = React.useState(true);
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const rawId = userData?.collegeId || "";
+    if (!rawId) {
+      setLoading(false);
+      return;
+    }
+
+    if (rawId.toLowerCase() === "dummy_college_01") {
+      setStatus("active");
+      setLoading(false);
+      return;
+    }
+
+    let unsub = null;
+
+    const initListener = async () => {
+      try {
+        let activeId = rawId.trim();
+        let docRef = doc(db, "colleges", activeId);
+        let snap = await getDoc(docRef);
+
+        if (!snap.exists()) {
+          activeId = rawId.trim().toUpperCase();
+          docRef = doc(db, "colleges", activeId);
+          snap = await getDoc(docRef);
+        }
+
+        if (!snap.exists()) {
+          activeId = rawId.trim().toLowerCase();
+          docRef = doc(db, "colleges", activeId);
+          snap = await getDoc(docRef);
+        }
+
+        unsub = onSnapshot(docRef, async (snapshot) => {
+          if (snapshot.exists()) {
+            let currentStatus = snapshot.data().status || "active";
+            
+            // If the snapshot indicates suspended but is retrieved from the local cache,
+            // double-check with the server to prevent stale cache evaluations.
+            if (currentStatus === "suspended" && snapshot.metadata.fromCache) {
+              try {
+                const serverSnap = await getDocFromServer(docRef);
+                if (serverSnap.exists()) {
+                  currentStatus = serverSnap.data().status || "active";
+                }
+              } catch (err) {
+                console.warn("Could not verify status from server, using cached status:", err);
+              }
+            }
+
+            setStatus(currentStatus);
+            if (currentStatus === "suspended") {
+              auth.signOut().then(() => {
+                navigate("/login?error=suspended", { replace: true });
+              });
+            }
+          } else {
+            setStatus("active");
+          }
+          setLoading(false);
+        }, (err) => {
+          console.error("College status sync failed:", err);
+          setLoading(false);
+        });
+      } catch (err) {
+        console.error("Error setting up status listener:", err);
+        setLoading(false);
+      }
+    };
+
+    initListener();
+
+    return () => {
+      if (unsub) unsub();
+    };
+  }, [userData?.collegeId, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-ec-root flex items-center justify-center text-ec-text-sub text-sm font-sans font-medium tracking-wide">
+        Verifying Institutional Nodes...
+      </div>
+    );
+  }
+
+  if (status === "suspended") {
+    return null;
+  }
+
+  return children;
+};
+
 // 🚧 Secondary Infrastructure Placeholder Component
 const UnderConstruction = ({ title }) => (
+
   <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed border-ec-border rounded-xl bg-ec-surface/30 animate-in fade-in duration-300 select-none">
     <div className="w-14 h-14 mb-4 rounded-full bg-yellow-500/10 flex items-center justify-center text-xl border border-yellow-500/20">
       🚧
@@ -113,7 +239,9 @@ export default function AppRoutes() {
         path="/college" 
         element={
           <ProtectedRoute allowedRole="college_admin">
-            <CollegeDashboardLayout />
+            <CollegeStatusGuard>
+              <CollegeDashboardLayout />
+            </CollegeStatusGuard>
           </ProtectedRoute>
         }
       >
@@ -124,10 +252,18 @@ export default function AppRoutes() {
         <Route path="settings" element={<CollegeSettings />} />
       </Route>
       <Route path="/alumni/*" element={
-        <ProtectedRoute allowedRole="alumni"><AlumniDashboard /></ProtectedRoute>
+        <ProtectedRoute allowedRole="alumni">
+          <CollegeStatusGuard>
+            <AlumniDashboard />
+          </CollegeStatusGuard>
+        </ProtectedRoute>
       } />
       <Route path="/student/*" element={
-        <ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>
+        <ProtectedRoute allowedRole="student">
+          <CollegeStatusGuard>
+            <StudentDashboard />
+          </CollegeStatusGuard>
+        </ProtectedRoute>
       } />
 
       {/* 🛸 Catch-all Edge Route Recovery Block */}

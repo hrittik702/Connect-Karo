@@ -6,23 +6,20 @@ import {
   Users, 
   Radio, 
   Settings, 
-  LogOut,
   Building2,
   Bell,
   Menu,
-  X,
-  AlertCircle
+  X
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function CollegeDashboardLayout() {
-  const { currentUser, userData, dummyLogout } = useAuth();
+  const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -34,14 +31,7 @@ export default function CollegeDashboardLayout() {
     { name: 'Verification Requests', path: '/college/requests', icon: UserCheck },
     { name: 'Verified Directory', path: '/college/users', icon: Users },
     { name: 'Root Broadcasts', path: '/college/broadcasts', icon: Radio },
-    { name: 'Settings', path: '/college/settings', icon: Settings },
   ];
-
-  const handleLogout = () => {
-    setShowLogoutModal(false);
-    dummyLogout();
-    navigate('/login', { replace: true });
-  };
 
   const adminName = userData?.name || "College Admin";
   const collegeId = userData?.collegeId || "";
@@ -111,15 +101,19 @@ export default function CollegeDashboardLayout() {
           })}
         </nav>
 
-        {/* Exit Button */}
+        {/* Settings Button */}
         <div className="p-4 border-t border-ec-border bg-ec-surface/40">
-          <button 
-            onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
+          <NavLink 
+            to="/college/settings"
+            className={({ isActive }) => `w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[14px] font-medium border transition-all duration-200 ${
+              isActive
+                ? 'bg-ec-accent/10 text-ec-accent border-ec-accent/20 shadow-[0_0_15px_rgba(16,185,129,0.03)]'
+                : 'text-ec-text-sub border-transparent hover:text-ec-highlight hover:bg-ec-muted/40'
+            }`}
           >
-            <LogOut size={18} />
-            <span>Sign Out</span>
-          </button>
+            <Settings size={18} />
+            <span>Settings</span>
+          </NavLink>
         </div>
       </aside>
 
@@ -206,37 +200,6 @@ export default function CollegeDashboardLayout() {
           </div>
         </main>
       </div>
-
-      {/* double confirm signout */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all duration-300">
-          <div className="w-full max-w-sm bg-white border border-gray-200 rounded-2xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 mb-3 text-red-500">
-              <AlertCircle size={24} strokeWidth={2.5} />
-              <h3 className="text-[16px] font-bold text-gray-900">Confirm Sign Out</h3>
-            </div>
-            
-            <p className="text-[13px] text-gray-600 leading-relaxed mb-6">
-              Kya aap College Admin Dashboard terminal se sign out karna chahte hain? Session close ho jayega.
-            </p>
-            
-            <div className="flex gap-3 justify-end">
-              <button 
-                onClick={() => setShowLogoutModal(false)} 
-                className="px-4 py-2.5 text-[12px] font-semibold text-gray-700 hover:text-gray-900 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleLogout} 
-                className="px-4 py-2.5 text-[12px] font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors shadow-md shadow-red-500/20"
-              >
-                Yes, Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
