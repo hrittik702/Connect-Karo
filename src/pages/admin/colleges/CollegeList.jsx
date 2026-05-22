@@ -181,7 +181,11 @@ export default function CollegeList() {
                         {college.name}
                       </div>
                       <div className="text-[11px] text-ec-text-sub mt-0.5">
-                        Added: {college.createdAt?.toDate().toLocaleDateString('en-GB') || 'Recently'}
+                        Added: {college.createdAt 
+                          ? (college.createdAt.toDate 
+                              ? college.createdAt.toDate().toLocaleDateString('en-GB') 
+                              : new Date(college.createdAt).toLocaleDateString('en-GB')) 
+                          : 'Recently'}
                       </div>
                     </td>
 
@@ -222,7 +226,7 @@ export default function CollegeList() {
                       </span>
                     </td>
 
-                    {/* Col 5: Actions (Light Theme Dropdown per user request) */}
+                    {/* Col 5: Actions */}
                     <td className="px-5 py-4 text-right relative">
                       <button 
                         onClick={(e) => {

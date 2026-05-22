@@ -22,7 +22,7 @@ const firebaseConfig = {
 //   measurementId: "G-HX7Z5L0VWQ"
 // };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
 // Ye dono cheezein poore project me use hongi
 export const auth = getAuth(app);

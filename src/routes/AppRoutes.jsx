@@ -24,6 +24,7 @@ import AddCollege from "../pages/admin/colleges/AddCollege";
 import BillingOverview from "../pages/admin/billing/BillingOverview";
 import TicketManager from "../pages/admin/support/TicketManager";
 import AnnouncementPanel from "../pages/admin/broadcast/AnnouncementPanel";
+import CollegeDetails from "../pages/admin/colleges/CollegeDetails";
 
 // Enterprise Role-Based Security Guard
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -90,7 +91,7 @@ export default function AppRoutes() {
         {/* College Management Grid & Form Pipeline */}
         <Route path="colleges" element={<CollegeList />} />
         <Route path="colleges/add" element={<AddCollege />} />
-        <Route path="colleges/:id" element={<UnderConstruction title="Dedicated College View (360° Control Panel)" />} />
+        <Route path="colleges/:id" element={<CollegeDetails />} />
         
         {/* Helpdesk Global Escalation Hub */}
         <Route path="support" element={<TicketManager />} />

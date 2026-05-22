@@ -16,8 +16,10 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { app, db } from '../../../firebase/config'; // Make sure 'app' is exported from config.js
+import { initializeApp } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { collection, addDoc, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 
 export default function AddCollege() {
   const navigate = useNavigate();
@@ -96,7 +98,7 @@ export default function AddCollege() {
         return;
       }
 
-      // 4. Multi-Layer Duplicate Verification (Domain, Code, and Email must be entirely unique)
+      // 4. Multi-Layer Duplicate Verification
       const collegesRef = collection(db, 'colleges');
       
       const domainQuery = query(collegesRef, where("domain", "==", sanitizedDomain));
@@ -128,34 +130,53 @@ export default function AddCollege() {
       }
 
       // 5. Build Master Payload for Database Provisioning
-      // Find this block in AddCollege.jsx and update the createdAt field:
-const newCollegeData = {
-  name: formData.name.trim(),
-  collegeCode: sanitizedCode,
-  domain: sanitizedDomain,
-  adminEmail: sanitizedEmail,
-  adminPhone: formData.adminPhone.trim(),
-  address: formData.address.trim(),
-  status: 'active', 
-  subscription: {
-    plan: 'free',
-    expiresAt: null
-  },
-  metrics: {
-    totalStudents: 0,
-    totalAlumni: 0
-  },
-  createdAt: new Date().toISOString() // Using local ISO string to bypass field transform checks
-};
+      const newCollegeData = {
+        name: formData.name.trim(),
+        collegeCode: sanitizedCode,
+        domain: sanitizedDomain,
+        adminEmail: sanitizedEmail,
+        adminPhone: formData.adminPhone.trim(),
+        address: formData.address.trim(),
+        status: 'active', 
+        subscription: {
+          plan: 'free',
+          expiresAt: null
+        },
+        metrics: {
+          totalStudents: 0,
+          totalAlumni: 0
+        },
+        createdAt: new Date().toISOString()
+      };
 
-      // Execute Write Operation
+      // 6. REAL AUTHENTICATION INJECTION (Secondary App Trick)
+      const secondaryApp = initializeApp(app.options, "SecondaryApp");
+      const secondaryAuth = getAuth(secondaryApp);
+      
+      let userCredential;
+      try {
+        // Create user in Firebase Authentication without logging out the current admin
+        userCredential = await createUserWithEmailAndPassword(secondaryAuth, sanitizedEmail, formData.password);
+        await signOut(secondaryAuth);
+      } catch (authError) {
+        showFeedback(`Auth Error: ${authError.message}`, "error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 7. Save Role to 'users' collection (CRITICAL FOR ROUTING)
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        email: sanitizedEmail,
+        role: 'college_admin',
+        collegeId: sanitizedCode,
+        status: 'approved',
+        name: formData.name.trim() + ' Admin'
+      });
+
+      // 8. Execute Write Operation for College Collection
       await addDoc(collegesRef, newCollegeData);
 
-      /* NOTE FOR PRODUCTION PIPELINE:
-         When you switch to real Firebase auth, we will link this to a cloud function 
-         that calls admin.auth().createUser({ email, password }) using these exact values. */
-
-      // 6. Success Orchestration
+      // 9. Success Orchestration
       showFeedback("Institution and credentials provisioned successfully!", "success");
       setFormData({ name: '', collegeCode: '', domain: '', adminEmail: '', adminPhone: '', address: '', password: '', confirmPassword: '' });
       
@@ -249,7 +270,7 @@ const newCollegeData = {
           </div>
         </div>
 
-        {/* Section 2: Security & Access Management (ADDED PASSSWORD LOGIC) */}
+        {/* Section 2: Security & Access Management */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-ec-accent uppercase tracking-wider border-b border-ec-border/40 pb-2">2. Secure Identity Access</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

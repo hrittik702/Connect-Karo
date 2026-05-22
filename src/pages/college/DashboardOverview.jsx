@@ -20,6 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 export default function CollegeDashboardOverview() {
   const { userData } = useAuth();
   const navigate = useNavigate();
+  // Safe extraction of collegeId
   const collegeId = userData?.collegeId || '';
 
   const [loading, setLoading] = useState(true);
@@ -118,6 +119,7 @@ export default function CollegeDashboardOverview() {
 
   // Approval handler
   const handleApprove = async (userId, role) => {
+    if (!userId || !role) return;
     setActionInProgress(userId);
     try {
       // 1. Update user status in Firestore
