@@ -17,6 +17,7 @@ import CollegeRequestList from "../pages/college/requests/RequestList";
 import CollegeUserList from "../pages/college/users/UserList";
 import CollegeBroadcastList from "../pages/college/broadcasts/BroadcastList";
 import CollegeSettings from "../pages/college/settings/CollegeSettings";
+import AppearanceSettings from "../components/AppearanceSettings";
 
 // ── ✅ ACTUAL ROOT ADMIN IMPORTS (PRODUCTION READY) ──
 import DashboardLayout from "../pages/admin/DashboardLayout";
@@ -250,6 +251,7 @@ export default function AppRoutes() {
         <Route path="users" element={<CollegeUserList />} />
         <Route path="broadcasts" element={<CollegeBroadcastList />} />
         <Route path="settings" element={<CollegeSettings />} />
+        <Route path="appearance" element={<AppearanceSettings />} />
       </Route>
       <Route path="/alumni/*" element={
         <ProtectedRoute allowedRole="alumni">
