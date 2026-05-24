@@ -10,6 +10,7 @@ import {
   GoOrganization
 } from 'react-icons/go';
 import { useAuth } from '../../context/AuthContext';
+import UserMenuDropdown from '../../components/college/UserMenuDropdown';
 
 export default function CollegeDashboardLayout() {
   const { currentUser, userData } = useAuth();
@@ -17,9 +18,11 @@ export default function CollegeDashboardLayout() {
   const location = useLocation();
   
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     setShowNotifications(false);
+    setShowUserMenu(false);
   }, [location.pathname]);
 
   const navItems = [
@@ -27,29 +30,59 @@ export default function CollegeDashboardLayout() {
     { name: 'Requests', path: '/college/requests', icon: GoChecklist },
     { name: 'Directory', path: '/college/users', icon: GoPeople },
     { name: 'Broadcasts', path: '/college/broadcasts', icon: GoMegaphone },
-    { name: 'Settings', path: '/college/settings', icon: GoGear },
   ];
 
   const adminName = userData?.name || "College Admin";
+  const collegeName = userData?.collegeName || userData?.collegeId || "College";
+  const collegeInitial = collegeName.charAt(0).toUpperCase();
+
+  const isCoreRoute = 
+    location.pathname === '/college' || 
+    location.pathname === '/college/' ||
+    location.pathname.startsWith('/college/requests') ||
+    location.pathname.startsWith('/college/users') ||
+    location.pathname.startsWith('/college/broadcasts');
 
   return (
     <div className="min-h-screen bg-ec-root text-ec-text flex flex-col font-sans relative selection:bg-ec-accent/20">
       
-      {/* ── TOP NAVBAR (2-Liner layout) ── */}
+      {/* ── TOP NAVBAR (Dynamic layout) ── */}
       <header className="w-full bg-ec-header flex flex-col shrink-0 select-none">
         
         {/* Row 1: Brand logo/title and notifications/profile */}
-        <div className="w-full h-16 flex items-center justify-between px-4 pt-3 pb-1">
+        <div className={`w-full h-16 flex items-center justify-between px-4 pt-2 pb-1 ${
+          isCoreRoute ? '' : 'border-b border-gray-200 dark:border-[#30363d]'
+        }`}>
+          
           {/* Brand Header */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center">
-              <GoOrganization size={16} className="text-ec-accent" />
-            </div>
-            <span className="text-[17.5px] font-bold text-ec-highlight tracking-wide uppercase">
-              College<span className="text-ec-accent"> Portal</span>
-            </span>
-          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Styled Hamburger Menu Button (Always visible) */}
+            <button className="p-1.5 text-gray-400 dark:text-[#8b949e] hover:text-gray-900 dark:hover:text-[#f0f6fc] hover:bg-gray-100 dark:hover:bg-[#30363d]/60 rounded-lg transition-colors cursor-pointer bg-transparent border-transparent outline-none">
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
+              </svg>
+            </button>
 
+            {isCoreRoute ? (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
+                  <GoOrganization size={14} className="text-ec-accent" />
+                </div>
+                <span className="text-[15.5px] font-extrabold text-ec-highlight tracking-wide uppercase">
+                  {collegeName}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#21262d] flex items-center justify-center border border-gray-200 dark:border-[#30363d] shrink-0">
+                  <GoOrganization size={14} className="text-gray-600 dark:text-[#c9d1d9]" />
+                </div>
+                <span className="text-sm font-bold text-gray-900 dark:text-[#f0f6fc] tracking-tight">
+                  Settings
+                </span>
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2.5 relative shrink-0">
             {/* Notification Alert Trigger */}
             <button 
@@ -89,45 +122,55 @@ export default function CollegeDashboardLayout() {
 
             {/* College Admin Identity Card (Profile Picture Only) */}
             <div className="pl-2 select-none z-10">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-ec-accent to-emerald-400 flex items-center justify-center text-ec-root font-bold text-xs shadow-md border border-ec-border/40 overflow-hidden cursor-pointer">
+              <div 
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-7 h-7 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-extrabold text-xs shadow-md border border-gray-200 dark:border-[#30363d] overflow-hidden cursor-pointer hover:border-ec-accent transition-all duration-200"
+              >
                 {userData?.photoURL ? (
                   <img src={userData.photoURL} alt="profile" className="w-full h-full object-cover" />
                 ) : currentUser?.photoURL ? (
                   <img src={currentUser.photoURL} alt="profile" className="w-full h-full object-cover" />
                 ) : (
-                  adminName.charAt(0).toUpperCase()
+                  collegeInitial
                 )}
               </div>
             </div>
+
+            {/* User Dropdown Menu */}
+            {showUserMenu && (
+              <UserMenuDropdown onClose={() => setShowUserMenu(false)} />
+            )}
           </div>
         </div>
 
-        {/* Row 2: Horizontal Nav Links */}
-        <div className="w-full h-12 flex items-center px-4 overflow-x-auto scrollbar-none border-b border-ec-border">
-          <nav className="flex items-center gap-1.5 h-full">
-            {navItems.map((item) => {
-              const isActive = item.exact 
-                ? location.pathname === item.path 
-                : location.pathname.startsWith(item.path);
+        {/* Row 2: Horizontal Nav Links (Show only on Core pages) */}
+        {isCoreRoute && (
+          <div className="w-full h-10 flex items-center px-4 overflow-x-auto scrollbar-none border-b border-ec-border">
+            <nav className="flex items-center gap-1.5 h-full">
+              {navItems.map((item) => {
+                const isActive = item.exact 
+                  ? location.pathname === item.path 
+                  : location.pathname.startsWith(item.path);
 
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.path}
-                  end={item.exact}
-                  className={`flex items-center gap-1.5 px-2.5 h-full text-[13.5px] font-medium transition-all duration-150 border-b-2 relative translate-y-[1px] shrink-0 ${
-                    isActive
-                      ? 'border-[#f78162] text-ec-highlight font-semibold'
-                      : 'border-transparent text-ec-text-sub hover:text-ec-highlight hover:border-ec-border/30'
-                  }`}
-                >
-                  <item.icon size={16} className={isActive ? 'text-[#f78162]' : 'text-ec-icon'} />
-                  <span>{item.name}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
-        </div>
+                return (
+                  <NavLink
+                    key={item.name}
+                    to={item.path}
+                    end={item.exact}
+                    className={`flex items-center gap-1.5 px-2.5 h-full text-[11.5px] font-medium transition-all duration-150 border-b-2 relative translate-y-[1px] shrink-0 ${
+                      isActive
+                        ? 'border-[#f78162] text-ec-highlight font-semibold'
+                        : 'border-transparent text-ec-text-sub hover:text-ec-highlight hover:border-ec-border/30'
+                    }`}
+                  >
+                    <item.icon size={16} className={isActive ? 'text-[#f78162]' : 'text-ec-icon'} />
+                    <span>{item.name}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* content area */}
