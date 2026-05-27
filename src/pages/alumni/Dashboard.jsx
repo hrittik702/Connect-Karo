@@ -1,5 +1,4 @@
 import { useAuth } from "../../context/AuthContext";
-import { auth } from "../../firebase/config";
 import { GraduationCap, LogOut, UserPlus, Briefcase, PenSquare } from "lucide-react";
 
 export default function AlumniDashboard() {

@@ -8,11 +8,10 @@ import {
   Users,
   Server
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, where, doc, orderBy } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 
-export default function CollegeBroadcastList() {
+export default function BroadcastList() {
   const { userData } = useAuth();
   const collegeId = userData?.collegeId || '';
 
@@ -20,21 +19,23 @@ export default function CollegeBroadcastList() {
   const [loading, setLoading] = useState(true);
   const [collegeDetails, setCollegeDetails] = useState(null);
 
-  // 1. Fetch College Details
+  // 1. Fetch college domain/status configuration
   useEffect(() => {
     if (!collegeId) return;
-    const unsub = onSnapshot(doc(db, 'colleges', collegeId), (snapshot) => {
-      if (snapshot.exists()) {
-        setCollegeDetails(snapshot.data());
-      } else {
-        // Fallback college details for local development / dummy login
-        setCollegeDetails({
-          status: 'active',
-          subscription: { plan: 'free' }
-        });
+    const fetchCollegeDetails = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .eq('id', collegeId)
+          .single();
+        if (error) throw error;
+        setCollegeDetails(data);
+      } catch (err) {
+        console.error("Fetch college details error:", err);
       }
-    });
-    return () => unsub();
+    };
+    fetchCollegeDetails();
   }, [collegeId]);
 
   // 2. Fetch active announcements with server-side target authorization
@@ -48,27 +49,36 @@ export default function CollegeBroadcastList() {
     if (status === 'active') allowedTargets.push('active');
     if (plan === 'premium') allowedTargets.push('premium');
 
-    const q = query(
-      collection(db, 'announcements'),
-      where('status', '==', 'active'),
-      where('target', 'in', allowedTargets),
-      orderBy('createdAt', 'desc')
-    );
+    const fetchAnnouncements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('status', 'active')
+          .in('target', allowedTargets)
+          .order('created_at', { ascending: false });
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = [];
-      snapshot.forEach((docSnap) => {
-        data.push({ id: docSnap.id, ...docSnap.data() });
-      });
+        if (error) throw error;
+        setAnnouncements(data || []);
+      } catch (error) {
+        console.error("Fetch broadcasts error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setAnnouncements(data);
-      setLoading(false);
-    }, (error) => {
-      console.error("Fetch broadcasts error:", error);
-      setLoading(false);
-    });
+    fetchAnnouncements();
 
-    return () => unsubscribe();
+    const channel = supabase
+      .channel('college-announcements-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        fetchAnnouncements();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [collegeId, collegeDetails]);
 
   const getTypeConfig = (typeValue) => {
@@ -147,7 +157,7 @@ export default function CollegeBroadcastList() {
                           </span>
                           <span className="text-[10px] text-ec-text-sub font-mono flex items-center gap-1">
                             <Clock size={11} />
-                            {announcement.createdAt?.toDate ? announcement.createdAt.toDate().toLocaleDateString('en-GB') : 'Just now'}
+                            {announcement.created_at ? new Date(announcement.created_at).toLocaleDateString('en-GB') : 'Just now'}
                           </span>
                         </div>
                       </div>

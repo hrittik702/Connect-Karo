@@ -16,10 +16,8 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { app, db } from '../../../firebase/config'; // Make sure 'app' is exported from config.js
-import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, addDoc, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 
 export default function AddCollege() {
   const navigate = useNavigate();
@@ -99,31 +97,34 @@ export default function AddCollege() {
       }
 
       // 4. Multi-Layer Duplicate Verification
-      const collegesRef = collection(db, 'colleges');
+      const { data: dupDomain } = await supabase
+        .from('colleges')
+        .select('id')
+        .eq('domain', sanitizedDomain);
       
-      const domainQuery = query(collegesRef, where("domain", "==", sanitizedDomain));
-      const codeQuery = query(collegesRef, where("collegeCode", "==", sanitizedCode));
-      const emailQuery = query(collegesRef, where("adminEmail", "==", sanitizedEmail));
-
-      const [domainSnapshot, codeSnapshot, emailSnapshot] = await Promise.all([
-        getDocs(domainQuery),
-        getDocs(codeQuery),
-        getDocs(emailQuery)
-      ]);
-
-      if (!domainSnapshot.empty) {
+      if (dupDomain && dupDomain.length > 0) {
         showFeedback(`Domain '${sanitizedDomain}' is already registered!`, "error");
         setIsSubmitting(false);
         return;
       }
 
-      if (!codeSnapshot.empty) {
+      const { data: dupCode } = await supabase
+        .from('colleges')
+        .select('id')
+        .eq('id', sanitizedCode);
+      
+      if (dupCode && dupCode.length > 0) {
         showFeedback(`College Code '${sanitizedCode}' is already in use!`, "error");
         setIsSubmitting(false);
         return;
       }
 
-      if (!emailSnapshot.empty) {
+      const { data: dupEmail } = await supabase
+        .from('colleges')
+        .select('id')
+        .eq('admin_email', sanitizedEmail);
+      
+      if (dupEmail && dupEmail.length > 0) {
         showFeedback(`Admin Email '${sanitizedEmail}' is already registered!`, "error");
         setIsSubmitting(false);
         return;
@@ -131,50 +132,88 @@ export default function AddCollege() {
 
       // 5. Build Master Payload for Database Provisioning
       const newCollegeData = {
+        id: sanitizedCode,
         name: formData.name.trim(),
-        collegeCode: sanitizedCode,
         domain: sanitizedDomain,
-        adminEmail: sanitizedEmail,
-        adminPhone: formData.adminPhone.trim(),
+        admin_email: sanitizedEmail,
+        admin_phone: formData.adminPhone.trim(),
         address: formData.address.trim(),
-        status: 'active', 
-        subscription: {
-          plan: 'free',
-          expiresAt: null
-        },
+        status: 'active',
+        billing_plan: 'Free',
         metrics: {
           totalStudents: 0,
           totalAlumni: 0
-        },
-        createdAt: new Date().toISOString()
+        }
       };
 
-      // 6. REAL AUTHENTICATION INJECTION (Secondary App Trick)
-      const secondaryApp = initializeApp(app.options, "SecondaryApp");
-      const secondaryAuth = getAuth(secondaryApp);
-      
-      let userCredential;
-      try {
-        // Create user in Firebase Authentication without logging out the current admin
-        userCredential = await createUserWithEmailAndPassword(secondaryAuth, sanitizedEmail, formData.password);
-        await signOut(secondaryAuth);
-      } catch (authError) {
+      // 6. Execute Write Operation for College table first (admin_uid is initially null)
+      // This is crucial because the signup trigger has a foreign key constraint requiring the college to exist first!
+      const { error: colErr } = await supabase
+        .from('colleges')
+        .insert([newCollegeData]);
+
+      if (colErr) {
+        throw colErr;
+      }
+
+      // 7. REAL AUTHENTICATION INJECTION (Secondary Supabase Client)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      const secondarySupabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+          storageKey: 'sb-secondary-auth-token',
+          storage: {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {}
+          }
+        }
+      });
+
+      // Sign up secondary college admin user
+      const { data: authData, error: authError } = await secondarySupabase.auth.signUp({
+        email: sanitizedEmail,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name.trim() + ' Admin',
+            role: 'college_admin',
+            collegeId: sanitizedCode,
+            collegeName: formData.name.trim(),
+            status: 'approved'
+          }
+        }
+      });
+
+      if (authError) {
+        // Rollback college creation
+        await supabase.from('colleges').delete().eq('id', sanitizedCode);
         showFeedback(`Auth Error: ${authError.message}`, "error");
         setIsSubmitting(false);
         return;
       }
 
-      // 7. Save Role to 'users' collection (CRITICAL FOR ROUTING)
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        email: sanitizedEmail,
-        role: 'college_admin',
-        collegeId: sanitizedCode,
-        status: 'approved',
-        name: formData.name.trim() + ' Admin'
-      });
+      if (!authData || !authData.user) {
+        // Rollback college creation
+        await supabase.from('colleges').delete().eq('id', sanitizedCode);
+        showFeedback("Auth Error: This email is already registered. Please use a different admin email.", "error");
+        setIsSubmitting(false);
+        return;
+      }
 
-      // 8. Execute Write Operation for College Collection
-      await setDoc(doc(db, 'colleges', sanitizedCode), newCollegeData);
+      // 8. Update college administrative UID now that user is successfully registered
+      const { error: updateErr } = await supabase
+        .from('colleges')
+        .update({ admin_uid: authData.user.id })
+        .eq('id', sanitizedCode);
+
+      if (updateErr) {
+        throw updateErr;
+      }
 
       // 9. Success Orchestration
       showFeedback("Institution and credentials provisioned successfully!", "success");

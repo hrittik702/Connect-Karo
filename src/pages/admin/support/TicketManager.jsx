@@ -16,57 +16,7 @@ import {
   ShieldCheck,
   ChevronRight
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc } from 'firebase/firestore';
-
-// =====================================================================
-// 🚨 DUMMY DATA BLOCK START (DELETE THIS ENTIRE BLOCK FOR PRODUCTION)
-// =====================================================================
-const DUMMY_TICKETS = [
-  {
-    id: 'TCK-7781',
-    subject: 'Database connection failing during bulk upload',
-    collegeName: 'Rajkiya Engineering College',
-    collegeEmail: 'admin@recabn.ac.in',
-    priority: 'critical',
-    status: 'open',
-    description: 'System is throwing a 500 internal server error when we try to upload the alumni excel sheet. Please resolve this urgently as we have an onboarding campaign tomorrow.',
-    createdAt: { toDate: () => new Date(Date.now() - 86400000) } // 1 day ago
-  },
-  {
-    id: 'TCK-7782',
-    subject: 'Billing invoice not generated for Premium Tier',
-    collegeName: 'DefensoTech Solutions',
-    collegeEmail: 'billing@defensotech.com',
-    priority: 'high',
-    status: 'in_progress',
-    description: 'We upgraded to the premium tier last week but have not received the tax invoice on our registered email. Can you please check the billing module?',
-    createdAt: { toDate: () => new Date(Date.now() - 172800000) } // 2 days ago
-  },
-  {
-    id: 'TCK-7783',
-    subject: 'How to disable the job board feature?',
-    collegeName: 'IIT Kanpur',
-    collegeEmail: 'tech.support@iitk.ac.in',
-    priority: 'medium',
-    status: 'open',
-    description: 'We want to temporarily disable the alumni job board feature during the exam season. Where is the toggle for this located in the college dashboard?',
-    createdAt: { toDate: () => new Date(Date.now() - 259200000) } // 3 days ago
-  },
-  {
-    id: 'TCK-7784',
-    subject: 'Request to update college logo',
-    collegeName: 'NIT Allahabad',
-    collegeEmail: 'admin@mnnit.ac.in',
-    priority: 'low',
-    status: 'resolved',
-    description: 'Our college logo has been officially updated. Can you please sync the new logo asset across the ConnectKaro platform?',
-    createdAt: { toDate: () => new Date(Date.now() - 432000000) } // 5 days ago
-  }
-];
-// =====================================================================
-// 🚨 DUMMY DATA BLOCK END
-// =====================================================================
+import { supabase } from '../../../lib/supabaseClient';
 
 export default function TicketManager() {
   const [tickets, setTickets] = useState([]);
@@ -88,44 +38,58 @@ export default function TicketManager() {
 
   // ── DATA FETCHING PIPELINE ──
   useEffect(() => {
-    // =====================================================================
-    // 🚨 DUMMY DATA INITIALIZATION (DELETE THIS BLOCK FOR PRODUCTION)
-    // =====================================================================
-    setTickets(DUMMY_TICKETS);
-    let openCount = 0; let criticalCount = 0; let resolvedCount = 0;
-    DUMMY_TICKETS.forEach(t => {
-      if (t.status === 'open' || t.status === 'in_progress') openCount++;
-      if ((t.status === 'open' || t.status === 'in_progress') && t.priority === 'critical') criticalCount++;
-      if (t.status === 'resolved') resolvedCount++;
-    });
-    setStats({ open: openCount, critical: criticalCount, resolved: resolvedCount });
-    setLoading(false);
-    // =====================================================================
+    const fetchTickets = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('root_support_tickets')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        const mappedTickets = (data || []).map(t => ({
+          id: t.id,
+          subject: t.subject,
+          collegeName: t.name,
+          collegeEmail: t.email,
+          description: t.message,
+          priority: 'medium', // Default priority as it is not in the DDL
+          status: t.status, // 'pending', 'resolved', 'closed'
+          createdAt: t.created_at
+        }));
+        
+        let openCount = 0; let criticalCount = 0; let resolvedCount = 0;
+        mappedTickets.forEach(t => {
+          if (t.status === 'pending' || t.status === 'open' || t.status === 'in_progress') openCount++;
+          // Priority heuristic based on keywords
+          if (t.subject?.toLowerCase().includes('urgent') || t.description?.toLowerCase().includes('critical') || t.description?.toLowerCase().includes('urgent')) {
+            t.priority = 'critical';
+          }
+          if ((t.status === 'pending' || t.status === 'open' || t.status === 'in_progress') && t.priority === 'critical') criticalCount++;
+          if (t.status === 'resolved' || t.status === 'closed') resolvedCount++;
+        });
 
-    /* --- 🔥 PRODUCTION FIREBASE CODE (UNCOMMENT WHEN READY) ---
-    const q = query(collection(db, 'root_support_tickets'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const ticketData = [];
-      let openCount = 0; let criticalCount = 0; let resolvedCount = 0;
+        setTickets(mappedTickets);
+        setStats({ open: openCount, critical: criticalCount, resolved: resolvedCount });
+      } catch (err) {
+        console.error("Support Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        ticketData.push({ id: doc.id, ...data });
-        if (data.status === 'open' || data.status === 'in_progress') openCount++;
-        if ((data.status === 'open' || data.status === 'in_progress') && data.priority === 'critical') criticalCount++;
-        if (data.status === 'resolved') resolvedCount++;
-      });
+    fetchTickets();
 
-      setTickets(ticketData);
-      setStats({ open: openCount, critical: criticalCount, resolved: resolvedCount });
-      setLoading(false);
-    }, (error) => {
-      console.error("Support Fetch Error:", error);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-    ---------------------------------------------------------- */
+    const channel = supabase
+      .channel('root-support-tickets-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'root_support_tickets' }, () => {
+        fetchTickets();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // ── UPDATE TICKET STATUS ──
@@ -134,29 +98,15 @@ export default function TicketManager() {
     setIsProcessing(true);
     
     try {
-      // =====================================================================
-      // 🚨 DUMMY DATA STATE UPDATE (DELETE THIS BLOCK FOR PRODUCTION)
-      // =====================================================================
-      setTickets(prev => prev.map(t => t.id === selectedTicket.id ? { ...t, status: updateStatus } : t));
-      setStats(prev => {
-        const isNowResolved = updateStatus === 'resolved';
-        const wasResolved = selectedTicket.status === 'resolved';
-        let newOpen = prev.open; let newResolved = prev.resolved;
-        if (isNowResolved && !wasResolved) { newOpen--; newResolved++; }
-        if (!isNowResolved && wasResolved) { newOpen++; newResolved--; }
-        return { ...prev, open: newOpen, resolved: newResolved };
-      });
-      setIsModalOpen(false);
-      // =====================================================================
+      const { error } = await supabase
+        .from('root_support_tickets')
+        .update({
+          status: updateStatus
+        })
+        .eq('id', selectedTicket.id);
 
-      /* --- 🔥 PRODUCTION FIREBASE UPDATE CODE (UNCOMMENT WHEN READY) ---
-      const ticketRef = doc(db, 'root_support_tickets', selectedTicket.id);
-      await updateDoc(ticketRef, {
-        status: updateStatus,
-        updatedAt: new Date()
-      });
+      if (error) throw error;
       setIsModalOpen(false);
-      ----------------------------------------------------------------- */
     } catch (error) {
       console.error("Ticket update error:", error);
       alert("Ticket status update failed.");

@@ -10,8 +10,7 @@ import {
   Mail,
   Briefcase
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, where, doc, runTransaction, limit } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function CollegeUserList() {
@@ -52,137 +51,167 @@ export default function CollegeUserList() {
     if (!collegeId) return;
 
     setLoading(true);
-    let q;
-    if (filterType === 'student') {
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId),
-        where('status', '==', 'approved'),
-        where('role', '==', 'student'),
-        limit(limitCount + 1)
-      );
-    } else if (filterType === 'alumni') {
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId),
-        where('status', '==', 'approved'),
-        where('role', '==', 'alumni'),
-        limit(limitCount + 1)
-      );
-    } else if (filterType === 'blocked') {
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId),
-        where('status', '==', 'blocked'),
-        limit(limitCount + 1)
-      );
-    } else {
-      // 'all' - Fetch approved and blocked directory members
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId),
-        where('status', 'in', ['approved', 'blocked']),
-        limit(limitCount + 1)
-      );
-    }
+    const fetchUsers = async () => {
+      try {
+        let query = supabase
+          .from('users')
+          .select('*')
+          .eq('college_id', collegeId)
+          .not('role', 'in', '("college_admin","root_admin")')
+          .limit(limitCount + 1);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = [];
-      snapshot.forEach((docSnap) => {
-        const u = { id: docSnap.id, ...docSnap.data() };
-        if (u.role !== 'college_admin' && u.role !== 'root_admin') {
-          data.push(u);
+        if (filterType === 'student') {
+          query = query.eq('status', 'approved').eq('role', 'student');
+        } else if (filterType === 'alumni') {
+          query = query.eq('status', 'approved').eq('role', 'alumni');
+        } else if (filterType === 'blocked') {
+          query = query.eq('status', 'blocked');
+        } else {
+          // 'all'
+          query = query.in('status', ['approved', 'blocked']);
         }
-      });
 
-      if (data.length > limitCount) {
-        setHasMore(true);
-        setUsers(data.slice(0, limitCount));
-      } else {
-        setHasMore(false);
-        setUsers(data);
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Map database columns to component properties
+        const mapped = (data || []).map(u => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          status: u.status,
+          rollNo: u.roll_no,
+          branch: u.branch,
+          currentYear: u.current_year,
+          batch: u.batch,
+          degree: u.degree,
+          company: u.company,
+          designation: u.designation,
+          linkedin: u.linkedin
+        }));
+
+        if (mapped.length > limitCount) {
+          setHasMore(true);
+          setUsers(mapped.slice(0, limitCount));
+        } else {
+          setHasMore(false);
+          setUsers(mapped);
+        }
+      } catch (err) {
+        console.error("Fetch users list error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, (error) => {
-      console.error("Fetch users list error:", error);
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    fetchUsers();
+
+    const channel = supabase
+      .channel('college-directory-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users', filter: `college_id=eq.${collegeId}` }, () => {
+        fetchUsers();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [collegeId, filterType, limitCount]);
 
-  // Toggle user block/active state with Transactions
+  // Toggle user block/active state
   const handleToggleBlock = async (userId, currentStatus, role) => {
     setActionMenuOpen(null);
-    const userRef = doc(db, 'users', userId);
-    const collegeRef = doc(db, 'colleges', collegeId);
     const newStatus = currentStatus === 'approved' ? 'blocked' : 'approved';
-    const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
     const incVal = newStatus === 'blocked' ? -1 : 1;
 
     try {
-      await runTransaction(db, async (transaction) => {
-        const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) {
-          throw new Error("User document does not exist.");
-        }
-        
-        const collegeSnap = await transaction.get(collegeRef);
-        if (!collegeSnap.exists()) {
-          throw new Error("College document does not exist.");
-        }
-        
-        transaction.update(userRef, { status: newStatus });
+      // 1. Update user status in Supabase
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ status: newStatus })
+        .eq('id', userId);
 
-        const collegeData = collegeSnap.data();
-        const metrics = collegeData.metrics || {};
-        const currentCount = role === 'student' ? (metrics.totalStudents || 0) : (metrics.totalAlumni || 0);
-        const newCount = Math.max(0, currentCount + incVal);
+      if (userError) throw userError;
 
-        transaction.update(collegeRef, {
-          [metricsField]: newCount
-        });
-      });
+      // 2. Fetch and adjust college metrics
+      const { data: collegeData, error: fetchError } = await supabase
+        .from('colleges')
+        .select('metrics')
+        .eq('id', collegeId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      let metrics = collegeData.metrics || { totalStudents: 0, totalAlumni: 0 };
+      if (typeof metrics === 'string') {
+        try { metrics = JSON.parse(metrics); } catch(e) {}
+      }
+
+      if (role === 'student') {
+        metrics.totalStudents = Math.max(0, (metrics.totalStudents || 0) + incVal);
+      } else {
+        metrics.totalAlumni = Math.max(0, (metrics.totalAlumni || 0) + incVal);
+      }
+
+      // Update college metrics
+      const { error: collegeError } = await supabase
+        .from('colleges')
+        .update({ metrics })
+        .eq('id', collegeId);
+
+      if (collegeError) throw collegeError;
     } catch (error) {
-      console.error("Toggle block transaction error:", error);
+      console.error("Toggle block error:", error);
       alert("Block toggling failed. Please try again.");
     }
   };
 
-  // Delete user from directory with Transactions
+  // Delete user from directory
   const handleDeleteUser = async (userId, userName, currentStatus, role) => {
     setActionMenuOpen(null);
     const isConfirmed = window.confirm(`WARNING: Are you sure you want to permanently delete '${userName}'? This cannot be undone.`);
     if (!isConfirmed) return;
 
-    const userRef = doc(db, 'users', userId);
-    const collegeRef = doc(db, 'colleges', collegeId);
-
     try {
-      await runTransaction(db, async (transaction) => {
-        const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) {
-          throw new Error("User document does not exist.");
+      // 1. Delete user
+      const { error: deleteError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (deleteError) throw deleteError;
+
+      // 2. Adjust metrics if the user was verified/approved
+      if (currentStatus === 'approved') {
+        const { data: collegeData, error: fetchError } = await supabase
+          .from('colleges')
+          .select('metrics')
+          .eq('id', collegeId)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        let metrics = collegeData.metrics || { totalStudents: 0, totalAlumni: 0 };
+        if (typeof metrics === 'string') {
+          try { metrics = JSON.parse(metrics); } catch(e) {}
         }
 
-        transaction.delete(userRef);
-
-        if (currentStatus === 'approved') {
-          const collegeSnap = await transaction.get(collegeRef);
-          if (collegeSnap.exists()) {
-            const collegeData = collegeSnap.data();
-            const metrics = collegeData.metrics || {};
-            const currentCount = role === 'student' ? (metrics.totalStudents || 0) : (metrics.totalAlumni || 0);
-            const newCount = Math.max(0, currentCount - 1);
-            const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
-            transaction.update(collegeRef, {
-              [metricsField]: newCount
-            });
-          }
+        if (role === 'student') {
+          metrics.totalStudents = Math.max(0, (metrics.totalStudents || 0) - 1);
+        } else {
+          metrics.totalAlumni = Math.max(0, (metrics.totalAlumni || 0) - 1);
         }
-      });
+
+        const { error: collegeError } = await supabase
+          .from('colleges')
+          .update({ metrics })
+          .eq('id', collegeId);
+
+        if (collegeError) throw collegeError;
+      }
     } catch (error) {
-      console.error("Delete user transaction error:", error);
+      console.error("Delete user error:", error);
       alert("User deletion failed. Please try again.");
     }
   };

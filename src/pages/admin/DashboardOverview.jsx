@@ -11,8 +11,7 @@ import {
   ArrowRight,
   Radio
 } from 'lucide-react';
-import { db } from '../../firebase/config';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function DashboardOverview() {
   const navigate = useNavigate();
@@ -28,50 +27,72 @@ export default function DashboardOverview() {
   });
   const [recentColleges, setRecentColleges] = useState([]);
 
-  // Firebase Real-time Data Aggregation Pipeline
+  // Supabase Real-time Data Aggregation Pipeline
   useEffect(() => {
-    // Query for recently added colleges
-    const q = query(collection(db, 'colleges'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let tColleges = 0;
-      let aColleges = 0;
-      let sColleges = 0;
-      let tStudents = 0;
-      let tAlumni = 0;
-      const recent = [];
+    const fetchDashboardStats = async () => {
+      try {
+        const { data: cols, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      snapshot.forEach((doc, index) => {
-        const data = doc.data();
-        tColleges++;
-        
-        if (data.status === 'active') aColleges++;
-        if (data.status === 'suspended') sColleges++;
-        
-        tStudents += (data.metrics?.totalStudents || 0);
-        tAlumni += (data.metrics?.totalAlumni || 0);
+        if (error) throw error;
 
-        // Sirf top 4 recent colleges nikalne ke liye
-        if (index < 4) {
-          recent.push({ id: doc.id, ...data });
-        }
-      });
+        let tColleges = 0;
+        let aColleges = 0;
+        let sColleges = 0;
+        let tStudents = 0;
+        let tAlumni = 0;
+        const recent = [];
 
-      setStats({
-        totalColleges: tColleges,
-        activeColleges: aColleges,
-        suspendedColleges: sColleges,
-        totalStudents: tStudents,
-        totalAlumni: tAlumni
-      });
-      setRecentColleges(recent);
-      setLoading(false);
-    }, (error) => {
-      console.error("Dashboard Aggregation Failed:", error);
-      setLoading(false);
-    });
+        (cols || []).forEach((col, index) => {
+          tColleges++;
+          if (col.status === 'active') aColleges++;
+          if (col.status === 'suspended') sColleges++;
+          
+          const metrics = col.metrics || {};
+          tStudents += (metrics.totalStudents || 0);
+          tAlumni += (metrics.totalAlumni || 0);
 
-    return () => unsubscribe();
+          if (index < 4) {
+            recent.push({
+              id: col.id,
+              name: col.name,
+              domain: col.domain,
+              status: col.status,
+              created_at: col.created_at
+            });
+          }
+        });
+
+        setStats({
+          totalColleges: tColleges,
+          activeColleges: aColleges,
+          suspendedColleges: sColleges,
+          totalStudents: tStudents,
+          totalAlumni: tAlumni
+        });
+        setRecentColleges(recent);
+      } catch (err) {
+        console.error("Dashboard Aggregation Failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardStats();
+
+    // ── LIVE REALTIME SYNC FOR COLLEGES UPDATES ──
+    const channel = supabase
+      .channel('public:colleges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'colleges' }, () => {
+        fetchDashboardStats();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Current Date Formatter for Topbar

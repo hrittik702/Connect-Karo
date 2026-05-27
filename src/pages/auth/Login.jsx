@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../../firebase/config";
-import { doc, getDoc, collection, query, where, getDocs, setDoc, getDocFromServer } from "firebase/firestore";
 import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "../../lib/supabaseClient";
 import { useAuth } from "../../context/AuthContext";
 import useSystemTheme from "../../hooks/useSystemTheme";
 import { 
@@ -166,19 +164,20 @@ export default function Login() {
         return;
       }
 
-      // Read from Firestore (Active colleges only)
-      const q = query(collection(db, "colleges"), where("status", "==", "active"));
-      const snapshot = await getDocs(q);
-      const list = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        list.push({
-          id: doc.id,
-          name: data.name,
-          collegeCode: data.collegeCode,
-          domain: data.domain
-        });
-      });
+      // Read from Supabase (Active colleges only)
+      const { data: cols, error: colsErr } = await supabase
+        .from("colleges")
+        .select("id, name, domain")
+        .eq("status", "active");
+
+      if (colsErr) throw colsErr;
+
+      const list = (cols || []).map(col => ({
+        id: col.id,
+        name: col.name,
+        collegeCode: col.id,
+        domain: col.domain
+      }));
 
       list.sort((a, b) => a.name.localeCompare(b.name));
       setColleges(list);
@@ -202,61 +201,70 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const userDoc = await getDocFromServer(doc(db, "users", user.uid));
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.status === "blocked") {
-          setError("Your account is blocked by Admin.");
-          await auth.signOut();
-          return;
-        }
-        if (userData.status === "pending") {
-          setError("Your registration request is pending approval from your college.");
-          await auth.signOut();
-          return;
-        }
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-        // Student, Alumni and College Admin must belong to a registered and active college
-        if (userData.role === "student" || userData.role === "alumni" || userData.role === "college_admin") {
-          if (!userData.collegeId) {
-            setError("Your user profile is missing an institutional identifier.");
-            await auth.signOut();
-            return;
-          }
-          
-          const isDummy = userData.collegeId.toLowerCase() === "dummy_college_01";
-          let isCollegeActive = isDummy;
-          
-          if (!isDummy) {
-            let collegeDoc = await getDocFromServer(doc(db, "colleges", userData.collegeId.trim()));
-            if (!collegeDoc.exists()) {
-              collegeDoc = await getDocFromServer(doc(db, "colleges", userData.collegeId.trim().toUpperCase()));
-            }
-            if (!collegeDoc.exists()) {
-              collegeDoc = await getDocFromServer(doc(db, "colleges", userData.collegeId.trim().toLowerCase()));
-            }
-            
-            if (collegeDoc.exists() && collegeDoc.data()?.status === "active") {
-              isCollegeActive = true;
-            }
-          }
-          
-          if (!isCollegeActive) {
-            setError("Your institution is not registered or is currently suspended on this platform. Please contact support.");
-            await auth.signOut();
-            return;
-          }
-        }
-
-        const role = userData.role;
-        redirectUser(role);
-      } else {
-        setError("User profile not found in the system database.");
-        await auth.signOut();
+      if (authError) {
+        throw authError;
       }
+
+      const user = authData.user;
+      const { data: userData, error: userErr } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (userErr || !userData) {
+        setError("User profile not found in the system database.");
+        await supabase.auth.signOut();
+        return;
+      }
+
+      if (userData.status === "blocked") {
+        setError("Your account is blocked by Admin.");
+        await supabase.auth.signOut();
+        return;
+      }
+      if (userData.status === "pending") {
+        setError("Your registration request is pending approval from your college.");
+        await supabase.auth.signOut();
+        return;
+      }
+
+      // Student, Alumni and College Admin must belong to a registered and active college
+      if (userData.role === "student" || userData.role === "alumni" || userData.role === "college_admin") {
+        if (!userData.college_id) {
+          setError("Your user profile is missing an institutional identifier.");
+          await supabase.auth.signOut();
+          return;
+        }
+        
+        const isDummy = userData.college_id.toLowerCase() === "dummy_college_01";
+        let isCollegeActive = isDummy;
+        
+        if (!isDummy) {
+          const { data: college } = await supabase
+            .from("colleges")
+            .select("status")
+            .eq("id", userData.college_id.trim())
+            .single();
+
+          if (college && college.status === "active") {
+            isCollegeActive = true;
+          }
+        }
+        
+        if (!isCollegeActive) {
+          setError("Your institution is not registered or is currently suspended on this platform. Please contact support.");
+          await supabase.auth.signOut();
+          return;
+        }
+      }
+
+      redirectUser(userData.role);
     } catch (err) {
       console.error(err);
       setError("Authentication failed. Please verify your portal credentials.");
@@ -277,50 +285,46 @@ export default function Login() {
     }
 
     try {
-      // 1. Create User in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
       const selectedCollegeObj = colleges.find(c => c.collegeCode === selectedCollegeCode);
       
-      // 2. Prepare user profile payload
-      const baseData = {
-        uid: user.uid,
+      // Prepare custom fields in user_metadata so triggers populate public.users atomically!
+      const metadata = {
         name: name.trim(),
-        email: email.trim(),
         role: signupRole,
         collegeId: selectedCollegeCode,
         collegeName: selectedCollegeObj?.name || selectedCollegeCode,
-        status: "pending",
-        createdAt: new Date().toISOString()
+        status: "pending"
       };
 
-      let finalData = { ...baseData };
       if (signupRole === "student") {
-        finalData = {
-          ...finalData,
-          rollNo: rollNo.trim(),
-          branch: branch.trim(),
-          currentYear: currentYear,
-          batch: graduationYear.trim()
-        };
+        metadata.rollNo = rollNo.trim();
+        metadata.branch = branch.trim();
+        metadata.currentYear = currentYear;
+        metadata.batch = graduationYear.trim();
       } else if (signupRole === "alumni") {
-        finalData = {
-          ...finalData,
-          rollNo: rollNo.trim(),
-          branch: branch.trim(),
-          batch: graduationYear.trim(),
-          company: company.trim(),
-          designation: designation.trim(),
-          linkedin: linkedin.trim()
-        };
+        metadata.rollNo = rollNo.trim();
+        metadata.branch = branch.trim();
+        metadata.batch = graduationYear.trim();
+        metadata.company = company.trim();
+        metadata.designation = designation.trim();
+        metadata.linkedin = linkedin.trim();
       }
 
-      // 3. Write User Profile into Firestore
-      await setDoc(doc(db, "users", user.uid), finalData);
+      // Create User in Supabase Auth
+      const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          data: metadata
+        }
+      });
+
+      if (signUpErr) {
+        throw signUpErr;
+      }
       
-      // 4. Force auth sign out immediately to prevent auto-login of pending user
-      await auth.signOut();
+      // Force auth sign out immediately to prevent auto-login of pending user
+      await supabase.auth.signOut();
 
       // Clear form inputs
       setName("");
@@ -335,15 +339,7 @@ export default function Login() {
       setSignupSuccess(true);
     } catch (err) {
       console.error("Sign up failure:", err);
-      if (err.code === "auth/email-already-in-use") {
-        setError("This email address is already registered in our system.");
-      } else if (err.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters long.");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Please enter a valid email address.");
-      } else {
-        setError(err.message || "Failed to submit request. Please try again.");
-      }
+      setError(err.message || "Failed to submit request. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,4 @@
 import { useAuth } from "../../context/AuthContext";
-import { auth } from "../../firebase/config";
 import { BookOpen, LogOut, Users, Building2 } from "lucide-react";
 
 export default function StudentDashboard() {

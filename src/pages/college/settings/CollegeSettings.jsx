@@ -29,10 +29,11 @@ import {
   Lock,
   Plus
 } from 'lucide-react';
-import { db, auth } from '../../../firebase/config';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import AppearanceSettings from '../../../components/AppearanceSettings';
+import SupabaseSandbox from '../../../components/SupabaseSandbox';
+import { Database } from 'lucide-react';
 
 export default function CollegeSettings() {
   const { currentUser, userData, logout } = useAuth();
@@ -79,7 +80,7 @@ export default function CollegeSettings() {
   useEffect(() => {
     if (!collegeId) return;
 
-    if (collegeId === 'dummy_college_01' || currentUser?.uid === 'dummy_12345') {
+    if (collegeId.toLowerCase().includes('dummy') || userData?.id === 'dummy_12345') {
       const dummyData = {
         name: 'Rajkiya Engineering College, Ambedkar Nagar',
         domain: 'recabn.ac.in',
@@ -98,22 +99,48 @@ export default function CollegeSettings() {
       return;
     }
 
-    const unsub = onSnapshot(doc(db, 'colleges', collegeId), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        setCollegeDetails(data);
-        setCollegeName(data.name || '');
-        setAdminPhone(data.adminPhone || '');
-        setAddress(data.address || '');
+    const fetchCollegeSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .eq('id', collegeId)
+          .single();
+          
+        if (error) throw error;
+        
+        const mapped = {
+          ...data,
+          collegeCode: data.id,
+          adminPhone: data.admin_phone,
+          adminEmail: data.admin_email,
+          createdAt: data.created_at
+        };
+        
+        setCollegeDetails(mapped);
+        setCollegeName(mapped.name || '');
+        setAdminPhone(mapped.adminPhone || '');
+        setAddress(mapped.address || '');
+      } catch (err) {
+        console.error("Fetch settings details failed:", err);
+      } finally {
+        setCollegeLoading(false);
       }
-      setCollegeLoading(false);
-    }, (error) => {
-      console.error("Fetch settings details failed:", error);
-      setCollegeLoading(false);
-    });
+    };
 
-    return () => unsub();
-  }, [collegeId, currentUser]);
+    fetchCollegeSettings();
+
+    const channel = supabase
+      .channel('college-settings-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'colleges', filter: `id=eq.${collegeId}` }, () => {
+        fetchCollegeSettings();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [collegeId, userData]);
 
   // Sync profile editing states with real-time userData
   useEffect(() => {
@@ -133,7 +160,7 @@ export default function CollegeSettings() {
     }, 3000);
   };
 
-  // Save personal profile data to Firestore
+  // Save personal profile data to Supabase
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     if (!profileName.trim()) {
@@ -143,19 +170,23 @@ export default function CollegeSettings() {
 
     setSavingProfile(true);
     try {
-      if (currentUser?.uid === 'dummy_12345') {
+      if (userData?.id === 'dummy_12345') {
         showToast('success', 'Public profile updated successfully! (Demo Mode)');
         setSavingProfile(false);
         return;
       }
 
-      const userRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userRef, {
-        name: profileName.trim(),
-        bio: profileBio.trim(),
-        pronouns: profilePronouns,
-        url: profileUrl.trim()
-      });
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: profileName.trim(),
+          bio: profileBio.trim(),
+          pronouns: profilePronouns,
+          url: profileUrl.trim()
+        })
+        .eq('id', userData.id);
+
+      if (error) throw error;
 
       showToast('success', 'Public profile updated successfully!');
     } catch (err) {
@@ -176,7 +207,7 @@ export default function CollegeSettings() {
 
     setSavingCollege(true);
     try {
-      if (collegeId === 'dummy_college_01' || currentUser?.uid === 'dummy_12345') {
+      if (collegeId.toLowerCase().includes('dummy') || userData?.id === 'dummy_12345') {
         const updated = {
           ...collegeDetails,
           name: collegeName.trim(),
@@ -189,12 +220,16 @@ export default function CollegeSettings() {
         return;
       }
 
-      const collegeRef = doc(db, 'colleges', collegeId);
-      await updateDoc(collegeRef, {
-        name: collegeName.trim(),
-        adminPhone: adminPhone.trim(),
-        address: address.trim()
-      });
+      const { error } = await supabase
+        .from('colleges')
+        .update({
+          name: collegeName.trim(),
+          admin_phone: adminPhone.trim(),
+          address: address.trim()
+        })
+        .eq('id', collegeId);
+
+      if (error) throw error;
 
       showToast('success', 'Institutional configurations updated successfully!');
       setIsEditingCollege(false);
@@ -211,7 +246,7 @@ export default function CollegeSettings() {
     if (!tempPhotoUrl.trim()) return;
     setSavingProfile(true);
     try {
-      if (currentUser?.uid === 'dummy_12345') {
+      if (userData?.id === 'dummy_12345') {
         setProfilePhotoURL(tempPhotoUrl.trim());
         showToast('success', 'Avatar updated! (Demo Mode)');
         setIsEditingPhoto(false);
@@ -219,8 +254,13 @@ export default function CollegeSettings() {
         return;
       }
 
-      const userRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userRef, { photoURL: tempPhotoUrl.trim() });
+      const { error } = await supabase
+        .from('users')
+        .update({ photo_url: tempPhotoUrl.trim() })
+        .eq('id', userData.id);
+
+      if (error) throw error;
+
       showToast('success', 'Profile picture updated successfully!');
       setIsEditingPhoto(false);
     } catch (err) {
@@ -341,6 +381,18 @@ export default function CollegeSettings() {
             >
               <Bell size={14} className={activeTab === 'notifications' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Notifications</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('supabase')}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                activeTab === 'supabase'
+                  ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60'
+                  : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight'
+              }`}
+            >
+              <Database size={14} className={activeTab === 'supabase' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <span>Supabase Sandbox</span>
             </button>
           </div>
 
@@ -865,6 +917,11 @@ export default function CollegeSettings() {
             )}
 
           </div>
+        )}
+
+        {/* TAB F: Supabase Sandbox component integration */}
+        {activeTab === 'supabase' && (
+          <SupabaseSandbox />
         )}
 
         {/* TAB E: Mock Settings Pages (Accessibility, Notifications, Emails, etc.) */}

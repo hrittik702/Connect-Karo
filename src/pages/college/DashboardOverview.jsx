@@ -13,8 +13,7 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react';
-import { db } from '../../firebase/config';
-import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, increment } from 'firebase/firestore';
+import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 
 export default function CollegeDashboardOverview() {
@@ -39,82 +38,137 @@ export default function CollegeDashboardOverview() {
   // 1. Fetch College Metadata
   useEffect(() => {
     if (!collegeId) return;
-    const unsub = onSnapshot(doc(db, 'colleges', collegeId), (snapshot) => {
-      if (snapshot.exists()) {
-        setCollegeDetails(snapshot.data());
+    
+    const fetchCollegeMetadata = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .eq('id', collegeId)
+          .single();
+          
+        if (error) throw error;
+        
+        setCollegeDetails({
+          ...data,
+          collegeCode: data.id
+        });
+      } catch (err) {
+        console.error("Fetch college metadata error:", err);
       }
-    });
-    return () => unsub();
+    };
+
+    fetchCollegeMetadata();
+
+    const channel = supabase
+      .channel('college-metadata-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'colleges', filter: `id=eq.${collegeId}` }, () => {
+        fetchCollegeMetadata();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [collegeId]);
 
   // 2. Fetch College Users (Students/Alumni/Pending)
   useEffect(() => {
     if (!collegeId) return;
     
-    const q = query(collection(db, 'users'), where('collegeId', '==', collegeId));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let studentsCount = 0;
-      let alumniCount = 0;
-      let pendingCount = 0;
-      const pendingList = [];
+    const fetchCollegeUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('college_id', collegeId);
+          
+        if (error) throw error;
+        
+        let studentsCount = 0;
+        let alumniCount = 0;
+        let pendingCount = 0;
+        const pendingList = [];
 
-      snapshot.forEach((docSnap) => {
-        const u = { id: docSnap.id, ...docSnap.data() };
-        if (u.status === 'pending') {
-          pendingCount++;
-          pendingList.push(u);
-        } else if (u.status === 'approved') {
-          if (u.role === 'student') studentsCount++;
-          if (u.role === 'alumni') alumniCount++;
-        }
-      });
+        (data || []).forEach((u) => {
+          if (u.status === 'pending') {
+            pendingCount++;
+            pendingList.push(u);
+          } else if (u.status === 'approved') {
+            if (u.role === 'student') studentsCount++;
+            if (u.role === 'alumni') alumniCount++;
+          }
+        });
 
-      setStats(prev => ({
-        ...prev,
-        totalStudents: studentsCount,
-        totalAlumni: alumniCount,
-        pendingApprovals: pendingCount
-      }));
-      setRecentRequests(pendingList.slice(0, 3));
-      setLoading(false);
-    }, (error) => {
-      console.error("College Aggregation Error:", error);
-      setLoading(false);
-    });
+        setStats(prev => ({
+          ...prev,
+          totalStudents: studentsCount,
+          totalAlumni: alumniCount,
+          pendingApprovals: pendingCount
+        }));
+        setRecentRequests(pendingList.slice(0, 3));
+      } catch (err) {
+        console.error("College Aggregation Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchCollegeUsers();
+
+    const channel = supabase
+      .channel('college-users-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users', filter: `college_id=eq.${collegeId}` }, () => {
+        fetchCollegeUsers();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [collegeId]);
 
   // 3. Fetch Active Announcements targeted to this node
   useEffect(() => {
     if (!collegeId) return;
 
-    const q = query(collection(db, 'announcements'), where('status', '==', 'active'));
+    const fetchActiveAnnouncements = async () => {
+      try {
+        const plan = collegeDetails?.subscription?.plan || 'free';
+        const status = collegeDetails?.status || 'active';
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let broadcastCount = 0;
-      const plan = collegeDetails?.subscription?.plan || 'free';
-      const status = collegeDetails?.status || 'active';
+        const allowedTargets = ['all'];
+        if (status === 'active') allowedTargets.push('active');
+        if (plan === 'premium') allowedTargets.push('premium');
 
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        if (
-          data.target === 'all' ||
-          (data.target === 'active' && status === 'active') ||
-          (data.target === 'premium' && plan === 'premium')
-        ) {
-          broadcastCount++;
-        }
-      });
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('id, target')
+          .eq('status', 'active')
+          .in('target', allowedTargets);
 
-      setStats(prev => ({
-        ...prev,
-        activeBroadcasts: broadcastCount
-      }));
-    });
+        if (error) throw error;
+        setStats(prev => ({
+          ...prev,
+          activeBroadcasts: (data || []).length
+        }));
+      } catch (err) {
+        console.error("Fetch Active Announcements error:", err);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchActiveAnnouncements();
+
+    const channel = supabase
+      .channel('announcements-metrics-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        fetchActiveAnnouncements();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [collegeId, collegeDetails]);
 
   // Approval handler
@@ -122,14 +176,41 @@ export default function CollegeDashboardOverview() {
     if (!userId || !role) return;
     setActionInProgress(userId);
     try {
-      // 1. Update user status in Firestore
-      await updateDoc(doc(db, 'users', userId), { status: 'approved' });
+      // 1. Update user status in Supabase
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ status: 'approved' })
+        .eq('id', userId);
+        
+      if (userError) throw userError;
       
-      // 2. Increment metrics atomically inside the college document
-      const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
-      await updateDoc(doc(db, 'colleges', collegeId), {
-        [metricsField]: increment(1)
-      });
+      // 2. Fetch current metrics
+      const { data: collegeData, error: fetchError } = await supabase
+        .from('colleges')
+        .select('metrics')
+        .eq('id', collegeId)
+        .single();
+        
+      if (fetchError) throw fetchError;
+      
+      let metrics = collegeData.metrics || { totalStudents: 0, totalAlumni: 0 };
+      if (typeof metrics === 'string') {
+        try { metrics = JSON.parse(metrics); } catch(e) {}
+      }
+      
+      if (role === 'student') {
+        metrics.totalStudents = (metrics.totalStudents || 0) + 1;
+      } else {
+        metrics.totalAlumni = (metrics.totalAlumni || 0) + 1;
+      }
+      
+      // Update metrics inside the college document
+      const { error: collegeError } = await supabase
+        .from('colleges')
+        .update({ metrics })
+        .eq('id', collegeId);
+        
+      if (collegeError) throw collegeError;
     } catch (error) {
       console.error("Approval Error:", error);
       alert("Approve karne mein error aaya.");
@@ -145,7 +226,11 @@ export default function CollegeDashboardOverview() {
     
     setActionInProgress(userId);
     try {
-      await deleteDoc(doc(db, 'users', userId));
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+      if (error) throw error;
     } catch (error) {
       console.error("Rejection Error:", error);
       alert("Reject karne mein error aaya.");

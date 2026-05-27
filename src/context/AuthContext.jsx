@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, db } from "../firebase/config";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext();
 
@@ -12,65 +10,129 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setCurrentUser(user);
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.collegeId && data.collegeId.toLowerCase() !== "dummy_college_01") {
-              const rawId = data.collegeId.trim();
-              let docRef = doc(db, "colleges", rawId);
-              let snap = await getDoc(docRef);
-              
-              if (!snap.exists()) {
-                docRef = doc(db, "colleges", rawId.toUpperCase());
-                snap = await getDoc(docRef);
-                if (snap.exists()) {
-                  data.collegeId = rawId.toUpperCase();
-                  try {
-                    await updateDoc(doc(db, "users", user.uid), { collegeId: data.collegeId });
-                  } catch (e) {
-                    console.warn("Self-healing updateDoc failed:", e);
-                  }
-                } else {
-                  docRef = doc(db, "colleges", rawId.toLowerCase());
-                  snap = await getDoc(docRef);
-                  if (snap.exists()) {
-                    data.collegeId = rawId.toLowerCase();
-                    try {
-                      await updateDoc(doc(db, "users", user.uid), { collegeId: data.collegeId });
-                    } catch (e) {
-                      console.warn("Self-healing updateDoc failed:", e);
-                    }
-                  }
+  // Helper to cleanly map Postgres snake_case fields to camelCase properties for 100% UI compatibility
+  const mapProfileData = (dbUser) => {
+    if (!dbUser) return null;
+    return {
+      uid: dbUser.id,
+      name: dbUser.name,
+      email: dbUser.email,
+      role: dbUser.role,
+      status: dbUser.status,
+      collegeId: dbUser.college_id,
+      collegeName: dbUser.college_name,
+      batch: dbUser.batch,
+      degree: dbUser.degree,
+      company: dbUser.company,
+      designation: dbUser.designation,
+      linkedin: dbUser.linkedin,
+      bio: dbUser.bio,
+      pronouns: dbUser.pronouns,
+      url: dbUser.url,
+      photoURL: dbUser.photo_url,
+      rollNo: dbUser.roll_no,
+      branch: dbUser.branch,
+      currentYear: dbUser.current_year
+    };
+  };
+
+  const handleUserSession = async (session) => {
+    if (session?.user) {
+      const user = session.user;
+      setCurrentUser(user);
+      
+      try {
+        // Retrieve public profile details from users table
+        const { data: dbUser, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (dbUser) {
+          const profile = { ...dbUser };
+          
+          // Self-healing collegeId logic (case sensitivity fix)
+          if (profile.college_id && profile.college_id.toLowerCase() !== "dummy_college_01") {
+            const rawId = profile.college_id.trim();
+            
+            const { data: college } = await supabase
+              .from("colleges")
+              .select("id")
+              .eq("id", rawId)
+              .single();
+
+            if (!college) {
+              const { data: upperCol } = await supabase
+                .from("colleges")
+                .select("id")
+                .eq("id", rawId.toUpperCase())
+                .single();
+
+              if (upperCol) {
+                profile.college_id = rawId.toUpperCase();
+                await supabase.from("users").update({ college_id: profile.college_id }).eq("id", user.id);
+              } else {
+                const { data: lowerCol } = await supabase
+                  .from("colleges")
+                  .select("id")
+                  .eq("id", rawId.toLowerCase())
+                  .single();
+
+                if (lowerCol) {
+                  profile.college_id = rawId.toLowerCase();
+                  await supabase.from("users").update({ college_id: profile.college_id }).eq("id", user.id);
                 }
               }
             }
-            setUserData(data);
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+
+          setUserData(mapProfileData(profile));
+        } else {
+          // Fallback to Supabase Auth metadata if public.users is not yet provisioned
+          const metadata = user.user_metadata || {};
+          setUserData({
+            uid: user.id,
+            email: user.email,
+            name: metadata.name || "Connect-Karo Member",
+            role: metadata.role || "student",
+            status: metadata.status || "pending",
+            collegeId: metadata.collegeId,
+            collegeName: metadata.collegeName
+          });
         }
-      } else {
-        setCurrentUser(null);
-        setUserData(null);
+      } catch (err) {
+        console.error("Error loading user profile:", err);
       }
+    } else {
+      setCurrentUser(null);
+      setUserData(null);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    // 1. Check current auth session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleUserSession(session);
+    }).catch(err => {
+      console.error("Error getting session:", err);
       setLoading(false);
     });
 
-    return unsubscribe;
+    // 2. Register real-time session updates
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await handleUserSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // 🟢 Dummy Login Function (Enabled in production to facilitate evaluation and testing on Vercel)
+  // 🟢 Dummy Login Function (Preserved for offline, fast portal evaluation)
   const dummyLogin = (role) => {
-    // Fake Firebase User
-    setCurrentUser({ uid: "dummy_12345", email: `test@${role}.com` });
-    
-    // Fake Firestore Data
+    setCurrentUser({ id: "dummy_12345", email: `test@${role}.com` });
     setUserData({
+      uid: "dummy_12345",
       name: `Demo ${role.toUpperCase()}`,
       role: role,
       status: "approved",
@@ -84,10 +146,10 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setCurrentUser(null);
     setUserData(null);
-    return auth.signOut();
+    return supabase.auth.signOut();
   };
 
-  // 🟢 Dummy Logout (for backward compatibility, calls unified logout)
+  // 🟢 Dummy Logout
   const dummyLogout = () => {
     logout();
   };

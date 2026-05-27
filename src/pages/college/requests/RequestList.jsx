@@ -9,8 +9,7 @@ import {
   Mail,
   Calendar
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, where, doc, runTransaction, limit } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 
 export default function CollegeRequestList() {
@@ -44,84 +43,106 @@ export default function CollegeRequestList() {
     if (!collegeId) return;
 
     setLoading(true);
-    let q;
-    if (filterRole === 'student') {
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId), 
-        where('status', '==', 'pending'),
-        where('role', '==', 'student'),
-        limit(limitCount + 1)
-      );
-    } else if (filterRole === 'alumni') {
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId), 
-        where('status', '==', 'pending'),
-        where('role', '==', 'alumni'),
-        limit(limitCount + 1)
-      );
-    } else {
-      q = query(
-        collection(db, 'users'), 
-        where('collegeId', '==', collegeId), 
-        where('status', '==', 'pending'),
-        limit(limitCount + 1)
-      );
-    }
+    const fetchRequests = async () => {
+      try {
+        let query = supabase
+          .from('users')
+          .select('*')
+          .eq('college_id', collegeId)
+          .eq('status', 'pending')
+          .limit(limitCount + 1);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = [];
-      snapshot.forEach((docSnap) => {
-        data.push({ id: docSnap.id, ...docSnap.data() });
-      });
+        if (filterRole !== 'all') {
+          query = query.eq('role', filterRole);
+        }
 
-      if (data.length > limitCount) {
-        setHasMore(true);
-        setRequests(data.slice(0, limitCount));
-      } else {
-        setHasMore(false);
-        setRequests(data);
+        const { data, error } = await query;
+        if (error) throw error;
+
+        // Map database columns to component properties
+        const mapped = (data || []).map(u => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          status: u.status,
+          rollNo: u.roll_no,
+          branch: u.branch,
+          currentYear: u.current_year,
+          batch: u.batch,
+          degree: u.degree,
+          company: u.company,
+          designation: u.designation,
+          linkedin: u.linkedin
+        }));
+
+        if (mapped.length > limitCount) {
+          setHasMore(true);
+          setRequests(mapped.slice(0, limitCount));
+        } else {
+          setHasMore(false);
+          setRequests(mapped);
+        }
+      } catch (err) {
+        console.error("Fetch pending error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, (error) => {
-      console.error("Fetch pending error:", error);
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    fetchRequests();
+
+    const channel = supabase
+      .channel('pending-requests-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users', filter: `college_id=eq.${collegeId}` }, () => {
+        fetchRequests();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [collegeId, filterRole, limitCount]);
 
-  // Approval handler with Transactions
+  // Approval handler
   const handleApprove = async (userId, role) => {
     setActionInProgress(userId);
-    const userRef = doc(db, 'users', userId);
-    const collegeRef = doc(db, 'colleges', collegeId);
-    const metricsField = role === 'student' ? 'metrics.totalStudents' : 'metrics.totalAlumni';
-
     try {
-      await runTransaction(db, async (transaction) => {
-        const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) {
-          throw new Error("User document does not exist.");
-        }
-        
-        const collegeSnap = await transaction.get(collegeRef);
-        if (!collegeSnap.exists()) {
-          throw new Error("College document does not exist.");
-        }
+      // 1. Update status
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ status: 'approved' })
+        .eq('id', userId);
 
-        transaction.update(userRef, { status: 'approved' });
+      if (userError) throw userError;
 
-        const collegeData = collegeSnap.data();
-        const metrics = collegeData.metrics || {};
-        const currentCount = role === 'student' ? (metrics.totalStudents || 0) : (metrics.totalAlumni || 0);
-        const newCount = currentCount + 1;
+      // 2. Fetch and increment college metrics
+      const { data: collegeData, error: fetchError } = await supabase
+        .from('colleges')
+        .select('metrics')
+        .eq('id', collegeId)
+        .single();
 
-        transaction.update(collegeRef, {
-          [metricsField]: newCount
-        });
-      });
+      if (fetchError) throw fetchError;
+
+      let metrics = collegeData.metrics || { totalStudents: 0, totalAlumni: 0 };
+      if (typeof metrics === 'string') {
+        try { metrics = JSON.parse(metrics); } catch(e) {}
+      }
+
+      if (role === 'student') {
+        metrics.totalStudents = (metrics.totalStudents || 0) + 1;
+      } else {
+        metrics.totalAlumni = (metrics.totalAlumni || 0) + 1;
+      }
+
+      // Update college metrics
+      const { error: collegeError } = await supabase
+        .from('colleges')
+        .update({ metrics })
+        .eq('id', collegeId);
+
+      if (collegeError) throw collegeError;
     } catch (error) {
       console.error("Approve Error:", error);
       alert("Approve action failed. Please try again.");
@@ -130,22 +151,18 @@ export default function CollegeRequestList() {
     }
   };
 
-  // Reject handler with Transactions
+  // Reject handler
   const handleReject = async (userId) => {
     const isConfirmed = window.confirm("Are you sure you want to decline this registration request? This action deletes their temporary record.");
     if (!isConfirmed) return;
 
     setActionInProgress(userId);
-    const userRef = doc(db, 'users', userId);
-
     try {
-      await runTransaction(db, async (transaction) => {
-        const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists()) {
-          throw new Error("User document does not exist.");
-        }
-        transaction.delete(userRef);
-      });
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+      if (error) throw error;
     } catch (error) {
       console.error("Reject Error:", error);
       alert("Reject action failed. Please try again.");

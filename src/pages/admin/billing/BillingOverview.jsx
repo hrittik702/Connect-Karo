@@ -13,8 +13,7 @@ import {
   ShieldCheck,
   AlertTriangle
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 
 export default function BillingOverview() {
   const [colleges, setColleges] = useState([]);
@@ -44,57 +43,86 @@ export default function BillingOverview() {
     enterprise: 14999 // ₹14,999/month
   };
 
-  // Firebase Real-time Pipeline
+  // Supabase Real-time Pipeline
   useEffect(() => {
-    const q = query(collection(db, 'colleges'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const collegeData = [];
-      let pColleges = 0;
-      let tColleges = 0;
-      let renewals = 0;
-      let mrr = 0;
-      const now = new Date();
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(now.getDate() + 30);
+    const fetchColleges = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        const collegeData = [];
+        let pColleges = 0;
+        let tColleges = 0;
+        let renewals = 0;
+        let mrr = 0;
+        const now = new Date();
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(now.getDate() + 30);
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        collegeData.push({ id: doc.id, ...data });
-
-        if (data.status === 'active') {
-          // Calculate Tiers
-          if (data.subscription?.plan === 'free') {
-            tColleges++;
-          } else {
-            pColleges++;
-            mrr += PRICING[data.subscription?.plan] || 0;
-          }
-
-          // Calculate Upcoming Renewals
-          if (data.subscription?.expiresAt) {
-            const expiryDate = data.subscription.expiresAt.toDate();
-            if (expiryDate > now && expiryDate <= thirtyDaysFromNow) {
-              renewals++;
+        (data || []).forEach((item) => {
+          let subscription = item.subscription;
+          if (typeof subscription === 'string') {
+            try {
+              subscription = JSON.parse(subscription);
+            } catch (e) {
+              subscription = { plan: 'free', expiresAt: null };
             }
           }
-        }
-      });
+          
+          const mapped = {
+            ...item,
+            subscription: subscription || { plan: 'free', expiresAt: null }
+          };
+          collegeData.push(mapped);
 
-      setColleges(collegeData.sort((a, b) => b.createdAt - a.createdAt));
-      setStats({
-        paidColleges: pColleges,
-        trialColleges: tColleges,
-        upcomingRenewals: renewals,
-        estimatedMRR: mrr
-      });
-      setLoading(false);
-    }, (error) => {
-      console.error("Billing Fetch Error:", error);
-      setLoading(false);
-    });
+          if (mapped.status === 'active') {
+            const plan = mapped.subscription?.plan || 'free';
+            if (plan === 'free') {
+              tColleges++;
+            } else {
+              pColleges++;
+              mrr += PRICING[plan] || 0;
+            }
 
-    return () => unsubscribe();
+            if (mapped.subscription?.expiresAt) {
+              const expiryDate = new Date(mapped.subscription.expiresAt);
+              if (expiryDate > now && expiryDate <= thirtyDaysFromNow) {
+                renewals++;
+              }
+            }
+          }
+        });
+
+        setColleges(collegeData);
+        setStats({
+          paidColleges: pColleges,
+          trialColleges: tColleges,
+          upcomingRenewals: renewals,
+          estimatedMRR: mrr
+        });
+      } catch (error) {
+        console.error("Billing Fetch Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchColleges();
+
+    const channel = supabase
+      .channel('billing-colleges-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'colleges' }, () => {
+        fetchColleges();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Utility: Click outside to close dropdowns
@@ -105,9 +133,9 @@ export default function BillingOverview() {
   }, []);
 
   // Compute Expiry Status Logic
-  const getExpiryStatus = (timestamp) => {
-    if (!timestamp) return { label: 'No Expiry Set', color: 'text-gray-400', badge: 'bg-gray-500/10 border-gray-500/20' };
-    const expiry = timestamp.toDate();
+  const getExpiryStatus = (expiryVal) => {
+    if (!expiryVal) return { label: 'No Expiry Set', color: 'text-gray-400', badge: 'bg-gray-500/10 border-gray-500/20' };
+    const expiry = new Date(expiryVal);
     const now = new Date();
     const diffDays = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
 
@@ -121,9 +149,19 @@ export default function BillingOverview() {
     if (!selectedCollege) return;
     setIsProcessing(true);
     try {
-      await updateDoc(doc(db, 'colleges', selectedCollege.id), {
-        'subscription.plan': newPlan
-      });
+      const updatedSubscription = {
+        ...(selectedCollege.subscription || {}),
+        plan: newPlan
+      };
+      const { error } = await supabase
+        .from('colleges')
+        .update({
+          subscription: updatedSubscription,
+          billing_plan: newPlan
+        })
+        .eq('id', selectedCollege.id);
+
+      if (error) throw error;
       setIsModalOpen(false);
     } catch (err) {
       console.error("Plan update error:", err);
@@ -137,13 +175,24 @@ export default function BillingOverview() {
     if (!selectedCollege) return;
     setIsProcessing(true);
     try {
-      const currentExpiry = selectedCollege.subscription?.expiresAt?.toDate() || new Date();
+      const currentExpiryStr = selectedCollege.subscription?.expiresAt;
+      const currentExpiry = currentExpiryStr ? new Date(currentExpiryStr) : new Date();
       const newExpiry = new Date(currentExpiry);
       newExpiry.setDate(newExpiry.getDate() + daysToAdd);
       
-      await updateDoc(doc(db, 'colleges', selectedCollege.id), {
-        'subscription.expiresAt': Timestamp.fromDate(newExpiry)
-      });
+      const updatedSubscription = {
+        ...(selectedCollege.subscription || {}),
+        expiresAt: newExpiry.toISOString()
+      };
+      
+      const { error } = await supabase
+        .from('colleges')
+        .update({
+          subscription: updatedSubscription
+        })
+        .eq('id', selectedCollege.id);
+
+      if (error) throw error;
       setIsModalOpen(false);
     } catch (err) {
       console.error("Validity extension error:", err);
@@ -325,7 +374,7 @@ export default function BillingOverview() {
                             {expiryData.label}
                           </span>
                           <span className="text-[11px] text-ec-text-sub">
-                            Expires: {college.subscription?.expiresAt ? college.subscription.expiresAt.toDate().toLocaleDateString('en-GB') : 'N/A'}
+                            Expires: {college.subscription?.expiresAt ? new Date(college.subscription.expiresAt).toLocaleDateString('en-GB') : 'N/A'}
                           </span>
                         </div>
                       </td>

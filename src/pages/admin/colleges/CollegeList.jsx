@@ -12,8 +12,7 @@ import {
   Users,
   GraduationCap
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 
 export default function CollegeList() {
   const navigate = useNavigate();
@@ -27,30 +26,47 @@ export default function CollegeList() {
 
   // Real-time Data Fetching Pipeline
   useEffect(() => {
-    const q = query(collection(db, 'colleges'), orderBy('createdAt', 'desc'));
-    
-    // onSnapshot sets up a real-time listener
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const collegeData = [];
-      snapshot.forEach((doc) => {
-        collegeData.push({ id: doc.id, ...doc.data() });
-      });
-      setColleges(collegeData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Data Fetch Error:", error);
-      setLoading(false);
-    });
+    const fetchColleges = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-    // Cleanup memory leak when component unmounts
-    return () => unsubscribe();
+        if (error) throw error;
+        setColleges(data || []);
+      } catch (err) {
+        console.error("Data Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchColleges();
+
+    // Setup Postgres realtime listener for colleges table
+    const channel = supabase
+      .channel('public:colleges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'colleges' }, () => {
+        fetchColleges();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Action Logic: Toggle Status (Suspend/Activate)
   const handleToggleStatus = async (collegeId, currentStatus) => {
     try {
       const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
-      await updateDoc(doc(db, 'colleges', collegeId), { status: newStatus });
+      const { error } = await supabase
+        .from('colleges')
+        .update({ status: newStatus })
+        .eq('id', collegeId);
+
+      if (error) throw error;
       setActionMenuOpen(null);
     } catch (err) {
       console.error("Status Update Failed:", err);
@@ -63,7 +79,12 @@ export default function CollegeList() {
     const isConfirmed = window.confirm(`WARNING: Kya aap sach mein '${collegeName}' ka data delete karna chahte hain? Ye undo nahi hoga.`);
     if (isConfirmed) {
       try {
-        await deleteDoc(doc(db, 'colleges', collegeId));
+        const { error } = await supabase
+          .from('colleges')
+          .delete()
+          .eq('id', collegeId);
+
+        if (error) throw error;
         setActionMenuOpen(null);
       } catch (err) {
         console.error("Deletion Failed:", err);
@@ -82,7 +103,7 @@ export default function CollegeList() {
   // Filter & Search Engine
   const filteredColleges = colleges.filter(college => {
     const matchesSearch = college.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          college.collegeCode?.toLowerCase().includes(searchTerm.toLowerCase());
+                          college.id?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || college.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -181,10 +202,8 @@ export default function CollegeList() {
                         {college.name}
                       </div>
                       <div className="text-[11px] text-ec-text-sub mt-0.5">
-                        Added: {college.createdAt 
-                          ? (college.createdAt.toDate 
-                              ? college.createdAt.toDate().toLocaleDateString('en-GB') 
-                              : new Date(college.createdAt).toLocaleDateString('en-GB')) 
+                        Added: {college.created_at 
+                          ? new Date(college.created_at).toLocaleDateString('en-GB') 
                           : 'Recently'}
                       </div>
                     </td>
@@ -193,7 +212,7 @@ export default function CollegeList() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1.5 text-[12px] font-mono text-ec-text-sub">
                         <span className="px-1.5 py-0.5 rounded bg-ec-muted/40 border border-ec-border font-bold text-ec-highlight">
-                          {college.collegeCode}
+                          {college.id}
                         </span>
                       </div>
                       <div className="text-[11px] text-ec-accent mt-1 hover:underline cursor-pointer">

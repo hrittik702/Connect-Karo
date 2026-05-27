@@ -15,8 +15,7 @@ import {
   Save,
   Filter
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { collection, onSnapshot, query, orderBy, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 export default function AnnouncementPanel() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,20 +45,36 @@ export default function AnnouncementPanel() {
 
   // ── DATA FETCHING PIPELINE ──
   useEffect(() => {
-    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = [];
-      snapshot.forEach((doc) => {
-        data.push({ id: doc.id, ...doc.data() });
-      });
-      setAnnouncements(data);
-      setLoading(false);
-    }, (error) => {
-      console.error("Broadcast Fetch Error:", error);
-      showFeedback("Failed to fetch broadcasts.", "error");
-      setLoading(false);
-    });
-    return () => unsubscribe();
+    const fetchAnnouncements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('*')
+          .is('college_id', null)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        setAnnouncements(data || []);
+      } catch (error) {
+        console.error("Broadcast Fetch Error:", error);
+        showFeedback("Failed to fetch broadcasts.", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+
+    const channel = supabase
+      .channel('global-announcements-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => {
+        fetchAnnouncements();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // ── DISPATCH / UPDATE BROADCAST (Write Operation) ──
@@ -70,15 +85,29 @@ export default function AnnouncementPanel() {
     setIsSubmitting(true);
     try {
       if (isEditing && editId) {
-        await updateDoc(doc(db, 'announcements', editId), {
-          title: title.trim(), message: message.trim(), type, target, updatedAt: serverTimestamp()
-        });
+        const { error } = await supabase
+          .from('announcements')
+          .update({
+            title: title.trim(),
+            message: message.trim(),
+            type,
+            target
+          })
+          .eq('id', editId);
+        if (error) throw error;
         showFeedback('Broadcast updated successfully.', 'success');
       } else {
-        await addDoc(collection(db, 'announcements'), {
-          title: title.trim(), message: message.trim(), type, target, status: 'active',
-          createdAt: serverTimestamp(), dispatchedBy: 'root_admin'
-        });
+        const { error } = await supabase
+          .from('announcements')
+          .insert({
+            title: title.trim(),
+            message: message.trim(),
+            type,
+            target,
+            status: 'active',
+            college_id: null
+          });
+        if (error) throw error;
         showFeedback('Broadcast dispatched across the network.', 'success');
       }
       cancelEdit();
@@ -97,7 +126,11 @@ export default function AnnouncementPanel() {
     if (!revokeTarget) return;
     const { id } = revokeTarget;
     try {
-      await deleteDoc(doc(db, 'announcements', id));
+      const { error } = await supabase
+        .from('announcements')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
       showFeedback('Announcement revoked and removed.', 'success');
       if (isEditing && editId === id) cancelEdit();
     } catch (error) {
@@ -303,7 +336,7 @@ export default function AnnouncementPanel() {
                               <Users size={10} /> {announcement.target}
                             </span>
                             <span className="text-[10px] text-ec-text-sub font-mono">
-                              {announcement.createdAt?.toDate ? announcement.createdAt.toDate().toLocaleDateString('en-GB') : 'Just now'}
+                              {announcement.created_at ? new Date(announcement.created_at).toLocaleDateString('en-GB') : 'Just now'}
                             </span>
                           </div>
                         </div>

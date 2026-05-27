@@ -16,8 +16,7 @@ import {
   ShieldBan,
   CheckCircle2
 } from 'lucide-react';
-import { db } from '../../../firebase/config';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { supabase } from '../../../lib/supabaseClient';
 
 export default function CollegeDetails() {
   const { id } = useParams(); // URL se college ID nikalenge
@@ -32,13 +31,16 @@ export default function CollegeDetails() {
   useEffect(() => {
     const fetchCollegeDetails = async () => {
       try {
-        const docRef = doc(db, 'colleges', id);
-        const docSnap = await getDoc(docRef);
+        const { data, error } = await supabase
+          .from('colleges')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-        if (docSnap.exists()) {
-          setCollege({ id: docSnap.id, ...docSnap.data() });
-        } else {
+        if (error) {
           setError('College not found in the database.');
+        } else {
+          setCollege(data);
         }
       } catch (err) {
         console.error("Error fetching college:", err);
@@ -51,12 +53,10 @@ export default function CollegeDetails() {
     fetchCollegeDetails();
   }, [id]);
 
-  // Safe Date Formatter (Prevents .toDate() crashes)
+  // Safe Date Formatter (Prevents crashes)
   const formatDate = (dateVal) => {
     if (!dateVal) return 'Not Available';
-    return dateVal.toDate 
-      ? dateVal.toDate().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })
-      : new Date(dateVal).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    return new Date(dateVal).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
   };
 
   // Toggle Status Logic
@@ -70,7 +70,12 @@ export default function CollegeDetails() {
     if (window.confirm(confirmMsg)) {
       setIsProcessing(true);
       try {
-        await updateDoc(doc(db, 'colleges', id), { status: newStatus });
+        const { error } = await supabase
+          .from('colleges')
+          .update({ status: newStatus })
+          .eq('id', id);
+
+        if (error) throw error;
         setCollege({ ...college, status: newStatus });
       } catch (err) {
         console.error("Status Update Failed:", err);
@@ -86,7 +91,12 @@ export default function CollegeDetails() {
     if (window.confirm(`CRITICAL WARNING: Are you absolutely sure you want to delete '${college.name}'? All associated data mapping will be lost. This cannot be undone.`)) {
       setIsProcessing(true);
       try {
-        await deleteDoc(doc(db, 'colleges', id));
+        const { error } = await supabase
+          .from('colleges')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
         navigate('/admin/colleges');
       } catch (err) {
         console.error("Deletion Failed:", err);
@@ -147,7 +157,7 @@ export default function CollegeDetails() {
               </span>
             </div>
             <p className="text-xs text-ec-text-sub mt-1 flex items-center gap-2">
-              <Calendar size={12} /> Onboarded: {formatDate(college.createdAt)}
+              <Calendar size={12} /> Onboarded: {formatDate(college.created_at)}
             </p>
           </div>
         </div>
@@ -222,7 +232,7 @@ export default function CollegeDetails() {
             <div>
               <p className="text-[11px] font-bold text-ec-text-sub uppercase tracking-wide mb-1">Institution Code</p>
               <p className="text-[14px] font-medium text-ec-highlight flex items-center gap-2">
-                <Hash size={14} className="text-ec-text-sub" /> {college.collegeCode}
+                <Hash size={14} className="text-ec-text-sub" /> {college.id}
               </p>
             </div>
             <div>
