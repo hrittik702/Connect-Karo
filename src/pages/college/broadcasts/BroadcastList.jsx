@@ -33,6 +33,11 @@ export default function BroadcastList() {
         setCollegeDetails(data);
       } catch (err) {
         console.error("Fetch college details error:", err);
+        // Fallback college details for local development / dummy login / missing records
+        setCollegeDetails({
+          status: 'active',
+          subscription: { plan: 'free' }
+        });
       }
     };
     fetchCollegeDetails();

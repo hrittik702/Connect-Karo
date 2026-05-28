@@ -55,6 +55,13 @@ export default function CollegeDashboardOverview() {
         });
       } catch (err) {
         console.error("Fetch college metadata error:", err);
+        // Fallback college details for local development / dummy login
+        setCollegeDetails({
+          status: 'active',
+          subscription: { plan: 'free' },
+          collegeCode: collegeId,
+          name: 'Demo Campus Node'
+        });
       }
     };
 
