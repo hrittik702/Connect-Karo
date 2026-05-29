@@ -20,14 +20,16 @@ export default function CollegeDashboardLayout() {
   
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     setShowNotifications(false);
     setShowUserMenu(false);
+    setIsSidebarOpen(false);
   }, [location.pathname]);
 
   const navItems = [
-    { name: 'Overview', path: '/college', icon: GoHome, exact: true },
+    { name: 'Overview', path: '/college', icon: GoOrganization, exact: true },
     { name: 'Requests', path: '/college/requests', icon: GoChecklist },
     { name: 'Directory', path: '/college/users', icon: GoPeople },
     { name: 'Broadcasts', path: '/college/broadcasts', icon: GoMegaphone },
@@ -65,8 +67,12 @@ export default function CollegeDashboardLayout() {
           {/* Brand Header */}
           <div className="flex items-center gap-3 shrink-0">
             {/* Styled Hamburger Menu Button (Always visible) */}
-            <button className="p-1.5 text-gray-400 dark:text-[#8b949e] hover:text-gray-900 dark:hover:text-[#f0f6fc] hover:bg-gray-100 dark:hover:bg-[#30363d]/60 rounded-lg transition-colors cursor-pointer bg-transparent border-transparent outline-none">
-              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-1.5 text-ec-text-sub hover:text-ec-highlight hover:bg-ec-muted/50 rounded-lg border border-ec-border transition-all cursor-pointer bg-ec-surface outline-none shadow-sm flex items-center justify-center"
+              aria-label="Open navigation menu"
+            >
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"></path>
               </svg>
             </button>
@@ -74,8 +80,8 @@ export default function CollegeDashboardLayout() {
             {isDashboard ? (
               /* Dashboard page - show "Dashboard" header like GitHub */
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/college')}>
-                <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
-                  <GoHome size={15} className="text-ec-accent" />
+                <div className="w-9 h-9 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
+                  <GoOrganization size={18} className="text-ec-accent" />
                 </div>
                 <span className="text-sm font-bold text-ec-highlight tracking-tight">
                   Dashboard
@@ -84,8 +90,8 @@ export default function CollegeDashboardLayout() {
             ) : isSubRoute ? (
               /* Sub-route pages - show college name (as stored in DB, no uppercase) */
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/college')}>
-                <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
-                  <GoOrganization size={15} className="text-ec-accent" />
+                <div className="w-9 h-9 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
+                  <GoOrganization size={18} className="text-ec-accent" />
                 </div>
                 <span className="text-sm font-bold text-ec-highlight tracking-tight">
                   {collegeName}
@@ -94,8 +100,8 @@ export default function CollegeDashboardLayout() {
             ) : (
               /* Settings pages */
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/college')}>
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#21262d] flex items-center justify-center border border-gray-200 dark:border-[#30363d] shrink-0">
-                  <GoGear size={15} className="text-gray-600 dark:text-[#c9d1d9]" />
+                <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-[#21262d] flex items-center justify-center border border-gray-200 dark:border-[#30363d] shrink-0">
+                  <GoGear size={18} className="text-gray-600 dark:text-[#c9d1d9]" />
                 </div>
                 <span className="text-sm font-bold text-gray-900 dark:text-[#f0f6fc] tracking-tight">
                   Settings
@@ -104,8 +110,8 @@ export default function CollegeDashboardLayout() {
             )}
           </div>
 
-          {/* Center: Search Bar (UI only) */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4">
+          {/* Right-aligned Search Bar (UI only) */}
+          <div className="hidden md:flex w-64 lg:w-80 ml-auto mr-4">
             <div className="w-full flex items-center gap-2 px-3 py-1.5 bg-ec-surface border border-ec-border rounded-lg text-ec-text-sub hover:border-ec-text-sub/40 transition-colors cursor-text group">
               <GoSearch size={14} className="text-ec-icon shrink-0" />
               <span className="text-[13px] text-ec-text-sub/60 flex-1">Type to search...</span>
@@ -154,7 +160,7 @@ export default function CollegeDashboardLayout() {
             <div className="pl-2 select-none z-10">
               <div 
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-7 h-7 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-extrabold text-xs shadow-md border border-gray-200 dark:border-[#30363d] overflow-hidden cursor-pointer hover:border-ec-accent transition-all duration-200"
+                className="w-9 h-9 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-extrabold text-sm shadow-md border border-gray-200 dark:border-[#30363d] overflow-hidden cursor-pointer hover:border-ec-accent transition-all duration-200"
               >
                 {userData?.photoURL ? (
                   <img src={userData.photoURL} alt="profile" className="w-full h-full object-cover" />
@@ -209,6 +215,95 @@ export default function CollegeDashboardLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* ── LEFT DRAWER / SIDEBAR (Smooth transition overlap card) ── */}
+      <div className={`fixed inset-0 z-50 overflow-hidden pointer-events-none transition-all duration-300 ${
+        isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 delay-100'
+      }`}>
+        {/* Backdrop (Whitish/semi-transparent overlay, no blur) */}
+        <div 
+          onClick={() => setIsSidebarOpen(false)}
+          className={`absolute inset-0 bg-white/35 dark:bg-black/25 transition-opacity duration-300 ease-out ${
+            isSidebarOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+        
+        {/* Drawer Panel (Rounded-r-2xl Overlap Card) */}
+        <div className={`absolute inset-y-0 left-0 w-80 max-w-[calc(100vw-3rem)] bg-ec-header border-r border-ec-border shadow-2xl rounded-r-2xl flex flex-col z-50 transition-transform duration-300 ease-out transform ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          {/* Header of Drawer */}
+          <div className="h-16 flex items-center justify-between px-4 border-b border-ec-border shrink-0">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => { navigate('/college'); setIsSidebarOpen(false); }}>
+              <div className="w-9 h-9 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-extrabold text-sm shadow border border-gray-200 dark:border-[#30363d] overflow-hidden shrink-0">
+                {userData?.photoURL ? (
+                  <img src={userData.photoURL} alt="logo" className="w-full h-full object-cover" />
+                ) : currentUser?.photoURL ? (
+                  <img src={currentUser.photoURL} alt="logo" className="w-full h-full object-cover" />
+                ) : (
+                  collegeInitial
+                )}
+              </div>
+            </div>
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1.5 text-ec-text-sub hover:text-ec-highlight hover:bg-ec-muted/50 rounded-lg border border-ec-border hover:border-ec-border transition-colors cursor-pointer outline-none flex items-center justify-center"
+              aria-label="Close navigation menu"
+            >
+              <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" className="w-4 h-4" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          {/* Content / Nav Items */}
+          <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-none">
+            <div className="px-3 mb-2 text-[11px] font-semibold text-ec-text-sub/50 uppercase tracking-wider">
+              Navigation
+            </div>
+            {navItems.map((item) => {
+              const isActive = item.exact 
+                ? location.pathname === item.path 
+                : location.pathname.startsWith(item.path);
+
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  end={item.exact}
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all duration-150 ${
+                    isActive
+                      ? 'bg-ec-accent/10 text-ec-highlight border border-ec-accent/20 font-semibold'
+                      : 'text-ec-text-sub hover:text-ec-highlight hover:bg-ec-muted/40 border border-transparent'
+                  }`}
+                >
+                  <item.icon size={18} className={isActive ? 'text-[#f78162]' : 'text-ec-icon'} />
+                  <span>{item.name}</span>
+                </NavLink>
+              );
+            })}
+
+            <div className="py-2" />
+
+            <div className="px-3 mb-2 text-[11px] font-semibold text-ec-text-sub/50 uppercase tracking-wider">
+              Management
+            </div>
+            <NavLink
+              to="/college/settings"
+              onClick={() => setIsSidebarOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all duration-150 ${
+                location.pathname.startsWith('/college/settings')
+                  ? 'bg-ec-accent/10 text-ec-highlight border border-ec-accent/20 font-semibold'
+                  : 'text-ec-text-sub hover:text-ec-highlight hover:bg-ec-muted/40 border border-transparent'
+              }`}
+            >
+              <GoGear size={18} className={location.pathname.startsWith('/college/settings') ? 'text-[#f78162]' : 'text-ec-icon'} />
+              <span>Settings</span>
+            </NavLink>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
