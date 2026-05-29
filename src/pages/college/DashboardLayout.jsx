@@ -39,6 +39,30 @@ export default function CollegeDashboardLayout() {
   const collegeName = userData?.collegeName || userData?.collegeId || "College";
   const collegeInitial = collegeName.charAt(0).toUpperCase();
 
+  // Helper to abbreviate college name before comma if it contains one
+  const getAbbreviatedCollegeName = (name) => {
+    if (!name) return "";
+    if (name.includes(',')) {
+      const parts = name.split(',');
+      const beforeComma = parts[0].trim();
+      const afterComma = parts.slice(1).join(',').trim();
+      
+      const words = beforeComma.split(/[\s-]+/);
+      const initials = words
+        .filter(word => {
+          const lower = word.toLowerCase();
+          return lower !== 'of' && lower !== 'and' && lower !== 'the' && lower !== 'in' && lower !== 'for' && lower !== 'a' && lower !== 'an';
+        })
+        .map(word => word.charAt(0).toUpperCase())
+        .join('');
+        
+      return `${initials}, ${afterComma}`;
+    }
+    return name;
+  };
+
+  const displayName = getAbbreviatedCollegeName(collegeName);
+
   // Dashboard overview page (no tabs shown)
   const isDashboard = 
     location.pathname === '/college' || 
@@ -94,7 +118,7 @@ export default function CollegeDashboardLayout() {
                   <GoOrganization size={18} className="text-ec-accent" />
                 </div>
                 <span className="text-sm font-bold text-ec-highlight tracking-tight">
-                  {collegeName}
+                  {displayName}
                 </span>
               </div>
             ) : (
