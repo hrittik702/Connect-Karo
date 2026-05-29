@@ -89,7 +89,7 @@ export default function InstitutionSettings() {
             <Building2 size={20} className="text-ec-accent" />
             Institutional Details
           </h2>
-          <p className="text-[11px] text-ec-text-sub mt-0.5">Manage domain protection, addresses, and college-wide credentials.</p>
+          <p className="text-xs text-ec-text-sub mt-0.5">Manage domain protection, addresses, and college-wide credentials.</p>
         </div>
 
         {collegeDetails && !isEditingCollege && (
@@ -116,7 +116,7 @@ export default function InstitutionSettings() {
           College records failed to sync.
         </div>
       ) : (
-        <form onSubmit={handleSaveCollege} className="space-y-6 max-w-3xl">
+        <form onSubmit={handleSaveCollege} className="space-y-6">
           
           {/* Node Active Banner */}
           <div className="flex items-center gap-3 p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl select-none">
@@ -124,8 +124,8 @@ export default function InstitutionSettings() {
               <Shield size={16} />
             </div>
             <div>
-              <p className="text-[11.5px] font-semibold text-ec-highlight">Operational Status: Verified Node</p>
-              <p className="text-[9.5px] text-ec-text-sub mt-0.5">
+              <p className="text-xs font-semibold text-ec-highlight">Operational Status: Verified Node</p>
+              <p className="text-[11px] text-ec-text-sub mt-0.5">
                 This institutional dashboard is authenticated and synced to Connect-Karo core databases.
               </p>
             </div>
@@ -146,13 +146,13 @@ export default function InstitutionSettings() {
                     type="text"
                     value={collegeName}
                     onChange={(e) => setCollegeName(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg text-xs text-ec-highlight font-normal outline-none transition-all"
+                    className="w-full pl-9 pr-4 py-2.5 bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg text-[13px] text-ec-highlight font-normal outline-none transition-all"
                     placeholder="Enter institution full name"
                     required
                   />
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5 p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-xs text-ec-highlight font-normal">
+                <div className="flex items-center gap-2.5 p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-[13px] text-ec-highlight font-normal">
                   <Building2 size={15} className="text-ec-text-sub" />
                   <span>{collegeDetails.name}</span>
                 </div>
@@ -163,7 +163,7 @@ export default function InstitutionSettings() {
               <label className="block text-[10px] font-semibold text-ec-text-sub uppercase tracking-wider mb-1.5">
                 Primary Domain Protection (Read-Only)
               </label>
-              <div className="flex items-center gap-2.5 p-3 bg-ec-muted/10 border border-ec-border/40 rounded-lg text-xs text-ec-text-sub font-mono font-normal">
+              <div className="flex items-center gap-2.5 p-3 bg-ec-muted/10 border border-ec-border/40 rounded-lg text-[13px] text-ec-text-sub font-mono font-normal">
                 <Globe size={15} className="text-ec-text-sub/50" />
                 <span>{collegeDetails.domain}</span>
               </div>
@@ -173,7 +173,7 @@ export default function InstitutionSettings() {
               <label className="block text-[10px] font-semibold text-ec-text-sub uppercase tracking-wider mb-1.5">
                 Unique Institution Code (Read-Only)
               </label>
-              <div className="flex items-center gap-2.5 p-3 bg-ec-muted/10 border border-ec-border/40 rounded-lg text-xs text-ec-text-sub font-mono font-semibold uppercase">
+              <div className="flex items-center gap-2.5 p-3 bg-ec-muted/10 border border-ec-border/40 rounded-lg text-[13px] text-ec-text-sub font-mono font-semibold uppercase">
                 <Hash size={15} className="text-ec-text-sub/50" />
                 <span>{collegeDetails.collegeCode}</span>
               </div>
@@ -183,7 +183,7 @@ export default function InstitutionSettings() {
               <label className="block text-[10px] font-semibold text-ec-text-sub uppercase tracking-wider mb-1.5">
                 Admin Email Endpoint (Read-Only)
               </label>
-              <div className="flex items-center gap-2.5 p-3 bg-ec-muted/10 border border-ec-border/40 rounded-lg text-xs text-ec-text-sub font-normal">
+              <div className="flex items-center gap-2.5 p-3 bg-ec-muted/10 border border-ec-border/40 rounded-lg text-[13px] text-ec-text-sub font-normal">
                 <Mail size={15} className="text-ec-text-sub/50" />
                 <span>{collegeDetails.adminEmail}</span>
               </div>
@@ -200,12 +200,12 @@ export default function InstitutionSettings() {
                     type="tel"
                     value={adminPhone}
                     onChange={(e) => setAdminPhone(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg text-xs text-ec-text outline-none transition-all font-normal"
+                    className="w-full pl-9 pr-4 py-2.5 bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg text-[13px] text-ec-text outline-none transition-all font-normal"
                     placeholder="e.g. +91 98765 43210"
                   />
                 </div>
               ) : (
-                <div className="flex items-center gap-2.5 p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-xs text-ec-text font-normal">
+                <div className="flex items-center gap-2.5 p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-[13px] text-ec-text font-normal">
                   <Phone size={15} className="text-ec-text-sub" />
                   <span>{collegeDetails.adminPhone || 'N/A'}</span>
                 </div>
@@ -223,12 +223,12 @@ export default function InstitutionSettings() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     rows={3}
-                    className="w-full pl-9 pr-4 py-2.5 bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg text-xs text-ec-text outline-none transition-all font-normal resize-y"
+                    className="w-full pl-9 pr-4 py-2.5 bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg text-[13px] text-ec-text outline-none transition-all font-normal resize-y"
                     placeholder="Enter physical campus boundary coordinates"
                   />
                 </div>
               ) : (
-                <div className="flex items-start gap-2.5 p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-xs text-ec-text font-normal leading-relaxed">
+                <div className="flex items-start gap-2.5 p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-[13px] text-ec-text font-normal leading-relaxed">
                   <MapPin size={15} className="text-ec-text-sub mt-0.5 shrink-0" />
                   <span>{collegeDetails.address || 'No campus localization credentials configured.'}</span>
                 </div>

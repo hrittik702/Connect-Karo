@@ -120,10 +120,10 @@ export default function CollegeSettings() {
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4d md:px-2 lg:px-12 flex flex-col md:flex-row gap-8 font-sans selection:bg-ec-accent/20 select-none pb-12 animate-in fade-in duration-300">
+    <div className="w-full flex flex-col md:flex-row gap-5 md:gap-6 font-sans selection:bg-ec-accent/20 select-none pb-12 animate-in fade-in duration-300">
       
       {/* ── LEFT SIDEBAR NAVIGATION (GitHub style) ── */}
-      <aside className="w-full md:w-[240px] shrink-0 space-y-6">
+      <aside className="w-full md:w-[260px] shrink-0 space-y-6">
         
         {/* User profile brief card */}
         <div className="flex items-center gap-3 px-2 pb-2 border-b border-ec-border/100">
@@ -136,10 +136,10 @@ export default function CollegeSettings() {
             )}
           </div>
           <div className="text-left min-w-0">
-            <h3 className="text-xs font-semibold text-ec-highlight leading-tight truncate">
+            <h3 className="text-[13px] font-semibold text-ec-highlight leading-tight truncate">
               {adminName}
             </h3>
-            <span className="block text-[10px] text-ec-text-sub font-medium truncate mt-0.5">
+            <span className="block text-[11px] text-ec-text-sub font-medium truncate mt-0.5">
               Personal settings
             </span>
           </div>
@@ -153,112 +153,112 @@ export default function CollegeSettings() {
             <NavLink
               to="/college/settings/profile"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <User size={14} className={activeTab === 'profile' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <User size={16} className={activeTab === 'profile' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Public profile</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/account"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Settings size={14} className={activeTab === 'account' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Settings size={16} className={activeTab === 'account' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Account</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/appearance"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Palette size={14} className={activeTab === 'appearance' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Palette size={16} className={activeTab === 'appearance' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Appearance</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/institution"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Building2 size={14} className={activeTab === 'institution' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Building2 size={16} className={activeTab === 'institution' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Institution Details</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/accessibility"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Accessibility size={14} className={activeTab === 'accessibility' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Accessibility size={16} className={activeTab === 'accessibility' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Accessibility</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/notifications"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Bell size={14} className={activeTab === 'notifications' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Bell size={16} className={activeTab === 'notifications' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Notifications</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/supabase"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Database size={14} className={activeTab === 'supabase' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Database size={16} className={activeTab === 'supabase' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Supabase Sandbox</span>
             </NavLink>
           </div>
 
           {/* Section 2: Access & Licensing */}
           <div className="space-y-1">
-            <span className="block px-3 text-[9px] font-[800] uppercase tracking-wider text-ec-text-sub select-none">
+            <span className="block px-3 text-[10px] font-[800] uppercase tracking-wider text-ec-text-sub select-none">
               Access & Security
             </span>
 
             <NavLink
               to="/college/settings/billing"
               className={({ isActive }) => 
-                `w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
@@ -266,7 +266,7 @@ export default function CollegeSettings() {
               }
             >
               <div className="flex items-center gap-2.5">
-                <CreditCard size={14} className={activeTab === 'billing' ? 'text-ec-accent' : 'text-ec-icon'} />
+                <CreditCard size={16} className={activeTab === 'billing' ? 'text-ec-accent' : 'text-ec-icon'} />
                 <span>Billing & licensing</span>
               </div>
               <span className="text-[8px] font-semibold border border-ec-border px-1.5 py-0.5 rounded-full uppercase leading-none font-mono">
@@ -277,42 +277,42 @@ export default function CollegeSettings() {
             <NavLink
               to="/college/settings/emails"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Mail size={14} className={activeTab === 'emails' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Mail size={16} className={activeTab === 'emails' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Emails</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/security"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Key size={14} className={activeTab === 'security' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Key size={16} className={activeTab === 'security' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Security & keys</span>
             </NavLink>
 
             <NavLink
               to="/college/settings/sessions"
               className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
+                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
                     ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
             >
-              <Tv size={14} className={activeTab === 'sessions' ? 'text-ec-accent' : 'text-ec-icon'} />
+              <Tv size={16} className={activeTab === 'sessions' ? 'text-ec-accent' : 'text-ec-icon'} />
               <span>Active sessions</span>
             </NavLink>
           </div>

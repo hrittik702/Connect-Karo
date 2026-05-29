@@ -7,7 +7,8 @@ import {
   GoMegaphone, 
   GoGear,
   GoBell,
-  GoOrganization
+  GoOrganization,
+  GoSearch
 } from 'react-icons/go';
 import { useAuth } from '../../context/AuthContext';
 import UserMenuDropdown from '../../components/college/UserMenuDropdown';
@@ -36,12 +37,19 @@ export default function CollegeDashboardLayout() {
   const collegeName = userData?.collegeName || userData?.collegeId || "College";
   const collegeInitial = collegeName.charAt(0).toUpperCase();
 
-  const isCoreRoute = 
+  // Dashboard overview page (no tabs shown)
+  const isDashboard = 
     location.pathname === '/college' || 
-    location.pathname === '/college/' ||
+    location.pathname === '/college/';
+
+  // Sub-routes where nav tabs are visible
+  const isSubRoute = 
     location.pathname.startsWith('/college/requests') ||
     location.pathname.startsWith('/college/users') ||
     location.pathname.startsWith('/college/broadcasts');
+
+  // Settings pages have their own header
+  const isSettingsRoute = location.pathname.startsWith('/college/settings');
 
   return (
     <div className="min-h-screen bg-ec-root text-ec-text flex flex-col font-sans relative selection:bg-ec-accent/20">
@@ -51,7 +59,7 @@ export default function CollegeDashboardLayout() {
         
         {/* Row 1: Brand logo/title and notifications/profile */}
         <div className={`w-full h-16 flex items-center justify-between px-4 pt-2 pb-1 ${
-          isCoreRoute ? '' : 'border-b border-gray-200 dark:border-[#30363d]'
+          isSubRoute ? '' : 'border-b border-gray-200 dark:border-[#30363d]'
         }`}>
           
           {/* Brand Header */}
@@ -63,19 +71,31 @@ export default function CollegeDashboardLayout() {
               </svg>
             </button>
 
-            {isCoreRoute ? (
-              <div className="flex items-center gap-2">
+            {isDashboard ? (
+              /* Dashboard page - show "Dashboard" header like GitHub */
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/college')}>
                 <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
-                  <GoOrganization size={14} className="text-ec-accent" />
+                  <GoHome size={15} className="text-ec-accent" />
                 </div>
-                <span className="text-[15.5px] font-extrabold text-ec-highlight tracking-wide uppercase">
+                <span className="text-sm font-bold text-ec-highlight tracking-tight">
+                  Dashboard
+                </span>
+              </div>
+            ) : isSubRoute ? (
+              /* Sub-route pages - show college name (as stored in DB, no uppercase) */
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/college')}>
+                <div className="w-7 h-7 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center shrink-0">
+                  <GoOrganization size={15} className="text-ec-accent" />
+                </div>
+                <span className="text-sm font-bold text-ec-highlight tracking-tight">
                   {collegeName}
                 </span>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              /* Settings pages */
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/college')}>
                 <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#21262d] flex items-center justify-center border border-gray-200 dark:border-[#30363d] shrink-0">
-                  <GoOrganization size={14} className="text-gray-600 dark:text-[#c9d1d9]" />
+                  <GoGear size={15} className="text-gray-600 dark:text-[#c9d1d9]" />
                 </div>
                 <span className="text-sm font-bold text-gray-900 dark:text-[#f0f6fc] tracking-tight">
                   Settings
@@ -83,6 +103,16 @@ export default function CollegeDashboardLayout() {
               </div>
             )}
           </div>
+
+          {/* Center: Search Bar (UI only) */}
+          <div className="hidden md:flex flex-1 max-w-md mx-4">
+            <div className="w-full flex items-center gap-2 px-3 py-1.5 bg-ec-surface border border-ec-border rounded-lg text-ec-text-sub hover:border-ec-text-sub/40 transition-colors cursor-text group">
+              <GoSearch size={14} className="text-ec-icon shrink-0" />
+              <span className="text-[13px] text-ec-text-sub/60 flex-1">Type to search...</span>
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono font-semibold text-ec-text-sub bg-ec-muted/40 border border-ec-border rounded">/</kbd>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2.5 relative shrink-0">
             {/* Notification Alert Trigger */}
             <button 
@@ -143,8 +173,8 @@ export default function CollegeDashboardLayout() {
           </div>
         </div>
 
-        {/* Row 2: Horizontal Nav Links (Show only on Core pages) */}
-        {isCoreRoute && (
+        {/* Row 2: Horizontal Nav Links (Show ONLY on sub-route pages, NOT on dashboard overview) */}
+        {isSubRoute && (
           <div className="w-full h-10 flex items-center px-4 overflow-x-auto scrollbar-none border-b border-ec-border">
             <nav className="flex items-center gap-1.5 h-full">
               {navItems.map((item) => {
@@ -157,7 +187,7 @@ export default function CollegeDashboardLayout() {
                     key={item.name}
                     to={item.path}
                     end={item.exact}
-                    className={`flex items-center gap-1.5 px-2.5 h-full text-[11.5px] font-medium transition-all duration-150 border-b-2 relative translate-y-[1px] shrink-0 ${
+                    className={`flex items-center gap-1.5 px-3 h-full text-[13px] font-medium transition-all duration-150 border-b-2 relative translate-y-[1px] shrink-0 ${
                       isActive
                         ? 'border-[#f78162] text-ec-highlight font-semibold'
                         : 'border-transparent text-ec-text-sub hover:text-ec-highlight hover:border-ec-border/30'
@@ -174,8 +204,8 @@ export default function CollegeDashboardLayout() {
       </header>
 
       {/* content area */}
-      <main className="flex-1 pt-10 pb-6 px-4 sm:pt-12 sm:pb-8 sm:px-6 lg:pt-16 lg:pb-12 lg:px-8 z-10 bg-transparent">
-        <div className="max-w-7xl mx-auto h-full">
+      <main className="flex-1 pt-6 pb-6 px-4 sm:pt-8 sm:pb-8 sm:px-5 lg:pt-8 lg:pb-12 lg:px-8 z-10 bg-transparent">
+        <div className="w-full h-full">
           <Outlet />
         </div>
       </main>

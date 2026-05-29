@@ -236,7 +236,7 @@ export default function CollegeUserList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-ec-border pb-5 shrink-0">
         <div>
-          <h2 className="text-xl font-bold text-ec-highlight tracking-tight flex items-center gap-2">
+          <h2 className="text-2xl font-semibold text-ec-highlight tracking-tight flex items-center gap-2">
             <Users className="text-ec-accent" size={22} />
             Institutional User Directory
           </h2>
@@ -264,7 +264,7 @@ export default function CollegeUserList() {
           <select 
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="pl-9 pr-8 py-2.5 bg-ec-surface/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent transition-all font-semibold appearance-none cursor-pointer"
+            className="pl-9 pr-8 py-2.5 bg-ec-surface/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent transition-all font-normal appearance-none cursor-pointer"
           >
             <option value="all">All Directory</option>
             <option value="student">Active Students</option>
@@ -280,11 +280,11 @@ export default function CollegeUserList() {
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-ec-surface/95 backdrop-blur-md z-10 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
               <tr className="border-b border-ec-border">
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Candidate Profile</th>
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Professional Data</th>
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Role</th>
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Security State</th>
-                <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider text-right">Actions</th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-ec-text-sub uppercase tracking-wider">Candidate Profile</th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-ec-text-sub uppercase tracking-wider">Professional Data</th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-ec-text-sub uppercase tracking-wider">Role</th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-ec-text-sub uppercase tracking-wider">Security State</th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-ec-text-sub uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             
@@ -314,51 +314,55 @@ export default function CollegeUserList() {
                     
                     {/* User Profile */}
                     <td className="px-5 py-4">
-                      <div className="font-semibold text-[13px] text-ec-highlight group-hover:text-ec-accent transition-colors flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-ec-muted text-ec-highlight flex items-center justify-center uppercase font-extrabold text-[10px]">
+                      <div className="font-medium text-sm text-ec-highlight group-hover:text-ec-accent transition-colors flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-md bg-ec-muted text-ec-highlight flex items-center justify-center uppercase font-bold text-xs">
                           {u.name?.charAt(0) || '?'}
                         </div>
                         {u.name}
                       </div>
-                      <div className="text-[10px] text-ec-text-sub mt-0.5 flex items-center gap-1">
-                        <Mail size={11} /> {u.email}
+                      <div className="text-xs text-ec-text-sub mt-1.5 flex items-center gap-1">
+                        <Mail size={12} /> {u.email}
                       </div>
                     </td>
 
                     {/* Pro Info / Batch */}
                     <td className="px-5 py-4 max-w-[280px]">
                       {u.role === 'student' ? (
-                        <div className="space-y-0.5 text-[11px] text-ec-text-sub">
-                          <div className="text-[12px] font-medium text-ec-text">Roll No: {u.rollNo || 'N/A'}</div>
+                        <div className="space-y-1 text-xs text-ec-text-sub">
+                          <div className="text-sm font-normal text-ec-text">Roll No: {u.rollNo || 'N/A'}</div>
                           <div>Branch: {u.branch || 'N/A'}</div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 text-[11px]">
                             <span>Year: {u.currentYear || 'N/A'}</span>
                             <span>|</span>
                             <span>Class of {u.batch || 'N/A'}</span>
                           </div>
                         </div>
                       ) : (
-                        <div className="space-y-0.5 text-[11px] text-ec-text-sub">
+                        <div className="space-y-1 text-xs text-ec-text-sub">
                           {u.company || u.designation ? (
-                            <div className="flex items-start gap-1 text-[12px] font-medium text-ec-text">
-                              <Briefcase size={12} className="text-ec-text-sub mt-0.5 shrink-0" />
+                            <div className="flex items-start gap-1 text-sm font-normal text-ec-text">
+                              <Briefcase size={13} className="text-ec-text-sub mt-0.5 shrink-0" />
                               <span>{u.designation || 'Alumni'} at {u.company || 'N/A'}</span>
                             </div>
                           ) : (
-                            <div className="text-[12px] font-medium text-ec-text">Class of {u.batch || 'N/A'}</div>
+                            <div className="text-sm font-normal text-ec-text">Class of {u.batch || 'N/A'}</div>
                           )}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 text-[11px]">
                             <span>Branch: {u.branch || 'N/A'}</span>
-                            <span>|</span>
-                            <span>Class of {u.batch || 'N/A'}</span>
+                            {u.company || u.designation ? (
+                              <>
+                                <span>|</span>
+                                <span>Class of {u.batch || 'N/A'}</span>
+                              </>
+                            ) : null}
                           </div>
                           {u.linkedin && (
-                            <div>
+                            <div className="pt-0.5">
                               <a 
                                 href={u.linkedin} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="inline-flex items-center gap-1 text-ec-accent hover:underline text-[10px] mt-0.5"
+                                className="inline-flex items-center gap-1 text-ec-accent hover:underline text-[11px] mt-0.5"
                               >
                                 🔗 LinkedIn
                               </a>
@@ -370,10 +374,10 @@ export default function CollegeUserList() {
 
                     {/* Role */}
                     <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
                         u.role === 'student' 
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                          : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                           : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
                       }`}>
                         {u.role}
                       </span>
@@ -381,16 +385,14 @@ export default function CollegeUserList() {
 
                     {/* Security State */}
                     <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
                         u.status === 'approved' 
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                           : 'bg-red-500/10 text-red-400 border border-red-500/20'
                       }`}>
                         {u.status === 'approved' ? 'Verified' : 'Suspended'}
                       </span>
-                    </td>
-
-                    {/* Action Menu */}
+                    </td>                    {/* Action Menu */}
                     <td className="px-5 py-4 text-right relative">
                       <button 
                         onClick={(e) => {
@@ -404,25 +406,25 @@ export default function CollegeUserList() {
 
                       {actionMenuOpen === u.id && (
                         <div 
-                          className="absolute right-8 top-10 w-44 bg-white border border-gray-200 rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.2)] py-1.5 z-50 text-left animate-in fade-in zoom-in-95 duration-150"
+                          className="absolute right-8 top-10 w-44 bg-ec-surface border border-ec-border rounded-lg shadow-2xl py-1.5 z-50 text-left animate-in fade-in zoom-in-95 duration-150"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button 
                             onClick={() => handleToggleBlock(u.id, u.status, u.role)}
-                            className="w-full px-4 py-2 text-[12px] font-medium text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+                            className="w-full px-4 py-2 text-xs font-normal text-ec-highlight hover:bg-ec-muted/50 flex items-center gap-2 transition-colors cursor-pointer bg-transparent border-transparent"
                           >
                             {u.status === 'approved' ? (
-                              <><ShieldAlert size={14} className="text-orange-500" /> Suspend User</>
+                              <><ShieldAlert size={14} className="text-orange-400" /> Suspend User</>
                             ) : (
-                              <><ShieldCheck size={14} className="text-emerald-500" /> Verify/Unblock</>
+                              <><ShieldCheck size={14} className="text-emerald-400" /> Verify/Unblock</>
                             )}
                           </button>
 
-                          <div className="h-px bg-gray-100 my-1"></div>
-                          
+                          <div className="h-px bg-ec-border/40 my-1"></div>
+                           
                           <button 
                             onClick={() => handleDeleteUser(u.id, u.name, u.status, u.role)}
-                            className="w-full px-4 py-2 text-[12px] font-medium text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                            className="w-full px-4 py-2 text-xs font-normal text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors cursor-pointer bg-transparent border-transparent"
                           >
                             <Trash2 size={14} /> Remove Profile
                           </button>

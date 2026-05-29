@@ -14,7 +14,7 @@ export default function AccountSettings() {
     <div className="space-y-6 animate-in fade-in duration-200">
       <div className="border-b border-ec-border pb-4">
         <h2 className="text-2xl font-medium text-ec-highlight">Account Settings</h2>
-        <p className="text-[11px] text-ec-text-sub mt-0.5">Manage administrative credentials and security preferences.</p>
+        <p className="text-xs text-ec-text-sub mt-0.5">Manage administrative credentials and security preferences.</p>
       </div>
 
       <div className="space-y-6">
@@ -25,12 +25,12 @@ export default function AccountSettings() {
             General Configurations
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-[10px] font-semibold text-ec-text-sub uppercase tracking-wider mb-1.5">
                 Username / Handle
               </label>
-              <div className="p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-xs text-ec-text-sub font-mono font-normal">
+              <div className="p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-[13px] text-ec-text-sub font-mono font-normal">
                 {userHandle}
               </div>
             </div>
@@ -39,7 +39,7 @@ export default function AccountSettings() {
               <label className="block text-[10px] font-semibold text-ec-text-sub uppercase tracking-wider mb-1.5">
                 Assigned Security Role
               </label>
-              <div className="p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-xs text-ec-text-sub font-mono font-semibold uppercase">
+              <div className="p-3 bg-ec-muted/20 border border-ec-border/60 rounded-lg text-[13px] text-ec-text-sub font-mono font-semibold uppercase">
                 {userData?.role || 'COLLEGE_ADMIN'}
               </div>
             </div>
@@ -52,10 +52,10 @@ export default function AccountSettings() {
             Danger Zone
           </h3>
           
-          <div className="p-4 border border-red-500/20 bg-red-500/5 rounded-xl max-w-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="p-4 border border-red-500/20 bg-red-500/5 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h4 className="text-xs font-semibold text-ec-highlight">Terminate Active Session</h4>
-              <p className="text-[10px] text-ec-text-sub mt-0.5 leading-normal max-w-sm">
+              <p className="text-[11px] text-ec-text-sub mt-0.5 leading-normal">
                 Log out of the Connect-Karo platform immediately. This clears your local security authentication tokens.
               </p>
             </div>

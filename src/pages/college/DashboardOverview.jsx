@@ -250,8 +250,11 @@ export default function CollegeDashboardOverview() {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
   });
 
-  const MetricCard = ({ title, value, subtitle, icon: Icon, colorClass, gradientClass }) => (
-    <div className="surface-card p-6 border border-ec-border rounded-2xl relative overflow-hidden group">
+  const MetricCard = ({ title, value, subtitle, icon: Icon, colorClass, gradientClass, onClick }) => (
+    <div 
+      onClick={onClick}
+      className="surface-card p-6 border border-ec-border rounded-2xl relative overflow-hidden group cursor-pointer hover:border-ec-accent/40 hover:shadow-lg hover:shadow-ec-accent/5 transition-all duration-300"
+    >
       <div className={`absolute top-0 right-0 w-32 h-32 opacity-10 blur-3xl rounded-full transition-transform duration-500 group-hover:scale-150 ${gradientClass}`} />
       
       <div className="flex justify-between items-start relative z-10">
@@ -264,9 +267,12 @@ export default function CollegeDashboardOverview() {
             {subtitle}
           </p>
         </div>
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-lg ${colorClass}`}>
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-lg group-hover:scale-110 transition-transform duration-300 ${colorClass}`}>
           <Icon size={24} />
         </div>
+      </div>
+      <div className="absolute bottom-3 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <ArrowRight size={16} className="text-ec-accent" />
       </div>
     </div>
   );
@@ -306,6 +312,7 @@ export default function CollegeDashboardOverview() {
           icon={Users}
           colorClass="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           gradientClass="bg-emerald-500"
+          onClick={() => navigate('/college/users?filter=student')}
         />
         <MetricCard 
           title="Verified Alumni" 
@@ -314,6 +321,7 @@ export default function CollegeDashboardOverview() {
           icon={GraduationCap}
           colorClass="bg-blue-500/10 text-blue-400 border-blue-500/20"
           gradientClass="bg-blue-500"
+          onClick={() => navigate('/college/users?filter=alumni')}
         />
         <MetricCard 
           title="Pending Approvals" 
@@ -322,14 +330,16 @@ export default function CollegeDashboardOverview() {
           icon={UserCheck}
           colorClass="bg-purple-500/10 text-purple-400 border-purple-500/20"
           gradientClass="bg-purple-500"
+          onClick={() => navigate('/college/requests')}
         />
         <MetricCard 
-          title="Root Broadcasts" 
+          title="Broadcasts" 
           value={stats.activeBroadcasts}
           subtitle="Active system bulletins"
           icon={Radio}
           colorClass="bg-red-500/10 text-red-400 border-red-500/20"
           gradientClass="bg-red-500"
+          onClick={() => navigate('/college/broadcasts')}
         />
       </div>
 

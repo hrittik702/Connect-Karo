@@ -45,7 +45,7 @@ export default function AppearanceSettings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300 pb-12 relative">
+    <div className="w-full space-y-6 animate-in fade-in duration-300 pb-12 relative">
       
       {/* Header Panel */}
       <div className="flex items-center justify-between border-b border-ec-border pb-5 select-none">

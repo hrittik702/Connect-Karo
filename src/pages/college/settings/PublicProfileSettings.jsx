@@ -105,11 +105,11 @@ export default function PublicProfileSettings() {
       <div className="border-b border-ec-border pb-4 flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-medium text-ec-highlight">Public profile</h2>
-          <p className="text-[11px] text-ec-text-sub mt-0.5">Manage details shown to verified network nodes.</p>
+          <p className="text-xs text-ec-text-sub mt-0.5">Manage details shown to verified network nodes.</p>
         </div>
       </div>
 
-      <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-16">
+      <div className="flex flex-col-reverse lg:flex-row gap-8 lg:gap-12">
         
         {/* Form columns */}
         <form onSubmit={handleSaveProfile} className="flex-1 space-y-5">
@@ -121,11 +121,11 @@ export default function PublicProfileSettings() {
               type="text"
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
-              className="w-full max-w-xl bg-ec-surface border border-ec-border focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/25 rounded-lg px-3 py-2 text-xs text-ec-highlight outline-none font-normal transition-all"
+              className="w-full bg-ec-surface border border-ec-border focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/25 rounded-lg px-3 py-2 text-[13px] text-ec-highlight outline-none font-normal transition-all"
               placeholder="Enter your display name"
               required
             />
-            <p className="text-[10px] text-ec-text-sub mt-1 leading-normal max-w-md">
+            <p className="text-[11px] text-ec-text-sub mt-1 leading-normal">
               Your name may appear around the Connect-Karo platform where you publish broadcasts, notice letters, or review directories.
             </p>
           </div>
@@ -135,12 +135,12 @@ export default function PublicProfileSettings() {
               Public email
             </label>
             <select 
-              className="w-full max-w-xl bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg px-3 py-2 text-xs text-ec-highlight outline-none font-normal transition-all"
+              className="w-full bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg px-3 py-2 text-[13px] text-ec-highlight outline-none font-normal transition-all"
               disabled
             >
               <option>{adminEmail} (Primary)</option>
             </select>
-            <p className="text-[10px] text-ec-text-sub mt-1 leading-normal max-w-md">
+            <p className="text-[11px] text-ec-text-sub mt-1 leading-normal">
               You have set your email address to primary institutional verification.
             </p>
           </div>
@@ -153,10 +153,10 @@ export default function PublicProfileSettings() {
               value={profileBio}
               onChange={(e) => setProfileBio(e.target.value)}
               rows={4}
-              className="w-full max-w-xl bg-ec-surface border border-ec-border focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/25 rounded-lg px-3 py-2 text-xs text-ec-highlight outline-none font-normal transition-all resize-y"
+              className="w-full bg-ec-surface border border-ec-border focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/25 rounded-lg px-3 py-2 text-[13px] text-ec-highlight outline-none font-normal transition-all resize-y"
               placeholder="C++ (DSA) | Contributor to Alumni and Hackathon Projects..."
             />
-            <p className="text-[10px] text-ec-text-sub mt-1 leading-normal max-w-md">
+            <p className="text-[11px] text-ec-text-sub mt-1 leading-normal">
               Brief professional or academic summary. You can mention other departments or colleges to link to them.
             </p>
           </div>
@@ -168,7 +168,7 @@ export default function PublicProfileSettings() {
             <select 
               value={profilePronouns}
               onChange={(e) => setProfilePronouns(e.target.value)}
-              className="w-full max-w-xs bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg px-3 py-2 text-xs text-ec-highlight outline-none font-normal transition-all cursor-pointer"
+              className="w-full max-w-xs bg-ec-surface border border-ec-border focus:border-ec-accent rounded-lg px-3 py-2 text-[13px] text-ec-highlight outline-none font-normal transition-all cursor-pointer"
             >
               <option value="he/him">he/him</option>
               <option value="she/her">she/her</option>
@@ -185,7 +185,7 @@ export default function PublicProfileSettings() {
               type="url"
               value={profileUrl}
               onChange={(e) => setProfileUrl(e.target.value)}
-              className="w-full max-w-xl bg-ec-surface border border-ec-border focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/25 rounded-lg px-3 py-2 text-xs text-ec-highlight outline-none font-normal transition-all"
+              className="w-full bg-ec-surface border border-ec-border focus:border-ec-accent focus:ring-1 focus:ring-ec-accent/25 rounded-lg px-3 py-2 text-[13px] text-ec-highlight outline-none font-normal transition-all"
               placeholder="https://github.com/hrittik702"
             />
           </div>
