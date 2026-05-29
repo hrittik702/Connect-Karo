@@ -7,5 +7,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Verify .env.local file configuration.');
 }
 
-// Singleton instantiation of the Supabase Client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Singleton instantiation of the Supabase Client (session persistence disabled)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false
+  }
+});
