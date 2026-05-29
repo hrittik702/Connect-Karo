@@ -273,7 +273,7 @@ export default function AnnouncementPanel() {
                   <X size={16} />
                 </button>
               )}
-              <button type="submit" disabled={isSubmitting} className={`flex-1 py-2.5 font-bold rounded-lg text-[13px] transition-all flex items-center justify-center gap-2 shadow-lg ${isEditing ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20' : type === 'critical' ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20' : type === 'warning' ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20' : 'bg-ec-accent hover:bg-emerald-600 text-ec-root shadow-ec-accent/20'} disabled:opacity-50`}>
+              <button type="submit" disabled={isSubmitting} className={`flex-1 py-2.5 font-bold rounded-lg text-[13px] transition-all flex items-center justify-center gap-2 shadow-lg ${isEditing ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20' : type === 'critical' ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20' : type === 'warning' ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/20' : 'bg-ec-accent hover:bg-ec-accent-hover text-white shadow-ec-accent/20'} disabled:opacity-50`}>
                 {isSubmitting ? <RefreshCw size={16} className="animate-spin" /> : isEditing ? <><Save size={16} /> Update</> : <><Radio size={16} /> Dispatch</>}
               </button>
             </div>

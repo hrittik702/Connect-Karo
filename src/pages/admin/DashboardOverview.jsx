@@ -149,7 +149,7 @@ export default function DashboardOverview() {
           </button>
           <button 
             onClick={() => navigate('/admin/colleges/add')}
-            className="px-4 py-2 bg-ec-accent hover:bg-emerald-600 text-ec-root font-bold rounded-lg text-[13px] transition-all flex items-center gap-2 shadow-lg shadow-ec-accent/10"
+            className="px-4 py-2 bg-ec-accent hover:bg-ec-accent-hover text-white font-bold rounded-lg text-[13px] transition-all flex items-center gap-2 shadow-lg shadow-ec-accent/10"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>Onboard College</span>

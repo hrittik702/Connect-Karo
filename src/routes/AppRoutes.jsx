@@ -18,6 +18,18 @@ import CollegeBroadcastList from "../pages/college/broadcasts/BroadcastList";
 import CollegeSettings from "../pages/college/settings/CollegeSettings";
 import AppearanceSettings from "../components/AppearanceSettings";
 
+// ── COLLEGE SETTINGS SUB-PAGES ──
+import PublicProfileSettings from "../pages/college/settings/PublicProfileSettings";
+import AccountSettings from "../pages/college/settings/AccountSettings";
+import InstitutionSettings from "../pages/college/settings/InstitutionSettings";
+import AccessibilitySettings from "../pages/college/settings/AccessibilitySettings";
+import NotificationsSettings from "../pages/college/settings/NotificationsSettings";
+import SupabaseSandboxPage from "../pages/college/settings/SupabaseSandboxPage";
+import BillingSettings from "../pages/college/settings/BillingSettings";
+import EmailsSettings from "../pages/college/settings/EmailsSettings";
+import SecuritySettings from "../pages/college/settings/SecuritySettings";
+import ActiveSessionsSettings from "../pages/college/settings/ActiveSessionsSettings";
+
 // ── ✅ ACTUAL ROOT ADMIN IMPORTS (PRODUCTION READY) ──
 import DashboardLayout from "../pages/admin/DashboardLayout";
 import DashboardOverview from "../pages/admin/DashboardOverview";
@@ -244,8 +256,20 @@ export default function AppRoutes() {
         <Route path="requests" element={<CollegeRequestList />} />
         <Route path="users" element={<CollegeUserList />} />
         <Route path="broadcasts" element={<CollegeBroadcastList />} />
-        <Route path="settings" element={<CollegeSettings />} />
-        <Route path="appearance" element={<AppearanceSettings />} />
+        <Route path="settings" element={<CollegeSettings />}>
+          <Route index element={<Navigate to="profile" replace />} />
+          <Route path="profile" element={<PublicProfileSettings />} />
+          <Route path="account" element={<AccountSettings />} />
+          <Route path="appearance" element={<AppearanceSettings />} />
+          <Route path="institution" element={<InstitutionSettings />} />
+          <Route path="accessibility" element={<AccessibilitySettings />} />
+          <Route path="notifications" element={<NotificationsSettings />} />
+          <Route path="supabase" element={<SupabaseSandboxPage />} />
+          <Route path="billing" element={<BillingSettings />} />
+          <Route path="emails" element={<EmailsSettings />} />
+          <Route path="security" element={<SecuritySettings />} />
+          <Route path="sessions" element={<ActiveSessionsSettings />} />
+        </Route>
       </Route>
       
       <Route path="/alumni/*" element={

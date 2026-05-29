@@ -122,7 +122,7 @@ export default function CollegeList() {
         </div>
         <button 
           onClick={() => navigate('/admin/colleges/add')}
-          className="px-4 py-2 bg-ec-accent hover:bg-emerald-600 text-ec-root font-bold rounded-lg text-[13px] transition-all flex items-center gap-2 shadow-lg shadow-ec-accent/10 whitespace-nowrap"
+          className="px-4 py-2 bg-ec-accent hover:bg-ec-accent-hover text-white font-bold rounded-lg text-[13px] transition-all flex items-center gap-2 shadow-lg shadow-ec-accent/10 whitespace-nowrap"
         >
           <Plus size={16} strokeWidth={2.5} />
           <span>Add New College</span>
