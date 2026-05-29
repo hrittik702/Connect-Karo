@@ -112,15 +112,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // 1. Check current auth session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      handleUserSession(session);
-    }).catch(err => {
-      console.error("Error getting session:", err);
-      setLoading(false);
-    });
-
-    // 2. Register real-time session updates
+    // Register real-time session updates.
+    // In Supabase v2, onAuthStateChange immediately fires an INITIAL_SESSION event
+    // with the active session (if any), removing the need for a separate getSession call.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       await handleUserSession(session);
     });

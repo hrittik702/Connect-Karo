@@ -129,8 +129,15 @@ export default function Login() {
   // Stateful index for the collapsible description accordion
   const [openIndex, setOpenIndex] = useState(0); 
 
-  const { dummyLogin } = useAuth();
+  const { currentUser, userData, loading: authLoading, dummyLogin } = useAuth();
   const theme = useSystemTheme(); 
+
+  // Auto-redirect already authenticated users
+  useEffect(() => {
+    if (currentUser && userData && !authLoading) {
+      redirectUser(userData.role);
+    }
+  }, [currentUser, userData, authLoading, navigate]);
 
   // Fetch registered colleges with caching
   useEffect(() => {
