@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, GraduationCap } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
 
 function CollegeAdminLogin() {
     const navigate = useNavigate();
@@ -14,31 +15,16 @@ function CollegeAdminLogin() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (!email.trim()) {
-            setError('Please enter your email address');
-            return;
-        }
-        if (!password.trim()) {
-            setError('Please enter your password');
-            return;
-        }
-
         setLoading(true);
-
         try {
-            // TODO: Integrate with Firebase authentication
-            // For now, simulate a login delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Placeholder: Replace with actual auth logic
-            console.log('Login attempt:', { email, rememberMe });
-
-            // On successful login, navigate to dashboard
-            // navigate('/college-admin/dashboard');
-            setError('Authentication not yet configured. Please connect Firebase.');
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+            if (error) throw error;
+            navigate('/college');
         } catch (err) {
-            setError('Invalid credentials. Please try again.');
+            setError(err.message || 'Login failed. Please check your credentials.');
         } finally {
             setLoading(false);
         }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   UserCheck, 
   Search, 
@@ -18,17 +19,35 @@ export default function CollegeRequestList() {
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [filterRole, setFilterRole] = useState('all'); // 'all', 'student', 'alumni'
   const [actionInProgress, setActionInProgress] = useState(null);
   const [limitCount, setLimitCount] = useState(15);
   const [hasMore, setHasMore] = useState(false);
 
-  // Search Debouncer
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterRole = searchParams.get('role') || 'all'; // 'all', 'student', 'alumni'
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Sync search input with URL search param changes
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
+
+  // Search Debouncer & URL Sync
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
+      
+      const currentSearch = new URLSearchParams(window.location.search).get('search') || '';
+      if (searchTerm === currentSearch) return;
+
+      const newParams = new URLSearchParams(window.location.search);
+      if (searchTerm) {
+        newParams.set('search', searchTerm);
+      } else {
+        newParams.delete('search');
+      }
+      setSearchParams(newParams, { replace: true });
     }, 300);
     return () => clearTimeout(handler);
   }, [searchTerm]);
@@ -197,7 +216,7 @@ export default function CollegeRequestList() {
       </div>
 
       {/* Control Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+      <div className="flex flex-col sm:flex-row gap-3 shrink-0 md:hidden">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-3 text-ec-text-sub/50" />
           <input 
@@ -213,7 +232,11 @@ export default function CollegeRequestList() {
           <Filter size={16} className="absolute left-3 top-3 text-ec-text-sub/50 pointer-events-none" />
           <select 
             value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            onChange={(e) => {
+              const newParams = new URLSearchParams(searchParams);
+              newParams.set('role', e.target.value);
+              setSearchParams(newParams);
+            }}
             className="pl-9 pr-8 py-2.5 bg-ec-surface/60 border border-ec-border rounded-lg text-sm text-ec-text outline-none focus:border-ec-accent transition-all font-semibold appearance-none cursor-pointer"
           >
             <option value="all">All Roles</option>

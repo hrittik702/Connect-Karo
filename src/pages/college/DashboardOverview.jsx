@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
-  Building2, 
   GraduationCap, 
-  TrendingUp, 
-  Clock, 
   Activity,
   ArrowRight,
   Radio,
@@ -220,7 +217,7 @@ export default function CollegeDashboardOverview() {
       if (collegeError) throw collegeError;
     } catch (error) {
       console.error("Approval Error:", error);
-      alert("Approve karne mein error aaya.");
+      alert("Failed to approve request.");
     } finally {
       setActionInProgress(null);
     }
@@ -228,7 +225,7 @@ export default function CollegeDashboardOverview() {
 
   // Reject handler
   const handleReject = async (userId) => {
-    const isConfirmed = window.confirm("Kya aap is registration request ko reject karna chahte hain? User document permanently delete ho jayega.");
+    const isConfirmed = window.confirm("Are you sure you want to reject this registration request?");
     if (!isConfirmed) return;
     
     setActionInProgress(userId);
@@ -240,7 +237,7 @@ export default function CollegeDashboardOverview() {
       if (error) throw error;
     } catch (error) {
       console.error("Rejection Error:", error);
-      alert("Reject karne mein error aaya.");
+      alert("Failed to reject request.");
     } finally {
       setActionInProgress(null);
     }
@@ -294,7 +291,7 @@ export default function CollegeDashboardOverview() {
         
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => navigate('/college/broadcasts', { viewTransition: true })}
+            onClick={() => navigate('/college/broadcasts')}
             className="px-4 py-2 bg-ec-surface/60 border border-ec-border hover:border-ec-accent hover:text-ec-accent text-ec-text-sub font-semibold rounded-lg text-[13px] transition-all flex items-center gap-2"
           >
             <Radio size={16} />
@@ -312,7 +309,7 @@ export default function CollegeDashboardOverview() {
           icon={Users}
           colorClass="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           gradientClass="bg-emerald-500"
-          onClick={() => navigate('/college/users?filter=student', { viewTransition: true })}
+          onClick={() => navigate('/college/users?type=student')}
         />
         <MetricCard 
           title="Verified Alumni" 
@@ -321,7 +318,7 @@ export default function CollegeDashboardOverview() {
           icon={GraduationCap}
           colorClass="bg-blue-500/10 text-blue-400 border-blue-500/20"
           gradientClass="bg-blue-500"
-          onClick={() => navigate('/college/users?filter=alumni', { viewTransition: true })}
+          onClick={() => navigate('/college/users?type=alumni')}
         />
         <MetricCard 
           title="Pending Approvals" 
@@ -330,7 +327,7 @@ export default function CollegeDashboardOverview() {
           icon={UserCheck}
           colorClass="bg-purple-500/10 text-purple-400 border-purple-500/20"
           gradientClass="bg-purple-500"
-          onClick={() => navigate('/college/requests', { viewTransition: true })}
+          onClick={() => navigate('/college/requests')}
         />
         <MetricCard 
           title="Broadcasts" 
@@ -339,7 +336,7 @@ export default function CollegeDashboardOverview() {
           icon={Radio}
           colorClass="bg-red-500/10 text-red-400 border-red-500/20"
           gradientClass="bg-red-500"
-          onClick={() => navigate('/college/broadcasts', { viewTransition: true })}
+          onClick={() => navigate('/college/broadcasts')}
         />
       </div>
 
@@ -354,7 +351,7 @@ export default function CollegeDashboardOverview() {
               <p className="text-xs text-ec-text-sub mt-0.5">Top pending profiles awaiting campus verification.</p>
             </div>
             <button 
-              onClick={() => navigate('/college/requests', { viewTransition: true })}
+              onClick={() => navigate('/college/requests')}
               className="text-xs font-semibold text-ec-accent hover:text-emerald-400 flex items-center gap-1 transition-colors"
             >
               Requests Panel <ArrowRight size={14} />

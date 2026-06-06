@@ -11,6 +11,7 @@ import {
   Key, 
   Tv, 
   Check, 
+  X, 
   Building2, 
   LogOut, 
   Database 
@@ -128,7 +129,7 @@ export default function CollegeSettings() {
         {/* User profile brief card */}
         <div className="flex items-center gap-3 px-2 pb-2 border-b border-ec-border/100">
           {/* Avatar preview */}
-          <div className={`w-10 h-10 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-semibold text-sm border border-gray-200 dark:border-[#30363d] overflow-hidden shrink-0 shadow-sm ${location.pathname !== '/college/settings/profile' ? 'college-transition-avatar' : ''}`}>
+          <div className="w-10 h-10 rounded-full bg-ec-muted flex items-center justify-center text-ec-text font-semibold text-sm border border-ec-border overflow-hidden shrink-0 shadow-sm">
             {profilePhotoURL ? (
               <img src={profilePhotoURL} alt="avatar" className="w-full h-full object-cover" />
             ) : (
@@ -152,11 +153,10 @@ export default function CollegeSettings() {
           <div className="space-y-0.5">
             <NavLink
               to="/college/settings/profile"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -167,11 +167,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/account"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -182,11 +181,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/appearance"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -197,11 +195,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/institution"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -212,11 +209,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/accessibility"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -227,11 +223,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/notifications"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -242,11 +237,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/supabase"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -264,11 +258,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/billing"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -284,11 +277,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/emails"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -299,11 +291,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/security"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -314,11 +305,10 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/sessions"
-              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
-                    ? 'bg-ec-muted/50 dark:bg-[#21262d] text-ec-highlight border-ec-border/60 font-semibold'
+                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
                     : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
                 }`
               }
@@ -353,7 +343,6 @@ export default function CollegeSettings() {
               <NavLink
                 key={item.name}
                 to={item.path}
-                viewTransition
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all shrink-0 ${
                   isActive
                     ? 'bg-ec-accent/10 border-ec-accent/20 text-ec-highlight font-bold'
@@ -378,7 +367,7 @@ export default function CollegeSettings() {
               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' 
               : 'bg-red-500/10 text-red-400 border-red-500/25'
           }`}>
-            <Check size={14} />
+            {message.type === 'success' ? <Check size={14} /> : <X size={14} />}
             <span>{message.text}</span>
           </div>
         )}

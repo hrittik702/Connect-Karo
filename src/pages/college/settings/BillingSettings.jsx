@@ -19,7 +19,7 @@ export default function BillingSettings() {
           Node Subscription Protected
         </h4>
         <p className="text-[11px] text-ec-text-sub max-w-lg leading-relaxed">
-          Your institution is currently verified under the **Free Open-Source Core License**. Enterprise billing portals will activate upon commercial license migration.
+          Your institution is currently verified under the <strong>Free Open-Source Core License</strong>. Enterprise billing portals will activate upon commercial license migration.
         </p>
         
         <button 

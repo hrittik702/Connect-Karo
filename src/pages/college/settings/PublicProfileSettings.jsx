@@ -90,6 +90,7 @@ export default function PublicProfileSettings() {
 
       if (error) throw error;
 
+      setProfilePhotoURL(tempPhotoUrl.trim());
       showToast('success', 'Profile picture updated successfully!');
       setIsEditingPhoto(false);
     } catch (err) {
@@ -208,7 +209,7 @@ export default function PublicProfileSettings() {
             Profile picture
           </span>
 
-          <div className="relative group w-[200px] h-[200px] rounded-full border border-ec-border bg-[#f3f4f6] dark:bg-[#30363d] shadow-sm flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-medium text-4xl overflow-hidden mb-4 college-transition-avatar">
+          <div className="relative group w-[200px] h-[200px] rounded-full border border-ec-border bg-ec-muted shadow-sm flex items-center justify-center text-ec-text font-medium text-4xl overflow-hidden mb-4">
             {profilePhotoURL ? (
               <img src={profilePhotoURL} alt="avatar" className="w-full h-full object-cover" />
             ) : (

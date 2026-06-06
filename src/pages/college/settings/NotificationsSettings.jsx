@@ -8,7 +8,7 @@ export default function NotificationsSettings() {
         <h2 className="text-2xl font-medium text-ec-highlight capitalize">
           Notifications Settings
         </h2>
-        <p className="text-xs text-ec-text-sub mt-0.5">Customize your college broadcoast alerts, notice reminders, and student registration notifications.</p>
+        <p className="text-xs text-ec-text-sub mt-0.5">Customize your college broadcast alerts, notice reminders, and student registration notifications.</p>
       </div>
 
       <div className="surface-card border-dashed border-2 border-ec-border rounded-xl p-8 text-center flex flex-col items-center bg-ec-surface/40">

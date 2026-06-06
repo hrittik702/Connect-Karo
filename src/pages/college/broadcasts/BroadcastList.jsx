@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Radio, 
   Clock, 
@@ -18,6 +19,10 @@ export default function BroadcastList() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [collegeDetails, setCollegeDetails] = useState(null);
+
+  const [searchParams] = useSearchParams();
+  const priority = searchParams.get('priority') || 'all'; // 'all', 'critical', 'general'
+  const querySearch = searchParams.get('search') || '';
 
   // 1. Fetch college domain/status configuration
   useEffect(() => {
@@ -94,6 +99,18 @@ export default function BroadcastList() {
     }
   };
 
+  const filteredAnnouncements = announcements.filter(ann => {
+    const matchesSearch = !querySearch || 
+      ann.title?.toLowerCase().includes(querySearch.toLowerCase()) ||
+      ann.message?.toLowerCase().includes(querySearch.toLowerCase());
+      
+    let matchesPriority = true;
+    if (priority === 'critical') matchesPriority = ann.type === 'critical' || ann.type === 'warning';
+    else if (priority === 'general') matchesPriority = ann.type === 'info' || ann.type === 'general' || !ann.type;
+    
+    return matchesSearch && matchesPriority;
+  });
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-12 h-full flex flex-col">
       
@@ -124,13 +141,13 @@ export default function BroadcastList() {
                 </div>
               </div>
             ))
-          ) : announcements.length === 0 ? (
+          ) : filteredAnnouncements.length === 0 ? (
             <div className="py-20 text-center text-ec-text-sub">
               <Radio size={36} className="mx-auto mb-3 opacity-40 animate-pulse" />
               <p className="text-sm font-medium">Clear transmission line. No active announcements.</p>
             </div>
           ) : (
-            announcements.map((announcement) => {
+            filteredAnnouncements.map((announcement) => {
               const config = getTypeConfig(announcement.type);
               const Icon = config.icon;
 

@@ -240,7 +240,12 @@ export default function InstitutionSettings() {
             <div className="flex gap-2.5 justify-end pt-3 border-t border-ec-border/60">
               <button 
                 type="button"
-                onClick={() => setIsEditingCollege(false)}
+                onClick={() => {
+                  setIsEditingCollege(false);
+                  setCollegeName(collegeDetails?.name || '');
+                  setAdminPhone(collegeDetails?.adminPhone || '');
+                  setAddress(collegeDetails?.address || '');
+                }}
                 className="px-3.5 py-2 text-xs font-semibold text-ec-text-sub hover:text-ec-highlight bg-ec-surface border border-ec-border hover:bg-ec-muted rounded-lg transition-colors cursor-pointer"
                 disabled={savingCollege}
               >

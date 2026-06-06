@@ -825,68 +825,6 @@
   transform: translateY(0) scale(0.98);
 }
 
-/* ═══════════════════════════════════════════════════
- * View Transition API Integration
- * Scoped specifically to the College Admin Panel
- * ═══════════════════════════════════════════════════ */
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-
-  /* Keep layout static: disable default root transition when college panel is active */
-  html.college-panel {
-    view-transition-name: none;
-  }
-
-  /* Animate content area within the college panel */
-  .college-panel .college-transition-content {
-    view-transition-name: college-main-content;
-  }
-
-  /* Group timing and easing */
-  ::view-transition-group(college-main-content) {
-    animation-duration: 0.5s;
-    animation-timing-function: ease;
-  }
-
-  /* Horizontal Slide Animations */
-  @keyframes slide-out {
-    to {
-      translate: -100vw;
-    }
-  }
-
-  @keyframes slide-in {
-    from {
-      translate: 100vw;
-    }
-  }
-
-  ::view-transition-old(college-main-content) {
-    animation-name: slide-out;
-  }
-
-  ::view-transition-new(college-main-content) {
-    animation-name: slide-in;
-  }
-
-  ::view-transition-old(college-main-content),
-  ::view-transition-new(college-main-content) {
-    /* Prevent cross-fade blending issues during slide transitions */
-    mix-blend-mode: normal;
-  }
-
-  /* Shared element: college avatar transition */
-  .college-transition-avatar {
-    view-transition-name: college-avatar;
-  }
-
-  ::view-transition-group(college-avatar) {
-    animation-duration: 350ms;
-    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); /* spring easing */
-  }
-}
 
 
 

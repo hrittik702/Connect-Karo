@@ -1,0 +1,39 @@
+/* ═══════════════════════════════════════════════════
+ * Connect-Karo — College Admin Scoped Stylesheet
+ * Scopes custom properties under the .college-panel context
+ * to protect other panels (student, alumni, root admin, home)
+ * ═══════════════════════════════════════════════════ */
+
+/* Override theme colors to a high-fidelity charcoal #171717 theme */
+.college-panel,
+.college-panel.dark,
+.college-panel .dark {
+  --ec-root:          23 23 23;      /* #171717 (Charcoal Root background) */
+  --ec-surface:       30 30 30;      /* #1e1e1e (Card/Surface color) */
+  --ec-muted:         42 42 42;      /* #2a2a2a (Secondary/Hover state) */
+  --ec-border:        48 48 48;      /* #303030 (Crisp Dark Border) */
+  --ec-text:          240 240 240;   /* #f0f0f0 (Main text) */
+  --ec-text-sub:      163 163 163;   /* #a3a3a3 (Muted/Secondary text) */
+  --ec-icon:          163 163 163;   /* #a3a3a3 (Icon default color) */
+  --ec-accent:        63 185 80;     /* #3fb950 (Sleek Green Accent) */
+  --ec-accent-hover:  87 203 102;    /* #57cb66 (Sleek Green Accent Hover) */
+  --ec-highlight:     255 255 255;   /* #ffffff (Header/Bold elements) */
+  --ec-header:        23 23 23;      /* #171717 (Clean Toolbar matching root) */
+
+  /* Override shadow values for rich depth on charcoal background */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+  --surface-elevated: rgba(30, 30, 30, 0.96);
+}
+
+/* Scoped layout locks and trackpad history navigation prevention */
+html.college-panel,
+html.college-panel body {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+}
+
