@@ -294,7 +294,7 @@ export default function CollegeDashboardOverview() {
         
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => navigate('/college/broadcasts')}
+            onClick={() => navigate('/college/broadcasts', { viewTransition: true })}
             className="px-4 py-2 bg-ec-surface/60 border border-ec-border hover:border-ec-accent hover:text-ec-accent text-ec-text-sub font-semibold rounded-lg text-[13px] transition-all flex items-center gap-2"
           >
             <Radio size={16} />
@@ -312,7 +312,7 @@ export default function CollegeDashboardOverview() {
           icon={Users}
           colorClass="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
           gradientClass="bg-emerald-500"
-          onClick={() => navigate('/college/users?filter=student')}
+          onClick={() => navigate('/college/users?filter=student', { viewTransition: true })}
         />
         <MetricCard 
           title="Verified Alumni" 
@@ -321,7 +321,7 @@ export default function CollegeDashboardOverview() {
           icon={GraduationCap}
           colorClass="bg-blue-500/10 text-blue-400 border-blue-500/20"
           gradientClass="bg-blue-500"
-          onClick={() => navigate('/college/users?filter=alumni')}
+          onClick={() => navigate('/college/users?filter=alumni', { viewTransition: true })}
         />
         <MetricCard 
           title="Pending Approvals" 
@@ -330,7 +330,7 @@ export default function CollegeDashboardOverview() {
           icon={UserCheck}
           colorClass="bg-purple-500/10 text-purple-400 border-purple-500/20"
           gradientClass="bg-purple-500"
-          onClick={() => navigate('/college/requests')}
+          onClick={() => navigate('/college/requests', { viewTransition: true })}
         />
         <MetricCard 
           title="Broadcasts" 
@@ -339,7 +339,7 @@ export default function CollegeDashboardOverview() {
           icon={Radio}
           colorClass="bg-red-500/10 text-red-400 border-red-500/20"
           gradientClass="bg-red-500"
-          onClick={() => navigate('/college/broadcasts')}
+          onClick={() => navigate('/college/broadcasts', { viewTransition: true })}
         />
       </div>
 
@@ -354,7 +354,7 @@ export default function CollegeDashboardOverview() {
               <p className="text-xs text-ec-text-sub mt-0.5">Top pending profiles awaiting campus verification.</p>
             </div>
             <button 
-              onClick={() => navigate('/college/requests')}
+              onClick={() => navigate('/college/requests', { viewTransition: true })}
               className="text-xs font-semibold text-ec-accent hover:text-emerald-400 flex items-center gap-1 transition-colors"
             >
               Requests Panel <ArrowRight size={14} />

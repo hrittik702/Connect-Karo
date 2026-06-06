@@ -397,9 +397,9 @@ export default function Login() {
       <div className="relative hidden lg:flex flex-col justify-between p-12 bg-gradient-to-b from-[#030712] via-[#080a1d] to-[#030712] text-white border-r border-ec-border/10 overflow-hidden shadow-2xl h-full">
         <StarfieldCanvas />
         
-        {/* Glow Effects */}
-        <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] rounded-full bg-ec-accent/5 filter blur-[60px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-purple-500/5 filter blur-[70px] pointer-events-none" />
+        {/* Floating Ambient Mesh spheres */}
+        <div className="absolute top-[10%] left-[20%] w-[350px] h-[350px] rounded-full bg-gradient-to-br from-ec-accent/10 to-transparent filter blur-[80px] pointer-events-none animate-ambient-slow" />
+        <div className="absolute bottom-[20%] right-[10%] w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-purple-500/10 to-transparent filter blur-[90px] pointer-events-none animate-ambient-slow animate-pulse-gentle" />
 
         {/* Top Brand Logo */}
         <div 
@@ -491,39 +491,40 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ── RIGHT PANE: 50% split form, light GitHub style layout ── */}
-      <div className="flex flex-col justify-between p-6 md:p-10 xl:p-12 h-full relative bg-white overflow-y-auto lg:overflow-y-hidden text-gray-900 shadow-2xl">
+      {/* ── RIGHT PANE: Cohesive theme layout with glassmorphic glows & custom aesthetics ── */}
+      <div className="flex flex-col justify-between p-6 md:p-10 xl:p-12 h-full relative bg-ec-surface border-l border-ec-border overflow-y-auto lg:overflow-y-hidden text-ec-text shadow-2xl transition-colors duration-300">
         
-        {/* Subtle Ambient light glow */}
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-emerald-500/5 to-transparent rounded-full filter blur-[80px] pointer-events-none" />
+        {/* Subtle Ambient mesh light glow */}
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-gradient-to-br from-ec-accent/5 to-transparent rounded-full filter blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-gradient-to-tr from-purple-500/5 to-transparent rounded-full filter blur-[65px] pointer-events-none" />
 
-        {/* Absolute Top Switch Controls */}
-        <div className="absolute top-6 left-6 right-6 md:top-8 md:left-8 md:right-8 flex justify-between items-center z-20">
+        {/* Responsive Top Switch Controls */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 w-full mb-6 lg:absolute lg:top-8 lg:left-8 lg:right-8 lg:w-auto lg:mb-0 z-20 border-b border-ec-border/40 lg:border-none pb-4 lg:pb-0">
           <button 
             onClick={() => navigate("/")}
-            className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-ec-text-sub hover:text-ec-highlight transition-colors cursor-pointer self-start sm:self-auto"
           >
             <GoArrowLeft size={13} />
             Back to Home
           </button>
-
-          <div className="text-xs">
+  
+          <div className="text-xs self-end sm:self-auto">
             {mode === "signup" ? (
               <>
-                <span className="text-gray-500 mr-1.5">Already registered?</span>
+                <span className="text-ec-text-sub mr-1.5">Already registered?</span>
                 <button 
                   onClick={() => { setMode("login"); setError(""); }} 
-                  className="text-emerald-600 hover:text-emerald-700 font-extrabold transition-colors cursor-pointer hover:underline"
+                  className="text-ec-accent hover:text-ec-accent-hover font-extrabold transition-colors cursor-pointer hover:underline"
                 >
                   Sign in &rarr;
                 </button>
               </>
             ) : (
               <>
-                <span className="text-gray-500 mr-1.5">Need portal access?</span>
+                <span className="text-ec-text-sub mr-1.5">Need portal access?</span>
                 <button 
                   onClick={() => { setMode("signup"); setError(""); }} 
-                  className="text-emerald-600 hover:text-emerald-700 font-extrabold transition-colors cursor-pointer hover:underline"
+                  className="text-ec-accent hover:text-ec-accent-hover font-extrabold transition-colors cursor-pointer hover:underline"
                 >
                   Register &rarr;
                 </button>
@@ -540,37 +541,37 @@ export default function Login() {
             onClick={() => navigate("/")}
             className="flex items-center gap-2 mb-6 lg:hidden cursor-pointer"
           >
-            <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center font-bold text-white text-sm">
+            <div className="w-7 h-7 rounded-lg bg-ec-accent flex items-center justify-center font-bold text-white text-sm shadow-sm shadow-ec-accent/25">
               C
             </div>
-            <span className="font-extrabold text-sm tracking-tight text-gray-900">
-              Connect<span className="text-emerald-600">Karo</span>
+            <span className="font-extrabold text-sm tracking-tight text-ec-highlight">
+              Connect<span className="text-ec-accent">Karo</span>
             </span>
           </div>
 
           {signupSuccess ? (
             /* Request Confirmation Screen */
-            <div className="p-6 bg-gray-50 border border-emerald-500/20 rounded-2xl shadow-xl animate-fade-in-up">
+            <div className="p-6 bg-ec-root/40 border border-ec-accent/25 rounded-2xl shadow-xl animate-fade-in-up">
               <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-600 mb-4 animate-pulse">
+                <div className="w-12 h-12 rounded-full bg-ec-accent/10 border border-ec-accent/20 flex items-center justify-center text-ec-accent mb-4 animate-pulse">
                   <GoCheckCircle size={24} />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1.5">Request Submitted</h3>
-                <p className="text-xs text-gray-600 leading-relaxed mb-5">
-                  We've successfully logged your request for <strong className="text-gray-900">{email}</strong>. 
-                  Administrators at <span className="font-semibold text-gray-900">{colleges.find(c => c.collegeCode === selectedCollegeCode)?.name || "your college"}</span> will review your academic credentials.
+                <h3 className="text-xl font-bold text-ec-highlight mb-1.5">Request Submitted</h3>
+                <p className="text-xs text-ec-text-sub leading-relaxed mb-5">
+                  We've successfully logged your request for <strong className="text-ec-highlight">{email}</strong>. 
+                  Administrators at <span className="font-semibold text-ec-highlight">{colleges.find(c => c.collegeCode === selectedCollegeCode)?.name || "your college"}</span> will review your academic credentials.
                 </p>
-                <div className="w-full bg-white rounded-xl p-4 mb-5 text-left border border-gray-200 shadow-sm">
+                <div className="w-full bg-ec-surface rounded-xl p-4 mb-5 text-left border border-ec-border shadow-sm">
                   <div className="flex gap-2">
-                    <GoInfo size={14} className="text-emerald-600 mt-0.5 shrink-0" />
-                    <p className="text-[11px] text-gray-500 leading-normal">
+                    <GoInfo size={14} className="text-ec-accent mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-ec-text-sub leading-normal">
                       Once verified, an onboarding invitation link containing role authorization credentials will be delivered to your registered inbox.
                     </p>
                   </div>
                 </div>
                 <button 
                   onClick={() => { setSignupSuccess(false); setMode("login"); }}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg py-3 text-sm transition-colors cursor-pointer"
+                  className="w-full bg-ec-accent hover:bg-ec-accent-hover text-white font-bold rounded-lg py-3 text-sm transition-all cursor-pointer shadow-md shadow-ec-accent/10"
                 >
                   Return to Sign In
                 </button>
@@ -580,10 +581,10 @@ export default function Login() {
             /* Auth / Access Form */
             <div className="animate-fade-in-up">
               <div className="mb-6">
-                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-2 md:text-[26px]">
+                <h2 className="text-2xl font-extrabold text-ec-highlight tracking-tight mb-2 md:text-[26px]">
                   {mode === "signup" ? "Request portal access" : "Sign in to Connect-Karo"}
                 </h2>
-                <p className="text-xs md:text-[13px] text-gray-500 leading-relaxed">
+                <p className="text-xs md:text-[13px] text-ec-text-sub leading-relaxed">
                   {mode === "signup" 
                     ? "Enter your academic credentials to submit an invitation request to your college."
                     : "Access your student dashboard, alumni workspace, or administration tower."
@@ -593,8 +594,8 @@ export default function Login() {
 
               {/* Error Notice */}
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 border-l-4 border-l-red-500 animate-shake">
-                  <p className="text-xs text-red-600 font-semibold">{error}</p>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4 border-l-4 border-l-red-500 animate-shake">
+                  <p className="text-xs text-red-400 font-semibold">{error}</p>
                 </div>
               )}
 
@@ -604,34 +605,34 @@ export default function Login() {
                 {mode === "login" ? (
                   <>
                     <div>
-                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Email Address</label>
                       <input
                         type="email"
                         placeholder="name@institution.edu"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                        className="input-premium"
                         required
                       />
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider">Password</label>
-                        <a href="#" className="text-xs font-semibold text-emerald-600 hover:underline">Forgot password?</a>
+                        <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider">Password</label>
+                        <a href="#" className="text-xs font-semibold text-ec-accent hover:underline">Forgot password?</a>
                       </div>
                       <input
                         type="password"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                        className="input-premium"
                         required
                       />
                     </div>
                   </>
                 ) : (
-                  /* Signup fields wrapper with internal scrolling */
-                  <div className="max-h-[300px] md:max-h-[360px] lg:h-[198px] xl:h-[198px] overflow-y-auto pr-2 space-y-4 custom-form-scroll">
+                  /* Signup fields wrapper - responsive scroll (native on mobile, clean inner scroll on desktop) */
+                  <div className="lg:max-h-[198px] lg:overflow-y-auto lg:pr-2 space-y-4 custom-form-scroll">
                     <style>{`
                       .custom-form-scroll::-webkit-scrollbar {
                         width: 4px;
@@ -649,51 +650,51 @@ export default function Login() {
                     `}</style>
                     
                     <div>
-                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Full Name</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Full Name</label>
                       <input
                         type="text"
                         placeholder="John Doe"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                        className="input-premium"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email Address</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Email Address</label>
                       <input
                         type="email"
                         placeholder="name@institution.edu"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                        className="input-premium"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Choose Password</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Choose Password</label>
                       <input
                         type="password"
                         placeholder="Min. 6 characters"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                        className="input-premium"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select College</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Select College</label>
                       <div className="relative">
                         {collegesLoading ? (
-                          <div className="w-full bg-white text-gray-500 border border-gray-300 rounded-lg px-3.5 py-2.5 pl-9 text-sm flex items-center justify-between">
+                          <div className="w-full bg-ec-surface text-ec-text-sub border border-ec-border rounded-lg px-3.5 py-2.5 pl-9 text-sm flex items-center justify-between">
                             <span>Loading active colleges...</span>
-                            <div className="w-3.5 h-3.5 border-2 border-emerald-500/30 border-t-emerald-600 rounded-full animate-spin" />
+                            <div className="w-3.5 h-3.5 border-2 border-ec-accent/30 border-t-ec-accent rounded-full animate-spin" />
                           </div>
                         ) : colleges.length === 0 ? (
-                          <div className="w-full bg-red-50 text-red-600 border border-red-200 rounded-lg px-3.5 py-2.5 pl-9 text-sm">
+                          <div className="w-full bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg px-3.5 py-2.5 pl-9 text-sm">
                             No registered colleges found.
                           </div>
                         ) : (
@@ -701,84 +702,84 @@ export default function Login() {
                             <select
                               value={selectedCollegeCode}
                               onChange={(e) => setSelectedCollegeCode(e.target.value)}
-                              className="w-full bg-white text-gray-900 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 pl-9 pr-8 appearance-none cursor-pointer font-medium transition-all duration-200 outline-none"
+                              className="input-premium pl-9 pr-8 cursor-pointer appearance-none"
                               required
                             >
                               {colleges.map((c) => (
-                                <option key={c.collegeCode} value={c.collegeCode} className="text-gray-900 bg-white">
+                                <option key={c.collegeCode} value={c.collegeCode} className="text-ec-highlight bg-ec-surface">
                                   {c.name} ({c.collegeCode})
                                 </option>
                               ))}
                             </select>
-                            <GoOrganization size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">&#9662;</div>
+                            <GoOrganization size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-text-sub" />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
                           </>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Select Role</label>
+                      <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Select Role</label>
                       <div className="relative">
                         <select 
                           value={signupRole}
                           onChange={(e) => setSignupRole(e.target.value)}
-                          className="w-full bg-white text-gray-900 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 pl-9 pr-8 appearance-none cursor-pointer font-medium transition-all duration-200 outline-none"
+                          className="input-premium pl-9 pr-8 cursor-pointer appearance-none"
                           required
                         >
-                          <option value="student" className="text-gray-900 bg-white">Student Account</option>
-                          <option value="alumni" className="text-gray-900 bg-white">Alumni Account</option>
+                          <option value="student" className="text-ec-highlight bg-ec-surface">Student Account</option>
+                          <option value="alumni" className="text-ec-highlight bg-ec-surface">Alumni Account</option>
                         </select>
-                        <GoMortarBoard size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">&#9662;</div>
+                        <GoMortarBoard size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ec-text-sub" />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
                       </div>
                     </div>
 
                     {/* Role-specific sections */}
                     {signupRole === "student" ? (
-                      <div className="space-y-4 pt-3 border-t border-gray-200">
-                        <div className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider">Student Academic Details</div>
+                      <div className="space-y-4 pt-3 border-t border-ec-border/60 animate-in fade-in duration-200">
+                        <div className="text-[10px] font-extrabold text-ec-accent uppercase tracking-wider">Student Academic Details</div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Roll Number</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Roll Number</label>
                           <input
                             type="text"
                             placeholder="e.g. 210123010"
                             value={rollNo}
                             onChange={(e) => setRollNo(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Branch / Department</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Branch / Department</label>
                           <input
                             type="text"
                             placeholder="e.g. Computer Science"
                             value={branch}
                             onChange={(e) => setBranch(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Current Year</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Current Year</label>
                           <div className="relative">
                             <select
                               value={currentYear}
                               onChange={(e) => setCurrentYear(e.target.value)}
-                              className="w-full bg-white text-gray-900 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 pr-8 appearance-none cursor-pointer font-medium transition-all duration-200 outline-none"
+                              className="input-premium pr-8 cursor-pointer appearance-none"
                               required
                             >
-                              <option value="1" className="text-gray-900 bg-white">1st Year</option>
-                              <option value="2" className="text-gray-900 bg-white">2nd Year</option>
-                              <option value="3" className="text-gray-900 bg-white">3rd Year</option>
-                              <option value="4" className="text-gray-900 bg-white">4th Year</option>
+                              <option value="1" className="text-ec-highlight bg-ec-surface">1st Year</option>
+                              <option value="2" className="text-ec-highlight bg-ec-surface">2nd Year</option>
+                              <option value="3" className="text-ec-highlight bg-ec-surface">3rd Year</option>
+                              <option value="4" className="text-ec-highlight bg-ec-surface">4th Year</option>
                             </select>
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">&#9662;</div>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-ec-text-sub text-xs">&#9662;</div>
                           </div>
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Graduation Year</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Graduation Year</label>
                           <input
                             type="number"
                             min="2000"
@@ -786,38 +787,38 @@ export default function Login() {
                             placeholder="e.g. 2025"
                             value={graduationYear}
                             onChange={(e) => setGraduationYear(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4 pt-3 border-t border-gray-200">
-                        <div className="text-[10px] font-extrabold text-emerald-600 uppercase tracking-wider">Alumni Professional Details</div>
+                      <div className="space-y-4 pt-3 border-t border-ec-border/60 animate-in fade-in duration-200">
+                        <div className="text-[10px] font-extrabold text-ec-accent uppercase tracking-wider">Alumni Professional Details</div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Roll Number</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Roll Number</label>
                           <input
                             type="text"
                             placeholder="e.g. 210123010"
                             value={rollNo}
                             onChange={(e) => setRollNo(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Branch / Department</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Branch / Department</label>
                           <input
                             type="text"
                             placeholder="e.g. Computer Science"
                             value={branch}
                             onChange={(e) => setBranch(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Graduation Year</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Graduation Year</label>
                           <input
                             type="number"
                             min="1950"
@@ -825,40 +826,40 @@ export default function Login() {
                             placeholder="e.g. 2020"
                             value={graduationYear}
                             onChange={(e) => setGraduationYear(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Current Company</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Current Company</label>
                           <input
                             type="text"
                             placeholder="e.g. Google"
                             value={company}
                             onChange={(e) => setCompany(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Current Designation</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">Current Designation</label>
                           <input
                             type="text"
                             placeholder="e.g. Software Engineer"
                             value={designation}
                             onChange={(e) => setDesignation(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] md:text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">LinkedIn Profile URL</label>
+                          <label className="block text-[11px] md:text-xs font-bold text-ec-text-sub uppercase tracking-wider mb-1.5">LinkedIn Profile URL</label>
                           <input
                             type="url"
                             placeholder="e.g. https://linkedin.com/in/johndoe"
                             value={linkedin}
                             onChange={(e) => setLinkedin(e.target.value)}
-                            className="w-full bg-white text-gray-900 placeholder:text-gray-400 border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-lg px-3.5 py-2.5 text-sm transition-all duration-200 outline-none"
+                            className="input-premium"
                             required
                           />
                         </div>
@@ -866,11 +867,11 @@ export default function Login() {
                     )}
                   </div>
                 )}
-
+ 
                 <button
                   type="submit"
                   disabled={loading || (mode === "signup" && colleges.length === 0)}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg py-3 text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_4px_20px_rgba(16,185,129,0.15)] transition-colors"
+                  className="btn-premium-action w-full flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -887,31 +888,31 @@ export default function Login() {
                   )}
                 </button>
               </form>
-
+ 
               {/* Developer Access Box (Available only in Login Mode) */}
               {mode === "login" && (
-                <div className="mt-5 border-t border-gray-200 pt-4">
+                <div className="mt-5 border-t border-ec-border/60 pt-4">
                   <div className="flex items-center gap-1.5 mb-3">
-                    <GoZap size={12} className="text-emerald-600 animate-pulse" />
-                    <span className="text-[9px] font-[800] text-gray-500 uppercase tracking-wider">
+                    <GoZap size={12} className="text-ec-accent animate-pulse" />
+                    <span className="text-[9px] font-[800] text-ec-text-sub uppercase tracking-wider">
                       Developer & Evaluator Portal Access
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {devRoles.map(({ role, label, icon: Icon, color }) => (
                       <button
                         key={role}
                         onClick={() => handleDummyLogin(role)}
-                        className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-emerald-500/40 group transition-all duration-200 cursor-pointer shadow-sm text-gray-900"
+                        className="flex items-center gap-3.5 p-3 rounded-xl border border-ec-border/60 bg-ec-surface/40 hover:bg-ec-muted/50 hover:border-ec-accent/50 group transition-all duration-300 cursor-pointer shadow-sm text-ec-highlight backdrop-blur-md"
                       >
-                        <div className={`w-7 h-7 rounded-md ${color} flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-105 shadow-sm`}>
-                          <Icon size={12} className="stroke-[2.5]" />
+                        <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center text-white shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-[5deg] shadow-sm`}>
+                          <Icon size={14} className="stroke-[2.5]" />
                         </div>
                         <div className="text-left min-w-0">
-                          <div className="text-[11px] font-bold text-gray-800 group-hover:text-emerald-600 transition-colors truncate">
+                          <div className="text-[11.5px] font-bold text-ec-highlight group-hover:text-ec-accent transition-colors truncate">
                             {label}
                           </div>
-                          <div className="text-[9px] text-gray-500 leading-none mt-0.5">
+                          <div className="text-[9.5px] text-ec-text-sub leading-none mt-1">
                             Bypass Login
                           </div>
                         </div>
@@ -923,14 +924,14 @@ export default function Login() {
             </div>
           )}
         </div>
-
+ 
         {/* Footer info links (Lower heights to avoid scrollbars) */}
-        <div className="w-full mt-6 lg:mt-0 flex flex-col sm:flex-row items-center justify-between text-[10px] text-gray-400 gap-2 pt-4 border-t border-gray-100">
+        <div className="w-full mt-6 lg:mt-0 flex flex-col sm:flex-row items-center justify-between text-[10px] text-ec-text-sub/70 gap-2 pt-4 border-t border-ec-border/40">
           <span>&copy; 2026 Connect-Karo. All rights reserved.</span>
           <div className="flex gap-3.5">
-            <a href="#" className="hover:text-gray-800 transition-colors">Security</a>
-            <a href="#" className="hover:text-gray-800 transition-colors">Terms</a>
-            <a href="#" className="hover:text-gray-800 transition-colors">Support</a>
+            <a href="#" className="hover:text-ec-highlight transition-colors">Security</a>
+            <a href="#" className="hover:text-ec-highlight transition-colors">Terms</a>
+            <a href="#" className="hover:text-ec-highlight transition-colors">Support</a>
           </div>
         </div>
       </div>

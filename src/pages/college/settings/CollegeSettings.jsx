@@ -123,12 +123,12 @@ export default function CollegeSettings() {
     <div className="w-full flex flex-col md:flex-row gap-5 md:gap-6 font-sans selection:bg-ec-accent/20 select-none pb-12 animate-in fade-in duration-300">
       
       {/* ── LEFT SIDEBAR NAVIGATION (GitHub style) ── */}
-      <aside className="w-full md:w-[260px] shrink-0 space-y-6">
+      <aside className="hidden md:block w-full md:w-[260px] shrink-0 md:space-y-6">
         
         {/* User profile brief card */}
         <div className="flex items-center gap-3 px-2 pb-2 border-b border-ec-border/100">
           {/* Avatar preview */}
-          <div className="w-10 h-10 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-semibold text-sm border border-gray-200 dark:border-[#30363d] overflow-hidden shrink-0 shadow-sm">
+          <div className={`w-10 h-10 rounded-full bg-[#f3f4f6] dark:bg-[#30363d] flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-semibold text-sm border border-gray-200 dark:border-[#30363d] overflow-hidden shrink-0 shadow-sm ${location.pathname !== '/college/settings/profile' ? 'college-transition-avatar' : ''}`}>
             {profilePhotoURL ? (
               <img src={profilePhotoURL} alt="avatar" className="w-full h-full object-cover" />
             ) : (
@@ -152,6 +152,7 @@ export default function CollegeSettings() {
           <div className="space-y-0.5">
             <NavLink
               to="/college/settings/profile"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -166,6 +167,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/account"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -180,6 +182,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/appearance"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -194,6 +197,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/institution"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -208,6 +212,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/accessibility"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -222,6 +227,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/notifications"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -236,6 +242,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/supabase"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -257,6 +264,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/billing"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -276,6 +284,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/emails"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -290,6 +299,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/security"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -304,6 +314,7 @@ export default function CollegeSettings() {
 
             <NavLink
               to="/college/settings/sessions"
+              viewTransition
               className={({ isActive }) => 
                 `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
                   isActive
@@ -319,6 +330,43 @@ export default function CollegeSettings() {
 
         </nav>
       </aside>
+
+      {/* ── MOBILE HORIZONTAL SCROLL NAVIGATION (md:hidden tabs) ── */}
+      <div className="md:hidden w-full overflow-x-auto scrollbar-none border-b border-ec-border pb-1 shrink-0 mb-3">
+        <nav className="flex items-center gap-1.5 px-1 min-w-max">
+          {[
+            { name: 'Profile', path: '/college/settings/profile', icon: User, activeKey: 'profile' },
+            { name: 'Account', path: '/college/settings/account', icon: Settings, activeKey: 'account' },
+            { name: 'Appearance', path: '/college/settings/appearance', icon: Palette, activeKey: 'appearance' },
+            { name: 'Institution', path: '/college/settings/institution', icon: Building2, activeKey: 'institution' },
+            { name: 'Accessibility', path: '/college/settings/accessibility', icon: Accessibility, activeKey: 'accessibility' },
+            { name: 'Notifications', path: '/college/settings/notifications', icon: Bell, activeKey: 'notifications' },
+            { name: 'Supabase', path: '/college/settings/supabase', icon: Database, activeKey: 'supabase' },
+            { name: 'Billing', path: '/college/settings/billing', icon: CreditCard, activeKey: 'billing' },
+            { name: 'Emails', path: '/college/settings/emails', icon: Mail, activeKey: 'emails' },
+            { name: 'Security', path: '/college/settings/security', icon: Key, activeKey: 'security' },
+            { name: 'Sessions', path: '/college/settings/sessions', icon: Tv, activeKey: 'sessions' },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.activeKey;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                viewTransition
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all shrink-0 ${
+                  isActive
+                    ? 'bg-ec-accent/10 border-ec-accent/20 text-ec-highlight font-bold'
+                    : 'border-transparent text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight'
+                }`}
+              >
+                <Icon size={14} className={isActive ? 'text-ec-accent' : 'text-ec-icon'} />
+                <span>{item.name}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* ── MAIN CONTENT AREA ── */}
       <main className="flex-1 min-w-0">

@@ -223,10 +223,12 @@ export default function CollegeRequestList() {
         </div>
       </div>
 
-      {/* Data Table */}
-      <div className="flex-1 surface-card border border-ec-border rounded-xl overflow-hidden flex flex-col">
+      {/* Verification Data Glass Sheet */}
+      <div className="flex-1 glass-card flex flex-col">
         <div className="overflow-x-auto flex-1 max-h-[550px] overflow-y-auto scrollbar-thin">
-          <table className="w-full text-left border-collapse">
+          
+          {/* Desktop Table View */}
+          <table className="w-full text-left border-collapse hidden md:table">
             <thead className="sticky top-0 bg-ec-surface/95 backdrop-blur-md z-10 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
               <tr className="border-b border-ec-border">
                 <th className="px-5 py-3.5 text-[11px] font-bold text-ec-text-sub uppercase tracking-wider">Candidate Name</th>
@@ -257,7 +259,7 @@ export default function CollegeRequestList() {
                 </tr>
               ) : (
                 filteredRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-ec-surface/80 transition-colors group">
+                  <tr key={req.id} className="hover:bg-ec-surface/50 hover:border-ec-accent/20 transition-all duration-250 group border-b border-ec-border/45">
                     
                     {/* Candidate Name */}
                     <td className="px-5 py-4">
@@ -344,6 +346,109 @@ export default function CollegeRequestList() {
               )}
             </tbody>
           </table>
+
+          {/* Mobile Cards View */}
+          <div className="block md:hidden divide-y divide-ec-border/60">
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="p-4 space-y-3 animate-pulse bg-ec-surface/40">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-ec-muted/40 rounded"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-ec-muted/50 rounded w-2/3 mb-1"></div>
+                      <div className="h-3 bg-ec-muted/30 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : filteredRequests.length === 0 ? (
+              <div className="p-8 text-center text-ec-text-sub">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-ec-muted/30 mb-2">
+                  <Search size={16} className="opacity-50" />
+                </div>
+                <p className="text-xs font-medium">No pending registration requests found.</p>
+              </div>
+            ) : (
+              filteredRequests.map((req) => (
+                <div key={req.id} className="p-5 my-3 mx-2 rounded-2xl glass-card space-y-4 border border-ec-border/20 shadow-sm relative overflow-hidden transition-all duration-300">
+                  {/* Candidate Name, Email & Role */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-md bg-ec-muted text-ec-highlight flex items-center justify-center uppercase font-bold text-sm shrink-0">
+                        {req.name?.charAt(0) || '?'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm text-ec-highlight truncate">{req.name}</div>
+                        <div className="text-[11.5px] text-ec-text-sub flex items-center gap-1 mt-0.5 truncate">
+                          <Mail size={11} className="shrink-0" /> {req.email}
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+                      req.role === 'student' 
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                        : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                    }`}>
+                      {req.role}
+                    </span>
+                  </div>
+
+                  {/* Details Block */}
+                  <div className="text-xs text-ec-text-sub bg-ec-root/30 border border-ec-border/40 p-2.5 rounded-lg space-y-1">
+                    {req.role === 'student' ? (
+                      <div className="space-y-0.5">
+                        <div><span className="font-semibold text-ec-highlight">Roll No:</span> {req.rollNo || 'N/A'}</div>
+                        <div><span className="font-semibold text-ec-highlight">Branch:</span> {req.branch || 'N/A'}</div>
+                        <div className="flex gap-3">
+                          <span><span className="font-semibold text-ec-highlight">Year:</span> {req.currentYear || 'N/A'}</span>
+                          <span>|</span>
+                          <span><span className="font-semibold text-ec-highlight">Batch:</span> {req.batch || 'N/A'}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-0.5">
+                        <div><span className="font-semibold text-ec-highlight">Branch:</span> {req.branch || 'N/A'} | <span className="font-semibold text-ec-highlight">Batch:</span> {req.batch || 'N/A'}</div>
+                        <div><span className="font-semibold text-ec-highlight">Work:</span> {req.designation || 'N/A'} at {req.company || 'N/A'}</div>
+                        {req.linkedin && (
+                          <div className="pt-1.5 border-t border-ec-border/20 mt-1">
+                            <a 
+                              href={req.linkedin} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-ec-accent hover:underline inline-flex items-center gap-1 font-semibold"
+                            >
+                              🔗 LinkedIn Profile
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button 
+                      disabled={actionInProgress !== null}
+                      onClick={() => handleReject(req.id)}
+                      className="px-3.5 py-2 bg-ec-surface hover:bg-red-500/10 text-ec-text-sub hover:text-red-400 border border-ec-border hover:border-red-500/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                    >
+                      <X size={13} />
+                      Decline
+                    </button>
+                    <button 
+                      disabled={actionInProgress !== null}
+                      onClick={() => handleApprove(req.id, req.role)}
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/15 flex items-center gap-1 disabled:opacity-50 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                    >
+                      {actionInProgress === req.id ? <RefreshCw size={13} className="animate-spin" /> : <Check size={13} />}
+                      Approve
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
         </div>
         
         {!loading && filteredRequests.length > 0 && (

@@ -274,10 +274,12 @@ export default function CollegeUserList() {
         </div>
       </div>
 
-      {/* Directory Table */}
-      <div className="flex-1 surface-card border border-ec-border rounded-xl overflow-hidden flex flex-col">
+      {/* Directory Glass Sheet */}
+      <div className="flex-1 glass-card flex flex-col">
         <div className="overflow-x-auto flex-1 max-h-[550px] overflow-y-auto scrollbar-thin">
-          <table className="w-full text-left border-collapse">
+          
+          {/* Desktop Table View */}
+          <table className="w-full text-left border-collapse hidden md:table">
             <thead className="sticky top-0 bg-ec-surface/95 backdrop-blur-md z-10 shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
               <tr className="border-b border-ec-border">
                 <th className="px-5 py-3.5 text-xs font-semibold text-ec-text-sub uppercase tracking-wider">Candidate Profile</th>
@@ -310,7 +312,7 @@ export default function CollegeUserList() {
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="hover:bg-ec-surface/80 transition-colors group">
+                  <tr key={u.id} className="hover:bg-ec-surface/50 hover:border-ec-accent/20 transition-all duration-250 group border-b border-ec-border/45">
                     
                     {/* User Profile */}
                     <td className="px-5 py-4">
@@ -392,7 +394,9 @@ export default function CollegeUserList() {
                       }`}>
                         {u.status === 'approved' ? 'Verified' : 'Suspended'}
                       </span>
-                    </td>                    {/* Action Menu */}
+                    </td>
+                    
+                    {/* Action Menu */}
                     <td className="px-5 py-4 text-right relative">
                       <button 
                         onClick={(e) => {
@@ -437,6 +441,127 @@ export default function CollegeUserList() {
               )}
             </tbody>
           </table>
+
+          {/* Mobile Cards View */}
+          <div className="block md:hidden divide-y divide-ec-border/60">
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="p-4 space-y-3 animate-pulse bg-ec-surface/40">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-ec-muted/40 rounded"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-ec-muted/50 rounded w-2/3 mb-1"></div>
+                      <div className="h-3 bg-ec-muted/30 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : filteredUsers.length === 0 ? (
+              <div className="p-8 text-center text-ec-text-sub">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-ec-muted/30 mb-2">
+                  <Search size={16} className="opacity-50" />
+                </div>
+                <p className="text-xs font-medium">No directory records found.</p>
+              </div>
+            ) : (
+              filteredUsers.map((u) => (
+                <div key={u.id} className="p-5 my-3 mx-2 rounded-2xl glass-card space-y-4 border border-ec-border/20 shadow-sm relative overflow-hidden transition-all duration-300">
+                  {/* Candidate Profile Info */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-md bg-ec-muted text-ec-highlight flex items-center justify-center uppercase font-bold text-sm shrink-0">
+                        {u.name?.charAt(0) || '?'}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm text-ec-highlight truncate">{u.name}</div>
+                        <div className="text-[11.5px] text-ec-text-sub flex items-center gap-1 mt-0.5 truncate">
+                          <Mail size={11} className="shrink-0" /> {u.email}
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+                      u.role === 'student' 
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                        : 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+                    }`}>
+                      {u.role}
+                    </span>
+                  </div>
+
+                  {/* Professional / Branch info */}
+                  <div className="text-xs text-ec-text-sub bg-ec-root/30 border border-ec-border/40 p-2.5 rounded-lg space-y-1">
+                    {u.role === 'student' ? (
+                      <div className="space-y-0.5">
+                        <div><span className="font-semibold text-ec-highlight">Roll No:</span> {u.rollNo || 'N/A'}</div>
+                        <div><span className="font-semibold text-ec-highlight">Branch:</span> {u.branch || 'N/A'}</div>
+                        <div className="flex gap-3">
+                          <span><span className="font-semibold text-ec-highlight">Year:</span> {u.currentYear || 'N/A'}</span>
+                          <span>|</span>
+                          <span><span className="font-semibold text-ec-highlight">Batch:</span> {u.batch || 'N/A'}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-0.5">
+                        {u.company || u.designation ? (
+                          <div className="flex items-start gap-1">
+                            <Briefcase size={12} className="text-ec-text-sub mt-0.5 shrink-0" />
+                            <span>{u.designation || 'Alumni'} at {u.company || 'N/A'}</span>
+                          </div>
+                        ) : (
+                          <div><span className="font-semibold text-ec-highlight">Batch:</span> Class of {u.batch || 'N/A'}</div>
+                        )}
+                        <div><span className="font-semibold text-ec-highlight">Branch:</span> {u.branch || 'N/A'}</div>
+                        {u.linkedin && (
+                          <div className="pt-1.5 border-t border-ec-border/20 mt-1">
+                            <a 
+                              href={u.linkedin} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-ec-accent hover:underline inline-flex items-center gap-1 font-semibold"
+                            >
+                              🔗 LinkedIn Profile
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Security Status & Quick Actions */}
+                  <div className="flex items-center justify-between pt-1">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                      u.status === 'approved' 
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    }`}>
+                      {u.status === 'approved' ? 'Verified' : 'Suspended'}
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleToggleBlock(u.id, u.status, u.role)}
+                        className="px-3 py-1.5 bg-ec-surface hover:bg-ec-muted border border-ec-border hover:border-ec-accent/30 rounded-xl text-[10.5px] font-bold flex items-center gap-1.5 text-ec-text-sub hover:text-ec-highlight transition-all cursor-pointer shadow-sm hover:scale-[1.03] active:scale-[0.98]"
+                      >
+                        {u.status === 'approved' ? (
+                           <><ShieldAlert size={12} className="text-orange-400 shrink-0" /> Suspend</>
+                        ) : (
+                           <><ShieldCheck size={12} className="text-emerald-400 shrink-0" /> Unblock</>
+                        )}
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteUser(u.id, u.name, u.status, u.role)}
+                        className="p-2 text-red-400 hover:text-white hover:bg-red-500 rounded-xl border border-transparent hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        title="Remove Profile"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
         </div>
         
         {!loading && filteredUsers.length > 0 && (

@@ -208,7 +208,7 @@ export default function PublicProfileSettings() {
             Profile picture
           </span>
 
-          <div className="relative group w-[200px] h-[200px] rounded-full border border-ec-border bg-[#f3f4f6] dark:bg-[#30363d] shadow-sm flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-medium text-4xl overflow-hidden mb-4">
+          <div className="relative group w-[200px] h-[200px] rounded-full border border-ec-border bg-[#f3f4f6] dark:bg-[#30363d] shadow-sm flex items-center justify-center text-gray-600 dark:text-[#c9d1d9] font-medium text-4xl overflow-hidden mb-4 college-transition-avatar">
             {profilePhotoURL ? (
               <img src={profilePhotoURL} alt="avatar" className="w-full h-full object-cover" />
             ) : (
