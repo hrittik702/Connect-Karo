@@ -1,17 +1,17 @@
-import React from 'react';
-import { Lock, Plus } from 'lucide-react';
+import { Lock, Plus, Bell } from 'lucide-react';
 
 export default function NotificationsSettings() {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <div className="border-b border-ec-border pb-4">
-        <h2 className="text-2xl font-medium text-ec-highlight capitalize">
+        <h2 className="text-2xl font-medium text-ec-highlight capitalize flex items-center gap-2">
+          <Bell size={20} className="text-ec-accent" />
           Notifications Settings
         </h2>
         <p className="text-xs text-ec-text-sub mt-0.5">Customize your college broadcast alerts, notice reminders, and student registration notifications.</p>
       </div>
 
-      <div className="surface-card border-dashed border-2 border-ec-border rounded-xl p-8 text-center flex flex-col items-center bg-ec-surface/40">
+      <div className="relative bg-ec-surface/40 border-dashed border-2 border-ec-border rounded-xl p-8 text-center flex flex-col items-center shadow-sm">
         <div className="w-12 h-12 rounded-full bg-ec-muted/40 border border-ec-border flex items-center justify-center text-ec-highlight mb-4">
           <Lock size={18} className="text-ec-text-sub" />
         </div>

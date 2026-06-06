@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabaseClient';
-import { Edit2, X } from 'lucide-react';
+import { Edit2, X, User } from 'lucide-react';
 
 export default function PublicProfileSettings() {
   const { currentUser, userData } = useAuth();
@@ -105,7 +105,10 @@ export default function PublicProfileSettings() {
     <div className="space-y-6">
       <div className="border-b border-ec-border pb-4 flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-medium text-ec-highlight">Public profile</h2>
+          <h2 className="text-2xl font-medium text-ec-highlight flex items-center gap-2">
+            <User size={20} className="text-ec-accent" />
+            Public profile
+          </h2>
           <p className="text-xs text-ec-text-sub mt-0.5">Manage details shown to verified network nodes.</p>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 
 export default function AccountSettings() {
   const { currentUser, userData } = useAuth();
@@ -13,7 +13,10 @@ export default function AccountSettings() {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <div className="border-b border-ec-border pb-4">
-        <h2 className="text-2xl font-medium text-ec-highlight">Account Settings</h2>
+        <h2 className="text-2xl font-medium text-ec-highlight flex items-center gap-2">
+          <Settings size={20} className="text-ec-accent" />
+          Account Settings
+        </h2>
         <p className="text-xs text-ec-text-sub mt-0.5">Manage administrative credentials and security preferences.</p>
       </div>
 

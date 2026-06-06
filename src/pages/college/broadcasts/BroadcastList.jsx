@@ -128,12 +128,12 @@ export default function BroadcastList() {
       </div>
 
       {/* Broadcast Cards Grid/List */}
-      <div className="flex-1 surface-card border border-ec-border rounded-xl p-6 overflow-y-auto bg-ec-root/20">
+      <div className="flex-1 relative border border-ec-border rounded-sm p-6 overflow-y-auto bg-ec-root/20">
         
         <div className="space-y-4">
           {loading ? (
             [...Array(3)].map((_, i) => (
-              <div key={i} className="p-4 border border-ec-border/50 rounded-xl animate-pulse flex gap-4 bg-ec-surface/50">
+              <div key={i} className="p-4 border border-ec-border/50 rounded-sm animate-pulse flex gap-4 bg-ec-surface/50">
                 <div className="w-9 h-9 rounded-lg bg-ec-muted/40 shrink-0"></div>
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-ec-muted/50 rounded w-1/3"></div>
@@ -154,7 +154,7 @@ export default function BroadcastList() {
               return (
                 <div 
                   key={announcement.id} 
-                  className="p-4 border border-ec-border bg-ec-surface rounded-xl hover:border-ec-accent/40 transition-all relative overflow-hidden group shadow-sm"
+                  className="p-4 border border-ec-border bg-ec-surface rounded-sm hover:border-ec-accent/40 transition-all relative overflow-hidden group"
                 >
                   {announcement.type === 'critical' && (
                     <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 blur-3xl pointer-events-none" />

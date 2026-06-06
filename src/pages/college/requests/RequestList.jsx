@@ -247,7 +247,7 @@ export default function CollegeRequestList() {
       </div>
 
       {/* Verification Data Glass Sheet */}
-      <div className="flex-1 glass-card flex flex-col">
+      <div className="flex-1 glass-card flex flex-col rounded-sm overflow-hidden">
         <div className="overflow-x-auto flex-1 max-h-[550px] overflow-y-auto scrollbar-thin">
           
           {/* Desktop Table View */}
@@ -393,7 +393,7 @@ export default function CollegeRequestList() {
               </div>
             ) : (
               filteredRequests.map((req) => (
-                <div key={req.id} className="p-5 my-3 mx-2 rounded-2xl glass-card space-y-4 border border-ec-border/20 shadow-sm relative overflow-hidden transition-all duration-300">
+                <div key={req.id} className="p-5 my-3 mx-2 rounded-sm glass-card space-y-4 border border-ec-border/20 relative overflow-hidden transition-all duration-300">
                   {/* Candidate Name, Email & Role */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -453,7 +453,7 @@ export default function CollegeRequestList() {
                     <button 
                       disabled={actionInProgress !== null}
                       onClick={() => handleReject(req.id)}
-                      className="px-3.5 py-2 bg-ec-surface hover:bg-red-500/10 text-ec-text-sub hover:text-red-400 border border-ec-border hover:border-red-500/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                      className="px-3.5 py-2 bg-ec-surface hover:bg-red-500/10 text-ec-text-sub hover:text-red-400 border border-ec-border hover:border-red-500/30 rounded-xl text-xs font-bold transition-all flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                     >
                       <X size={13} />
                       Decline
@@ -461,7 +461,7 @@ export default function CollegeRequestList() {
                     <button 
                       disabled={actionInProgress !== null}
                       onClick={() => handleApprove(req.id, req.role)}
-                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/15 flex items-center gap-1 disabled:opacity-50 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+                      className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-500/15 flex items-center gap-1 disabled:opacity-50 cursor-pointer"
                     >
                       {actionInProgress === req.id ? <RefreshCw size={13} className="animate-spin" /> : <Check size={13} />}
                       Approve

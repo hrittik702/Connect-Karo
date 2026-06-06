@@ -343,6 +343,14 @@ export default function SupabaseSandbox() {
   return (
     <div className="space-y-6 select-none font-sans text-gray-700 dark:text-[#c9d1d9] pb-6">
       
+      <div className="border-b border-ec-border pb-4">
+        <h2 className="text-2xl font-medium text-ec-highlight capitalize flex items-center gap-2">
+          <Database size={20} className="text-ec-accent" />
+          Supabase sandbox
+        </h2>
+        <p className="text-xs text-ec-text-sub mt-0.5">Test real-time database connections, authentication layers, and schema validations.</p>
+      </div>
+      
       {/* Toast popup */}
       {toast.text && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#24292f] dark:bg-[#1f2428] text-white border border-[#30363d] rounded-xl px-4 py-3 shadow-xl flex items-center gap-2.5 text-xs font-bold animate-in slide-in-from-bottom-5 duration-200">

@@ -104,7 +104,7 @@ export default function InstitutionSettings() {
       </div>
 
       {collegeLoading ? (
-        <div className="surface-card p-6 space-y-4 animate-pulse border border-ec-border rounded-xl">
+        <div className="relative bg-ec-surface p-6 space-y-4 animate-pulse border border-ec-border rounded-xl shadow-sm">
           <div className="h-5 bg-ec-muted/50 w-1/4 rounded"></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="h-10 bg-ec-muted/40 rounded"></div>
@@ -112,7 +112,7 @@ export default function InstitutionSettings() {
           </div>
         </div>
       ) : !collegeDetails ? (
-        <div className="surface-card p-8 border border-ec-border rounded-xl text-center text-ec-text-sub">
+        <div className="relative bg-ec-surface p-8 border border-ec-border rounded-xl text-center text-ec-text-sub shadow-sm">
           College records failed to sync.
         </div>
       ) : (

@@ -9,7 +9,7 @@
   --ec-root:          246 248 250;   /* Light background */
   --ec-surface:       255 255 255;   /* White surface */
   --ec-muted:         234 238 242;   /* Secondary/Hover light */
-  --ec-border:        216 222 228;   /* Light Border */
+  --ec-border:        180 188 196;   /* Crisp Light Border */
   --ec-text:          31 35 40;      /* Dark text */
   --ec-text-sub:      101 109 118;   /* Muted text */
   --ec-icon:          101 109 118;   /* Icon default light color */
@@ -29,7 +29,7 @@
   --ec-root:          23 23 23;      /* #171717 (Charcoal Root background) */
   --ec-surface:       30 30 30;      /* #1e1e1e (Card/Surface color) */
   --ec-muted:         42 42 42;      /* #2a2a2a (Secondary/Hover state) */
-  --ec-border:        48 48 48;      /* #303030 (Crisp Dark Border) */
+  --ec-border:        85 85 85;      /* #555555 (Crisp Dark Border) */
   --ec-text:          240 240 240;   /* #f0f0f0 (Main text) */
   --ec-text-sub:      163 163 163;   /* #a3a3a3 (Muted/Secondary text) */
   --ec-icon:          163 163 163;   /* #a3a3a3 (Icon default color) */
@@ -86,3 +86,28 @@ html.college-panel body {
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* Disable hover lift/translate (pop-up) effects on cards and list containers under college-panel */
+.college-panel .surface-card:hover,
+.college-panel .glass-card:hover {
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+  border-color: rgb(var(--ec-border)) !important;
+}
+
+.college-panel.dark .glass-card:hover,
+.college-panel .dark .glass-card:hover {
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(var(--ec-border) / 0.4) !important;
+}
+
+/* Ensure proper sandboxing and rounded-sm (6px) corners for requests and directory sheets/cards with zero shadow on hover */
+.college-panel .glass-card.rounded-sm,
+.college-panel .glass-card.rounded-sm:hover,
+.college-panel.dark .glass-card.rounded-sm:hover,
+.college-panel .dark .glass-card.rounded-sm:hover {
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+

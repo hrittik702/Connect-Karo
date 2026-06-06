@@ -49,7 +49,7 @@ export default function UserMenuDropdown({ onClose }) {
       />
 
       {/* Floating Right Sidebar Panel */}
-      <div className="fixed top-[58px] right-2 max-h-[calc(100vh-80px)] h-auto w-48 bg-white dark:bg-[#242424] border border-gray-200 dark:border-[#303030] rounded-xl shadow-2xl z-50 overflow-hidden animate-in slide-in-from-right duration-150 text-gray-900 dark:text-ec-text font-sans flex flex-col">
+      <div className="fixed top-[58px] right-2 max-h-[calc(100vh-80px)] h-auto w-48 bg-white dark:bg-[#242424] border border-ec-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in slide-in-from-right duration-150 text-gray-900 dark:text-ec-text font-sans flex flex-col">
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto scrollbar-none p-2.5 space-y-0.5">
           {/* Main Navigation */}
@@ -86,7 +86,7 @@ export default function UserMenuDropdown({ onClose }) {
           </div>
 
           {/* Horizontal Line */}
-          <hr className="border-gray-200 dark:border-[#303030] my-1.5" />
+          <hr className="border-ec-border my-1.5" />
 
           {/* Theme Options */}
           <div className="space-y-0.5">

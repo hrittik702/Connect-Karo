@@ -298,7 +298,7 @@ export default function CollegeUserList() {
       </div>
 
       {/* Directory Glass Sheet */}
-      <div className="flex-1 glass-card flex flex-col">
+      <div className="flex-1 glass-card flex flex-col rounded-sm overflow-hidden">
         <div className="overflow-x-auto flex-1 max-h-[550px] overflow-y-auto scrollbar-thin">
           
           {/* Desktop Table View */}
@@ -488,7 +488,7 @@ export default function CollegeUserList() {
               </div>
             ) : (
               filteredUsers.map((u) => (
-                <div key={u.id} className="p-5 my-3 mx-2 rounded-2xl glass-card space-y-4 border border-ec-border/20 shadow-sm relative overflow-hidden transition-all duration-300">
+                <div key={u.id} className="p-5 my-3 mx-2 rounded-sm glass-card space-y-4 border border-ec-border/20 relative overflow-hidden transition-all duration-300">
                   {/* Candidate Profile Info */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -563,7 +563,7 @@ export default function CollegeUserList() {
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => handleToggleBlock(u.id, u.status, u.role)}
-                        className="px-3 py-1.5 bg-ec-surface hover:bg-ec-muted border border-ec-border hover:border-ec-accent/30 rounded-xl text-[10.5px] font-bold flex items-center gap-1.5 text-ec-text-sub hover:text-ec-highlight transition-all cursor-pointer shadow-sm hover:scale-[1.03] active:scale-[0.98]"
+                        className="px-3 py-1.5 bg-ec-surface hover:bg-ec-muted border border-ec-border hover:border-ec-accent/30 rounded-xl text-[10.5px] font-bold flex items-center gap-1.5 text-ec-text-sub hover:text-ec-highlight transition-all cursor-pointer shadow-sm"
                       >
                         {u.status === 'approved' ? (
                            <><ShieldAlert size={12} className="text-orange-400 shrink-0" /> Suspend</>
@@ -573,7 +573,7 @@ export default function CollegeUserList() {
                       </button>
                       <button 
                         onClick={() => handleDeleteUser(u.id, u.name, u.status, u.role)}
-                        className="p-2 text-red-400 hover:text-white hover:bg-red-500 rounded-xl border border-transparent hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        className="p-2 text-red-400 hover:text-white hover:bg-red-500 rounded-xl border border-transparent transition-all cursor-pointer"
                         title="Remove Profile"
                       >
                         <Trash2 size={13} />

@@ -414,7 +414,7 @@ export default function CollegeDashboardLayout() {
       <div className="fixed bottom-2 left-2.5 z-[45] select-none">
         <button
           onClick={() => setShowSidebarMenu(!showSidebarMenu)}
-          className="w-7 h-7 rounded-md bg-ec-surface border-none border-ec-border flex items-center justify-center text-ec-icon hover:text-white hover:bg-white/5 transition-colors cursor-pointer outline-none"
+          className="w-7 h-7 rounded-md bg-ec-surface border border-ec-border flex items-center justify-center text-ec-icon hover:text-white hover:bg-white/5 transition-colors cursor-pointer outline-none"
           title="Sidebar control"
         >
           <SidebarControlIcon size={13} />
@@ -426,11 +426,11 @@ export default function CollegeDashboardLayout() {
               className="fixed inset-0 z-40 bg-transparent cursor-default"
               onClick={() => setShowSidebarMenu(false)}
             />
-            <div className="absolute  bottom-9 left-3 w-48 bg-white dark:bg-[#242424] border border-gray-200 dark:border-[#303030] rounded-sm shadow-2xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
+            <div className="absolute  bottom-9 left-3 w-48 bg-white dark:bg-[#242424] border border-ec-border rounded-sm shadow-2xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
               <div className="px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:text-ec-text-sub">
                 Sidebar Control
               </div>
-              <hr className="border-gray-200 dark:border-[#303030] my-1.5" />
+              <hr className="border-ec-border my-1.5" />
               <div className="space-y-0.5">
                 {[
                   { label: "Expanded", value: "expanded" },

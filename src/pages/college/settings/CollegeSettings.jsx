@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Outlet, NavLink, useLocation } from 'react-router-dom';
-import { 
-  User, 
-  Settings, 
-  Palette, 
-  Accessibility, 
-  Bell, 
-  CreditCard, 
-  Mail, 
-  Key, 
-  Tv, 
-  Check, 
-  X, 
-  Building2, 
-  LogOut, 
-  Database 
-} from 'lucide-react';
-import { supabase } from '../../../lib/supabaseClient';
-import { useAuth } from '../../../context/AuthContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
+import {
+  User,
+  Settings,
+  Palette,
+  Accessibility,
+  Bell,
+  CreditCard,
+  Mail,
+  Key,
+  Tv,
+  Check,
+  X,
+  Building2,
+  LogOut,
+  Database,
+} from "lucide-react";
+import { supabase } from "../../../lib/supabaseClient";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function CollegeSettings() {
   const { currentUser, userData, logout } = useAuth();
-  const collegeId = userData?.collegeId || '';
+  const collegeId = userData?.collegeId || "";
   const navigate = useNavigate();
   const location = useLocation();
 
   // Active sub-route name
-  const activeTab = location.pathname.split('/').pop() || 'profile';
+  const activeTab = location.pathname.split("/").pop() || "profile";
 
   // College institutional details state
   const [collegeDetails, setCollegeDetails] = useState(null);
@@ -34,30 +34,35 @@ export default function CollegeSettings() {
 
   // Modal / Toast message states
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   const adminName = userData?.name || "College Admin";
-  const adminEmail = userData?.email || currentUser?.email || "admin@institution.edu";
+  const adminEmail =
+    userData?.email || currentUser?.email || "admin@institution.edu";
 
   // Resolve default profile picture college letters
-  const institutionName = userData?.collegeName || userData?.collegeId || "College";
+  const institutionName =
+    userData?.collegeName || userData?.collegeId || "College";
   const collegeInitial = institutionName.charAt(0).toUpperCase();
-  const profilePhotoURL = userData?.photoURL || '';
+  const profilePhotoURL = userData?.photoURL || "";
 
   // Load Institutional Details
   useEffect(() => {
     if (!collegeId) return;
 
-    if (collegeId.toLowerCase().includes('dummy') || userData?.id === 'dummy_12345') {
+    if (
+      collegeId.toLowerCase().includes("dummy") ||
+      userData?.id === "dummy_12345"
+    ) {
       const dummyData = {
-        name: 'Rajkiya Engineering College, Ambedkar Nagar',
-        domain: 'recabn.ac.in',
-        collegeCode: '0737',
-        adminEmail: 'admin@demo.edu',
-        adminPhone: '+91 98765 43210',
-        address: 'Ambedkar Nagar, Uttar Pradesh India',
-        status: 'Active',
-        createdAt: new Date().toISOString()
+        name: "Rajkiya Engineering College, Ambedkar Nagar",
+        domain: "recabn.ac.in",
+        collegeCode: "0737",
+        adminEmail: "admin@demo.edu",
+        adminPhone: "+91 98765 43210",
+        address: "Ambedkar Nagar, Uttar Pradesh India",
+        status: "Active",
+        createdAt: new Date().toISOString(),
       };
       setCollegeDetails(dummyData);
       setCollegeLoading(false);
@@ -67,21 +72,21 @@ export default function CollegeSettings() {
     const fetchCollegeSettings = async () => {
       try {
         const { data, error } = await supabase
-          .from('colleges')
-          .select('*')
-          .eq('id', collegeId)
+          .from("colleges")
+          .select("*")
+          .eq("id", collegeId)
           .single();
-          
+
         if (error) throw error;
-        
+
         const mapped = {
           ...data,
           collegeCode: data.id,
           adminPhone: data.admin_phone,
           adminEmail: data.admin_email,
-          createdAt: data.created_at
+          createdAt: data.created_at,
         };
-        
+
         setCollegeDetails(mapped);
       } catch (err) {
         console.error("Fetch settings details failed:", err);
@@ -93,10 +98,19 @@ export default function CollegeSettings() {
     fetchCollegeSettings();
 
     const channel = supabase
-      .channel('college-settings-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'colleges', filter: `id=eq.${collegeId}` }, () => {
-        fetchCollegeSettings();
-      })
+      .channel("college-settings-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "colleges",
+          filter: `id=eq.${collegeId}`,
+        },
+        () => {
+          fetchCollegeSettings();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -107,31 +121,55 @@ export default function CollegeSettings() {
   const showToast = (type, text) => {
     setMessage({ type, text });
     setTimeout(() => {
-      setMessage({ type: '', text: '' });
+      setMessage({ type: "", text: "" });
     }, 3000);
   };
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate("/login");
     } catch (err) {
       console.error("Sign out error:", err);
     }
   };
+  const sections = [
+    {
+      title: "",
+      items: [
+        { name: "Public profile", path: "/college/settings/profile", icon: User, key: "profile" },
+        { name: "Account", path: "/college/settings/account", icon: Settings, key: "account" },
+        { name: "Institution Details", path: "/college/settings/institution", icon: Building2, key: "institution" },
+        { name: "Accessibility", path: "/college/settings/accessibility", icon: Accessibility, key: "accessibility" },
+        { name: "Notifications", path: "/college/settings/notifications", icon: Bell, key: "notifications" }
+      ]
+    },
+    {
+      title: "Access & Security",
+      items: [
+        { name: "Billing & licensing", path: "/college/settings/billing", icon: CreditCard, key: "billing", showFreeBadge: true },
+        { name: "Emails", path: "/college/settings/emails", icon: Mail, key: "emails" },
+        { name: "Security & keys", path: "/college/settings/security", icon: Key, key: "security" },
+        { name: "Active sessions", path: "/college/settings/sessions", icon: Tv, key: "sessions" },
+        { name: "Supabase sandbox", path: "/college/settings/supabase", icon: Database, key: "supabase" }
+      ]
+    }
+  ];
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-5 md:gap-6 font-sans selection:bg-ec-accent/20 select-none pb-12 animate-in fade-in duration-300">
-      
+    <div className="w-full md:h-[calc(100vh-160px)] flex flex-col md:flex-row gap-5 md:gap-6 font-sans selection:bg-ec-accent/20 select-none md:pb-4 animate-in fade-in duration-300 md:overflow-hidden">
       {/* ── LEFT SIDEBAR NAVIGATION (GitHub style) ── */}
-      <aside className="hidden md:block w-full md:w-[260px] shrink-0 md:space-y-6">
-        
+      <aside className="hidden md:block w-full md:w-[200px] shrink-0 md:space-y-6 md:h-full md:overflow-y-hidden">
         {/* User profile brief card */}
         <div className="flex items-center gap-3 px-2 pb-2 border-b border-ec-border/100">
           {/* Avatar preview */}
           <div className="w-10 h-10 rounded-full bg-ec-muted flex items-center justify-center text-ec-text font-semibold text-sm border border-ec-border overflow-hidden shrink-0 shadow-sm">
             {profilePhotoURL ? (
-              <img src={profilePhotoURL} alt="avatar" className="w-full h-full object-cover" />
+              <img
+                src={profilePhotoURL}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               collegeInitial
             )}
@@ -147,177 +185,50 @@ export default function CollegeSettings() {
         </div>
 
         {/* Sidebar menu list */}
-        <nav className="space-y-6">
-          
-          {/* Section 1: User Settings */}
-          <div className="space-y-0.5">
-            <NavLink
-              to="/college/settings/profile"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <User size={16} className={activeTab === 'profile' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Public profile</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/account"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Settings size={16} className={activeTab === 'account' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Account</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/appearance"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Palette size={16} className={activeTab === 'appearance' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Appearance</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/institution"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Building2 size={16} className={activeTab === 'institution' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Institution Details</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/accessibility"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Accessibility size={16} className={activeTab === 'accessibility' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Accessibility</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/notifications"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Bell size={16} className={activeTab === 'notifications' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Notifications</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/supabase"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Database size={16} className={activeTab === 'supabase' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Supabase Sandbox</span>
-            </NavLink>
-          </div>
-
-          {/* Section 2: Access & Licensing */}
-          <div className="space-y-1">
-            <span className="block px-3 text-[10px] font-[800] uppercase tracking-wider text-ec-text-sub select-none">
-              Access & Security
-            </span>
-
-            <NavLink
-              to="/college/settings/billing"
-              className={({ isActive }) => 
-                `w-full flex items-center justify-between px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <div className="flex items-center gap-2.5">
-                <CreditCard size={16} className={activeTab === 'billing' ? 'text-ec-accent' : 'text-ec-icon'} />
-                <span>Billing & licensing</span>
-              </div>
-              <span className="text-[8px] font-semibold border border-ec-border px-1.5 py-0.5 rounded-full uppercase leading-none font-mono">
-                Free
-              </span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/emails"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Mail size={16} className={activeTab === 'emails' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Emails</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/security"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Key size={16} className={activeTab === 'security' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Security & keys</span>
-            </NavLink>
-
-            <NavLink
-              to="/college/settings/sessions"
-              className={({ isActive }) => 
-                `w-full flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-lg text-left transition-colors border border-transparent bg-transparent outline-none cursor-pointer ${
-                  isActive
-                    ? 'bg-ec-muted text-ec-highlight border-ec-border font-semibold'
-                    : 'text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight font-normal'
-                }`
-              }
-            >
-              <Tv size={16} className={activeTab === 'sessions' ? 'text-ec-accent' : 'text-ec-icon'} />
-              <span>Active sessions</span>
-            </NavLink>
-          </div>
-
+        <nav className="space-y-4 text-left">
+          {sections.map((section, idx) => (
+            <div key={idx} className="space-y-0.5">
+              {section.title && (
+                <span className="block px-1.5 pb-1 text-[10px] font-[800] uppercase tracking-wider text-ec-text-sub select-none mt-4">
+                  {section.title}
+                </span>
+              )}
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.key}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `w-full flex items-center justify-between px-1.5 py-1.5 rounded-sm text-[12.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav border border-transparent bg-transparent outline-none cursor-pointer ${
+                      isActive
+                        ? "bg-black/5 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                        : "text-gray-500 dark:text-ec-text-sub hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <item.icon
+                          size={18}
+                          className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${
+                            isActive
+                              ? "text-gray-900 dark:text-white"
+                              : "text-gray-400 dark:text-ec-icon group-hover/nav:text-gray-900 dark:group-hover/nav:text-white"
+                          }`}
+                        />
+                        <span>{item.name}</span>
+                      </div>
+                      {item.showFreeBadge && (
+                        <span className="text-[8px] font-semibold border border-ec-border px-1.5 py-0.5 rounded-full uppercase leading-none font-mono">
+                          Free
+                        </span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          ))}
         </nav>
       </aside>
 
@@ -325,17 +236,66 @@ export default function CollegeSettings() {
       <div className="md:hidden w-full overflow-x-auto scrollbar-none border-b border-ec-border pb-1 shrink-0 mb-3">
         <nav className="flex items-center gap-1.5 px-1 min-w-max">
           {[
-            { name: 'Profile', path: '/college/settings/profile', icon: User, activeKey: 'profile' },
-            { name: 'Account', path: '/college/settings/account', icon: Settings, activeKey: 'account' },
-            { name: 'Appearance', path: '/college/settings/appearance', icon: Palette, activeKey: 'appearance' },
-            { name: 'Institution', path: '/college/settings/institution', icon: Building2, activeKey: 'institution' },
-            { name: 'Accessibility', path: '/college/settings/accessibility', icon: Accessibility, activeKey: 'accessibility' },
-            { name: 'Notifications', path: '/college/settings/notifications', icon: Bell, activeKey: 'notifications' },
-            { name: 'Supabase', path: '/college/settings/supabase', icon: Database, activeKey: 'supabase' },
-            { name: 'Billing', path: '/college/settings/billing', icon: CreditCard, activeKey: 'billing' },
-            { name: 'Emails', path: '/college/settings/emails', icon: Mail, activeKey: 'emails' },
-            { name: 'Security', path: '/college/settings/security', icon: Key, activeKey: 'security' },
-            { name: 'Sessions', path: '/college/settings/sessions', icon: Tv, activeKey: 'sessions' },
+            {
+              name: "Profile",
+              path: "/college/settings/profile",
+              icon: User,
+              activeKey: "profile",
+            },
+            {
+              name: "Account",
+              path: "/college/settings/account",
+              icon: Settings,
+              activeKey: "account",
+            },
+            {
+              name: "Institution",
+              path: "/college/settings/institution",
+              icon: Building2,
+              activeKey: "institution",
+            },
+            {
+              name: "Accessibility",
+              path: "/college/settings/accessibility",
+              icon: Accessibility,
+              activeKey: "accessibility",
+            },
+            {
+              name: "Notifications",
+              path: "/college/settings/notifications",
+              icon: Bell,
+              activeKey: "notifications",
+            },
+            {
+              name: "Supabase",
+              path: "/college/settings/supabase",
+              icon: Database,
+              activeKey: "supabase",
+            },
+            {
+              name: "Billing",
+              path: "/college/settings/billing",
+              icon: CreditCard,
+              activeKey: "billing",
+            },
+            {
+              name: "Emails",
+              path: "/college/settings/emails",
+              icon: Mail,
+              activeKey: "emails",
+            },
+            {
+              name: "Security",
+              path: "/college/settings/security",
+              icon: Key,
+              activeKey: "security",
+            },
+            {
+              name: "Sessions",
+              path: "/college/settings/sessions",
+              icon: Tv,
+              activeKey: "sessions",
+            },
           ].map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.activeKey;
@@ -345,11 +305,14 @@ export default function CollegeSettings() {
                 to={item.path}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all shrink-0 ${
                   isActive
-                    ? 'bg-ec-accent/10 border-ec-accent/20 text-ec-highlight font-bold'
-                    : 'border-transparent text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight'
+                    ? "bg-ec-accent/10 border-ec-accent/20 text-ec-highlight font-bold"
+                    : "border-transparent text-ec-text-sub hover:bg-ec-muted/20 hover:text-ec-highlight"
                 }`}
               >
-                <Icon size={14} className={isActive ? 'text-ec-accent' : 'text-ec-icon'} />
+                <Icon
+                  size={14}
+                  className={isActive ? "text-ec-accent" : "text-ec-icon"}
+                />
                 <span>{item.name}</span>
               </NavLink>
             );
@@ -358,33 +321,41 @@ export default function CollegeSettings() {
       </div>
 
       {/* ── MAIN CONTENT AREA ── */}
-      <main className="flex-1 min-w-0">
-        
+      <main className="flex-1 min-w-0 md:h-full md:overflow-y-auto md:pr-2 border border-ec-border bg-ec-surface/20 rounded-lg p-6">
         {/* Global Action Banner Alert */}
         {message.text && (
-          <div className={`p-4 rounded-xl text-xs font-semibold border flex items-center gap-2 mb-6 animate-in fade-in duration-200 ${
-            message.type === 'success' 
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' 
-              : 'bg-red-500/10 text-red-400 border-red-500/25'
-          }`}>
-            {message.type === 'success' ? <Check size={14} /> : <X size={14} />}
+          <div
+            className={`p-4 rounded-xl text-xs font-semibold border flex items-center gap-2 mb-6 animate-in fade-in duration-200 ${
+              message.type === "success"
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+                : "bg-red-500/10 text-red-400 border-red-500/25"
+            }`}
+          >
+            {message.type === "success" ? <Check size={14} /> : <X size={14} />}
             <span>{message.text}</span>
           </div>
         )}
 
         {/* ── TAB CONTENT OUTLET ── */}
-        <Outlet context={{ showToast, setShowLogoutModal, collegeDetails, collegeLoading, setCollegeDetails }} />
-
+        <Outlet
+          context={{
+            showToast,
+            setShowLogoutModal,
+            collegeDetails,
+            collegeLoading,
+            setCollegeDetails,
+          }}
+        />
       </main>
 
       {/* ── LOGOUT CONFIRMATION MODAL ── */}
       {showLogoutModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div 
+          <div
             className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity animate-fade-in"
             onClick={() => setShowLogoutModal(false)}
           />
-          
+
           <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl border border-ec-border bg-ec-surface p-6 text-left shadow-2xl transition-all animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 shrink-0 animate-pulse">
@@ -401,7 +372,8 @@ export default function CollegeSettings() {
             </div>
 
             <div className="mt-4 text-xs text-ec-text leading-relaxed">
-              This will clear your local administrative session token. You will need to input your credentials to log back in.
+              This will clear your local administrative session token. You will
+              need to input your credentials to log back in.
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
@@ -423,7 +395,6 @@ export default function CollegeSettings() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
