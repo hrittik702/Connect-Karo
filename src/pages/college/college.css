@@ -4,23 +4,40 @@
  * to protect other panels (student, alumni, root admin, home)
  * ═══════════════════════════════════════════════════ */
 
-/* Override theme colors to a high-fidelity charcoal #171717 theme */
-.college-panel,
+/* Override theme colors for high-fidelity light and charcoal #171717 dark themes */
+.college-panel {
+  --ec-root:          246 248 250;   /* Light background */
+  --ec-surface:       255 255 255;   /* White surface */
+  --ec-muted:         234 238 242;   /* Secondary/Hover light */
+  --ec-border:        216 222 228;   /* Light Border */
+  --ec-text:          31 35 40;      /* Dark text */
+  --ec-text-sub:      101 109 118;   /* Muted text */
+  --ec-icon:          101 109 118;   /* Icon default light color */
+  --ec-accent:        45 164 66;     /* Green Accent light */
+  --ec-accent-hover:  34 139 54;     /* Green Accent Hover light */
+  --ec-highlight:     31 35 40;      /* Header/Bold light */
+  --ec-header:        255 255 255;   /* White Header */
+
+  --shadow-sm: 0 1px 2px rgba(31, 35, 40, 0.04);
+  --shadow-md: 0 4px 12px rgba(31, 35, 40, 0.06);
+  --shadow-lg: 0 8px 24px rgba(31, 35, 40, 0.08);
+  --surface-elevated: rgba(255, 255, 255, 0.95);
+}
+
 .college-panel.dark,
 .college-panel .dark {
-  --ec-root: 23 23 23; /* #171717 (Charcoal Root background) */
-  --ec-surface: 30 30 30; /* #1e1e1e (Card/Surface color) */
-  --ec-muted: 42 42 42; /* #2a2a2a (Secondary/Hover state) */
-  --ec-border: 48 48 48; /* #303030 (Crisp Dark Border) */
-  --ec-text: 240 240 240; /* #f0f0f0 (Main text) */
-  --ec-text-sub: 163 163 163; /* #a3a3a3 (Muted/Secondary text) */
-  --ec-icon: 163 163 163; /* #a3a3a3 (Icon default color) */
-  --ec-accent: 63 185 80; /* #3fb950 (Sleek Green Accent) */
-  --ec-accent-hover: 87 203 102; /* #57cb66 (Sleek Green Accent Hover) */
-  --ec-highlight: 255 255 255; /* #ffffff (Header/Bold elements) */
-  --ec-header: 23 23 23; /* #171717 (Clean Toolbar matching root) */
+  --ec-root:          23 23 23;      /* #171717 (Charcoal Root background) */
+  --ec-surface:       30 30 30;      /* #1e1e1e (Card/Surface color) */
+  --ec-muted:         42 42 42;      /* #2a2a2a (Secondary/Hover state) */
+  --ec-border:        48 48 48;      /* #303030 (Crisp Dark Border) */
+  --ec-text:          240 240 240;   /* #f0f0f0 (Main text) */
+  --ec-text-sub:      163 163 163;   /* #a3a3a3 (Muted/Secondary text) */
+  --ec-icon:          163 163 163;   /* #a3a3a3 (Icon default color) */
+  --ec-accent:        63 185 80;     /* #3fb950 (Sleek Green Accent) */
+  --ec-accent-hover:  87 203 102;    /* #57cb66 (Sleek Green Accent Hover) */
+  --ec-highlight:     255 255 255;   /* #ffffff (Header/Bold elements) */
+  --ec-header:        23 23 23;      /* #171717 (Clean Toolbar matching root) */
 
-  /* Override shadow values for rich depth on charcoal background */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);

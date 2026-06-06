@@ -328,7 +328,7 @@ export default function CollegeDashboardLayout() {
       {/* ── WORKSPACE BOTTOM GRID ── */}
       <div className="flex-1 flex flex-row relative min-h-[calc(100vh-94px)]">
         {/* ── PERMANENT EXPANDABLE SIDEBAR ── */}
-        <aside className="fixed top-[50px] bottom-0 left-0 bg-ec-header border-r border-ec-border flex flex-col z-[35] select-Overview transition-all duration-300 ease-out w-12 hover:w-40 overflow-hidden group/sidebar">
+        <aside className="fixed top-[50px] bottom-0 left-0 bg-ec-header border-r border-ec-border flex flex-col z-[35] select-none transition-all duration-300 ease-out w-12 hover:w-40 overflow-hidden group/sidebar">
           {/* Navigation Items */}
           <div className="flex-1 overflow-y-auto py-3 px-2 space-y-1 scrollbar-none text-left">
             {navItems.map((item) => {
@@ -343,14 +343,18 @@ export default function CollegeDashboardLayout() {
                   end={item.exact}
                   className={`flex items-center gap-3 px-1.5 py-1.5 rounded-sm text-[12.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav ${
                     isActive
-                      ? "bg-white/10 text-white font-semibold"
-                      : "text-ec-text-sub hover:bg-white/5 hover:text-white"
+                      ? "bg-black/5 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                      : "text-gray-500 dark:text-ec-text-sub hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
                   }`}
                   title={item.name}
                 >
                   <item.icon
                     size={18}
-                    className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${isActive ? "text-white" : "text-ec-icon group-hover/nav:text-white"}`}
+                    className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${
+                      isActive
+                        ? "text-gray-900 dark:text-white"
+                        : "text-gray-400 dark:text-ec-icon group-hover/nav:text-gray-900 dark:group-hover/nav:text-white"
+                    }`}
                   />
                   <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 min-w-max delay-75">
                     {item.name}
@@ -360,21 +364,25 @@ export default function CollegeDashboardLayout() {
             })}
 
             <div className="py-1" />
-            <hr className="border-[#303030]" />
+            <hr className="border-ec-border" />
             <div className="py-1" />
 
             <NavLink
               to="/college/settings"
               className={`flex items-center gap-3 px-1.5 py-1.5 rounded-sm text-[12.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav ${
                 location.pathname.startsWith("/college/settings")
-                  ? "bg-white/10 text-white font-semibold"
-                  : "text-ec-text-sub hover:bg-white/5 hover:text-white"
+                  ? "bg-black/5 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                  : "text-gray-500 dark:text-ec-text-sub hover:bg-black/5 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
               }`}
               title="Settings"
             >
               <GoGear
                 size={18}
-                className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${location.pathname.startsWith("/college/settings") ? "text-white" : "text-ec-icon group-hover/nav:text-white"}`}
+                className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${
+                  location.pathname.startsWith("/college/settings")
+                    ? "text-gray-900 dark:text-white"
+                    : "text-gray-400 dark:text-ec-icon group-hover/nav:text-gray-900 dark:group-hover/nav:text-white"
+                }`}
               />
               <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 min-w-max delay-75">
                 Settings
@@ -417,37 +425,42 @@ export default function CollegeDashboardLayout() {
               className="fixed inset-0 z-40 bg-transparent cursor-default"
               onClick={() => setShowSidebarMenu(false)}
             />
-            <div className="absolute  bottom-9 left-3 w-48 bg-ec-surface border border-ec-border rounded-sm shadow-2xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
-              <div className="px-2.5 py-1 text-[11px] font-semibold text-ec-text-sub">
+            <div className="absolute  bottom-9 left-3 w-48 bg-white dark:bg-[#242424] border border-gray-200 dark:border-[#303030] rounded-sm shadow-2xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
+              <div className="px-2.5 py-1 text-[11px] font-semibold text-gray-500 dark:text-ec-text-sub">
                 Sidebar Control
               </div>
-              <hr className="border-[#303030] my-1.5" />
+              <hr className="border-gray-200 dark:border-[#303030] my-1.5" />
               <div className="space-y-0.5">
                 {[
                   { label: "Expanded", value: "expanded" },
                   { label: "Collapsed", value: "collapsed" },
                   { label: "Expand on hover", value: "hover" },
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      setSidebarMode(opt.value);
-                      setShowSidebarMenu(false);
-                    }}
-                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-sm text-xs transition-colors cursor-pointer text-left ${
-                      sidebarMode === opt.value
-                        ? "bg-white/10 text-white font-medium"
-                        : "text-ec-text-sub hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className="w-3 h-3 flex items-center justify-center shrink-0">
-                      {sidebarMode === opt.value && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                ].map((opt) => {
+                  const isSelected = sidebarMode === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setSidebarMode(opt.value);
+                        setShowSidebarMenu(false);
+                      }}
+                      className={`w-full flex items-center text-xs py-1.5 px-2.5 rounded-sm transition-colors cursor-pointer text-left ${
+                        isSelected
+                          ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-medium"
+                          : "text-gray-600 dark:text-ec-text-sub hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                    >
+                      {isSelected ? (
+                        <span className="w-4 inline-flex items-center justify-start text-gray-900 dark:text-white font-bold select-none text-[13px] leading-none pr-1">
+                          •
+                        </span>
+                      ) : (
+                        <span className="w-4 inline-flex shrink-0 select-none" />
                       )}
-                    </span>
-                    <span>{opt.label}</span>
-                  </button>
-                ))}
+                      <span>{opt.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </>
