@@ -185,10 +185,11 @@ export default function CollegeDashboardLayout() {
 
   const getPaddingLeft = () => {
     if (isMobile) return 56;
+    const gap = 37; // constant relative gap between sidebar and content
     if (sidebarMode === "expanded") {
-      return hasSubSidebar ? 490 : 250;
+      return 160 + gap; // 277px
     }
-    return hasSubSidebar ? 296 : 85;
+    return 48 + gap; // 85px
   };
 
   const getSubSidebarContent = () => {
