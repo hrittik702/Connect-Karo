@@ -288,9 +288,9 @@ export default function CollegeDashboardLayout() {
       {/* ── WORKSPACE BOTTOM GRID ── */}
       <div className="flex-1 flex flex-row relative min-h-[calc(100vh-94px)]">
         {/* ── PERMANENT EXPANDABLE SIDEBAR ── */}
-        <aside className="fixed top-[50px] bottom-0 left-0 bg-ec-header border-r border-ec-border flex flex-col z-[35] select-none transition-all duration-300 ease-out w-14 hover:w-60 overflow-hidden group/sidebar">
+        <aside className="fixed top-[50px] bottom-0 left-0 bg-ec-header border-r border-ec-border flex flex-col z-[35] select-none transition-all duration-300 ease-out w-12 hover:w-60 overflow-hidden group/sidebar">
           {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto py-3 px-3 scrollbar-none">
+          <div className="flex-1 overflow-y-auto py-3 px-2 space-y-1 scrollbar-none text-left">
             {navItems.map((item) => {
               const isActive = item.exact
                 ? location.pathname === item.path
@@ -301,22 +301,16 @@ export default function CollegeDashboardLayout() {
                   key={item.name}
                   to={item.path}
                   end={item.exact}
-                  className={`flex items-center gap-4 px-2 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav ${
+                  className={`flex items-center gap-3 px-1.5 py-1.5 rounded-sm text-[12.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav ${
                     isActive
-                      ? "bg-gradient-to-r from-ec-accent/15 to-emerald-500/5 text-ec-highlight font-bold shadow-[0_4px_12px_rgba(16,185,129,0.06)]"
-                      : "text-ec-text-sub hover:text-ec-highlight hover:bg-ec-muted/40 hover:translate-x-1"
+                      ? "bg-white/10 text-white font-semibold"
+                      : "text-ec-text-sub hover:bg-white/5 hover:text-white"
                   }`}
                   title={item.name}
                 >
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r bg-gradient-to-b from-ec-accent to-emerald-400 animate-pulse" />
-                  )}
-                  {/* Dotted border indicator on hover */}
-                  <div className="absolute inset-0 border-[1.5px] border-dashed border-transparent group-hover/nav:border-ec-text-sub/30 rounded-xl pointer-events-none transition-colors duration-300"></div>
-
                   <item.icon
-                    size={20}
-                    className={`shrink-0 transition-all duration-300 group-hover/nav:scale-110 ${isActive ? "text-[#f78162]" : "text-ec-icon group-hover/nav:text-ec-highlight"}`}
+                    size={18}
+                    className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${isActive ? "text-white" : "text-ec-icon group-hover/nav:text-white"}`}
                   />
                   <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 min-w-max delay-75">
                     {item.name}
@@ -326,26 +320,21 @@ export default function CollegeDashboardLayout() {
             })}
 
             <div className="py-1" />
-            <hr color="#242424" />
+            <hr className="border-[#303030]" />
             <div className="py-1" />
+
             <NavLink
               to="/college/settings"
-              className={`flex items-center gap-3 px-2 py-2 rounded-xl text-[13.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav ${
+              className={`flex items-center gap-3 px-1.5 py-1.5 rounded-sm text-[12.5px] font-medium transition-all duration-300 relative overflow-hidden group/nav ${
                 location.pathname.startsWith("/college/settings")
-                  ? "bg-gradient-to-r from-ec-accent/15 to-emerald-500/5 text-ec-highlight font-bold shadow-[0_4px_12px_rgba(16,185,129,0.06)]"
-                  : "text-ec-text-sub hover:text-ec-highlight hover:bg-ec-muted/40 hover:translate-x-1"
+                  ? "bg-white/10 text-white font-semibold"
+                  : "text-ec-text-sub hover:bg-white/5 hover:text-white"
               }`}
               title="Settings"
             >
-              {location.pathname.startsWith("/college/settings") && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r bg-gradient-to-b from-ec-accent to-emerald-400 animate-pulse" />
-              )}
-              {/* Dotted border indicator on hover */}
-              <div className="absolute inset-0 border-[1.5px] border-dashed border-transparent group-hover/nav:border-ec-text-sub/30 rounded-xl pointer-events-none transition-colors duration-300"></div>
-
               <GoGear
                 size={18}
-                className={`shrink-0 transition-all duration-300 group-hover/nav:scale-110 ${location.pathname.startsWith("/college/settings") ? "text-[#f78162]" : "text-ec-icon group-hover/nav:text-ec-highlight"}`}
+                className={`shrink-0 transition-all duration-300 group-hover/nav:scale-105 ${location.pathname.startsWith("/college/settings") ? "text-white" : "text-ec-icon group-hover/nav:text-white"}`}
               />
               <span className="opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-300 min-w-max delay-75">
                 Settings
