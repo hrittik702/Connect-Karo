@@ -20,6 +20,23 @@ import UserMenuDropdown from "../../components/college/UserMenuDropdown";
 import "./college.css";
 import logoImg from "../../assets/connect-karo-logo.png";
 
+// Custom SVG icon matching the Sidebar Control icon (rounded square with vertical dashed divider)
+const SidebarControlIcon = ({ size = 17 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <line x1="9" y1="3" x2="9" y2="21" strokeDasharray="3 3" />
+  </svg>
+);
+
 export default function CollegeDashboardLayout() {
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
@@ -28,6 +45,21 @@ export default function CollegeDashboardLayout() {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [sidebarMode, setSidebarMode] = useState(() => {
+    return localStorage.getItem("sidebar_mode") || "hover";
+  });
+  const [showSidebarMenu, setShowSidebarMenu] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("sidebar_mode", sidebarMode);
+    const root = document.documentElement;
+    root.classList.remove(
+      "sidebar-expanded",
+      "sidebar-collapsed",
+      "sidebar-hover",
+    );
+    root.classList.add(`sidebar-${sidebarMode}`);
+  }, [sidebarMode]);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [subSidebarSearch, setSubSidebarSearch] = useState(
     searchParams.get("search") || "",
@@ -150,6 +182,14 @@ export default function CollegeDashboardLayout() {
 
   // Spacing layout offset
   const paddingLeftValue = isMobile ? "56px" : hasSubSidebar ? "296px" : "56px";
+
+  const getPaddingLeft = () => {
+    if (isMobile) return 56;
+    if (sidebarMode === "expanded") {
+      return hasSubSidebar ? 490 : 250;
+    }
+    return hasSubSidebar ? 296 : 85;
+  };
 
   const getSubSidebarContent = () => {
     const path = location.pathname;
@@ -288,7 +328,7 @@ export default function CollegeDashboardLayout() {
       {/* ── WORKSPACE BOTTOM GRID ── */}
       <div className="flex-1 flex flex-row relative min-h-[calc(100vh-94px)]">
         {/* ── PERMANENT EXPANDABLE SIDEBAR ── */}
-        <aside className="fixed top-[50px] bottom-0 left-0 bg-ec-header border-r border-ec-border flex flex-col z-[35] select-none transition-all duration-300 ease-out w-12 hover:w-60 overflow-hidden group/sidebar">
+        <aside className="fixed top-[50px] bottom-0 left-0 bg-ec-header border-r border-ec-border flex flex-col z-[35] select-Overview transition-all duration-300 ease-out w-12 hover:w-40 overflow-hidden group/sidebar">
           {/* Navigation Items */}
           <div className="flex-1 overflow-y-auto py-3 px-2 space-y-1 scrollbar-none text-left">
             {navItems.map((item) => {
@@ -349,7 +389,7 @@ export default function CollegeDashboardLayout() {
         {/* ── CONTENT AREA ── */}
         <main
           className="flex-1 pt-6 pb-6 px-3 sm:pt-8 sm:pb-8 sm:px-5 lg:pt-6 lg:pb-12 lg:px-8 z-10 bg-transparent transition-all duration-[350ms] ease-out overflow-y-auto"
-          style={{ paddingLeft: 85 }}
+          style={{ paddingLeft: getPaddingLeft() }}
         >
           <div className="w-full h-full">
             <Outlet />
@@ -360,6 +400,59 @@ export default function CollegeDashboardLayout() {
       {showUserMenu && (
         <UserMenuDropdown onClose={() => setShowUserMenu(false)} />
       )}
+
+      {/* Floating Sidebar Control Button & Menu */}
+      <div className="fixed bottom-2 left-2.5 z-[45] select-none">
+        <button
+          onClick={() => setShowSidebarMenu(!showSidebarMenu)}
+          className="w-7 h-7 rounded-md bg-ec-surface border-none border-ec-border flex items-center justify-center text-ec-icon hover:text-white hover:bg-white/5 transition-colors cursor-pointer outline-none"
+          title="Sidebar control"
+        >
+          <SidebarControlIcon size={13} />
+        </button>
+
+        {showSidebarMenu && (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-transparent cursor-default"
+              onClick={() => setShowSidebarMenu(false)}
+            />
+            <div className="absolute  bottom-9 left-3 w-48 bg-ec-surface border border-ec-border rounded-sm shadow-2xl p-2.5 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150 text-left">
+              <div className="px-2.5 py-1 text-[11px] font-semibold text-ec-text-sub">
+                Sidebar Control
+              </div>
+              <hr className="border-[#303030] my-1.5" />
+              <div className="space-y-0.5">
+                {[
+                  { label: "Expanded", value: "expanded" },
+                  { label: "Collapsed", value: "collapsed" },
+                  { label: "Expand on hover", value: "hover" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setSidebarMode(opt.value);
+                      setShowSidebarMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-sm text-xs transition-colors cursor-pointer text-left ${
+                      sidebarMode === opt.value
+                        ? "bg-white/10 text-white font-medium"
+                        : "text-ec-text-sub hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <span className="w-3 h-3 flex items-center justify-center shrink-0">
+                      {sidebarMode === opt.value && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </span>
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
