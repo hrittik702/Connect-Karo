@@ -17,12 +17,12 @@ export default function UserMenuDropdown({ onClose }) {
 
   // Theme management
   const [currentTheme, setCurrentTheme] = React.useState(() => {
-    return localStorage.getItem("theme") || "system";
+    return localStorage.getItem("connect_karo_theme") || "light";
   });
 
   const applyTheme = (theme) => {
     setCurrentTheme(theme);
-    localStorage.setItem("theme", theme);
+    localStorage.setItem("connect_karo_theme", theme);
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
@@ -36,6 +36,8 @@ export default function UserMenuDropdown({ onClose }) {
         root.classList.remove("dark");
       }
     }
+    // Dispatch custom event to notify useSystemTheme hook
+    window.dispatchEvent(new CustomEvent("connect-karo-theme-change", { detail: theme }));
   };
 
   return (

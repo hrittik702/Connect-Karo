@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
  */
 export default function useSystemTheme() {
   const [activeTheme, setActiveTheme] = useState(() => {
-    if (typeof window === 'undefined') return 'system';
-    return localStorage.getItem('connect_karo_theme') || 'system';
+    if (typeof window === 'undefined') return 'light';
+    return localStorage.getItem('connect_karo_theme') || 'light';
   });
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function useSystemTheme() {
 
     // OS preference listener
     const handleOSChange = () => {
-      const currentPreference = localStorage.getItem('connect_karo_theme') || 'system';
+      const currentPreference = localStorage.getItem('connect_karo_theme') || 'light';
       if (currentPreference === 'system') {
         applyTheme('system');
       }
