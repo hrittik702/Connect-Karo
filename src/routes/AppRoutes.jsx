@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { auth, db } from "../firebase/config";
@@ -7,7 +7,10 @@ import { doc, onSnapshot, getDoc, getDocFromServer } from "firebase/firestore";
 // ── MASTER PUBLIC & OTHER DASHBOARDS IMPORTS ──
 import Home from "../pages/Home/Home";
 import Login from "../pages/auth/Login";
-import AlumniDashboard from "../pages/alumni/Dashboard";
+import AlumniDashboardLayout from "../pages/alumni/DashboardLayout"; // Fixed design token layout shell frame
+import AlumniDashboardOverview from "../pages/alumni/Dashboard"; // Core analytical overview cards matrix
+import InteractionChatRoom from "../pages/alumni/mentorship/InteractionChatRoom"; // Unified Chat Workspace
+import ReferralDashboard from "../pages/alumni/jobs/ReferralDashboard"; // Corporate jobs spreadsheet ATS
 import StudentDashboard from "../pages/student/Dashboard";
 
 // ── COLLEGE ADMIN IMPORTS ──
@@ -19,7 +22,7 @@ import CollegeBroadcastList from "../pages/college/broadcasts/BroadcastList";
 import CollegeSettings from "../pages/college/settings/CollegeSettings";
 import AppearanceSettings from "../components/AppearanceSettings";
 
-// ── ✅ ACTUAL ROOT ADMIN IMPORTS (PRODUCTION READY) ──
+// ── ACTUAL ROOT ADMIN IMPORTS (PRODUCTION READY) ──
 import DashboardLayout from "../pages/admin/DashboardLayout";
 import DashboardOverview from "../pages/admin/DashboardOverview";
 import CollegeList from "../pages/admin/colleges/CollegeList";
@@ -82,14 +85,14 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   return children;
 };
 
-// 🔒 Real-time Guard for Suspended Colleges
+// Real-time Guard for Suspended Colleges
 const CollegeStatusGuard = ({ children }) => {
   const { userData } = useAuth();
-  const [status, setStatus] = React.useState("active");
-  const [loading, setLoading] = React.useState(true);
+  const [status, setStatus] = useState("active");
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const rawId = userData?.collegeId || "";
     if (!rawId) {
       setLoading(false);
@@ -126,8 +129,6 @@ const CollegeStatusGuard = ({ children }) => {
           if (snapshot.exists()) {
             let currentStatus = snapshot.data().status || "active";
             
-            // If the snapshot indicates suspended but is retrieved from the local cache,
-            // double-check with the server to prevent stale cache evaluations.
             if (currentStatus === "suspended" && snapshot.metadata.fromCache) {
               try {
                 const serverSnap = await getDocFromServer(docRef);
@@ -181,9 +182,8 @@ const CollegeStatusGuard = ({ children }) => {
   return children;
 };
 
-// 🚧 Secondary Infrastructure Placeholder Component
+// Secondary Infrastructure Placeholder Component
 const UnderConstruction = ({ title }) => (
-
   <div className="flex flex-col items-center justify-center h-64 text-center p-8 border-2 border-dashed border-ec-border rounded-xl bg-ec-surface/30 animate-in fade-in duration-300 select-none">
     <div className="w-14 h-14 mb-4 rounded-full bg-yellow-500/10 flex items-center justify-center text-xl border border-yellow-500/20">
       🚧
@@ -199,11 +199,11 @@ const UnderConstruction = ({ title }) => (
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* 🔓 Public Landing Pages */}
+      {/* Public Landing Pages */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
 
-      {/* 🔐 Root Admin Secure Control Tower (Nested Routing) */}
+      {/* Root Admin Dashboard Routes */}
       <Route 
         path="/admin" 
         element={
@@ -212,30 +212,18 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        {/* /admin -> By default system overview dashboard open hoga */}
         <Route index element={<DashboardOverview />} />
-        
-        {/* College Management Grid & Form Pipeline */}
         <Route path="colleges" element={<CollegeList />} />
         <Route path="colleges/add" element={<AddCollege />} />
         <Route path="colleges/:id" element={<CollegeDetails />} />
-        
-        {/* Helpdesk Global Escalation Hub */}
         <Route path="support" element={<TicketManager />} />
-
-
-        {/* Commercial Billing & SaaS Node Contracts */}
         <Route path="billing" element={<BillingOverview />} />
-        
-        {/* Network-wide Announcement Engine */}
         <Route path="broadcast" element={<AnnouncementPanel />} />
-        
-        {/* System Node Cryptography & Security Settings */}
         <Route path="settings" element={<UnderConstruction title="Root Credentials & Security Framework" />} />
         <Route path="settings/logs" element={<UnderConstruction title="System Audit Logs & Threat Detection Trace" />} />
       </Route>
 
-      {/* 🔐 College Admin Control Console (Nested Routing) */}
+      {/* College Admin Dashboard Routes */}
       <Route 
         path="/college" 
         element={
@@ -253,13 +241,34 @@ export default function AppRoutes() {
         <Route path="settings" element={<CollegeSettings />} />
         <Route path="appearance" element={<AppearanceSettings />} />
       </Route>
-      <Route path="/alumni/*" element={
-        <ProtectedRoute allowedRole="alumni">
-          <CollegeStatusGuard>
-            <AlumniDashboard />
-          </CollegeStatusGuard>
-        </ProtectedRoute>
-      } />
+
+      {/* 🔐 ALUMNI DASHBOARD MODULE ROUTES */}
+      <Route 
+        path="/alumni" 
+        element={
+          <ProtectedRoute allowedRole="alumni">
+            <CollegeStatusGuard>
+              <AlumniDashboardLayout /> 
+            </CollegeStatusGuard>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<AlumniDashboardOverview />} />
+        
+        {/* 🌟 APKA BADLAV: Dono links par ab direct naya full-screen WhatsApp chat chalu hoga */}
+        <Route path="mentorship" element={<InteractionChatRoom />} />
+        <Route path="chat" element={<InteractionChatRoom />} />
+        
+        <Route path="jobs" element={<ReferralDashboard />} />
+        
+        {/* Construction fallbacks */}
+        <Route path="directory" element={<UnderConstruction title="Graduate Index Peer Discovery Database Grid" />} />
+        <Route path="events" element={<UnderConstruction title="Asynchronous Dual Webinar Scheduling Interface" />} />
+        <Route path="settings" element={<UnderConstruction title="Personal Identity Credentials Configuration Editor" />} />
+      </Route>
+
+      {/* Student Dashboard Routes */}
       <Route path="/student/*" element={
         <ProtectedRoute allowedRole="student">
           <CollegeStatusGuard>
@@ -268,7 +277,7 @@ export default function AppRoutes() {
         </ProtectedRoute>
       } />
 
-      {/* 🛸 Catch-all Edge Route Recovery Block */}
+      {/* Catch-all Route Recovery */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
